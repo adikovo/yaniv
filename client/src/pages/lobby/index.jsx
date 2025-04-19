@@ -6,32 +6,21 @@ import './styles.css'
 
 export const Lobby = () => {
     const navigate = useNavigate();
-    const { player, players, gameID } = useGameContext();
+    const { player, players, gameID, gameStarted } = useGameContext();
 
     useEffect(() => {
         console.log(player, players);
     }, [player, players])
 
     useEffect(() => {
-        socket.on("start", () => {
+        if (gameStarted) {
             navigate('/game');
-        });
-
-        return () => {
-            socket.off("start");
-        };
-    }, []);
+        }
+    }, [gameStarted, navigate]);
 
     const startGameClicked = () => {
-        
-        //debug
         socket.emit("startGame");
-
-        //TODO check if theres at least 2 players in the game
-
-        navigate('/game');
     }
-
 
     const lobby = () => {
         return(

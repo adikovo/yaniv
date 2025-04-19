@@ -13,22 +13,6 @@ export const Game = () => {
     //debug
     console.log("Component rendered!");
 
-    const getGameDetails = () => {
-        socket.on("start", ({deck, top_card, current_turn}) => {
-            //debug
-            console.log("🌟 Received start event!", { deck, top_card, current_turn });
-            setGameState({deck, top_card, current_turn});      
-        });
-
-        socket.on("hand", ({hand, hand_sum}) => {
-            //debug
-            console.log("HAND RECEIVED ON CLIENT:", hand, hand_sum);
-            setPlayer(prev => ({ ...prev, hand }));
-            setSum(hand_sum);
-            console.log("updated sum", sum);
-            setSelectedCards([]);
-        });
-    };
     const makeTurn = () => {
         if(selectedCards.length >= 1){
             //debug
@@ -39,42 +23,25 @@ export const Game = () => {
                 selected_cards: selectedCards
             });
             setSelectedCards([]);
-        } 
-        //socket.emit("makeTurn", gameID, {type: "cardFromDeck"});    
-        
-        
-        
+        }      
     }
 
     const yanivCall = () => {
         socket.emit("makeTurn", gameID, {type: "yaniv"});
     }
 
-    const getTurn = () => {
-        
-        if(!hasEmittedTurn.current){
-            hasEmittedTurn.current = true;
+    // const getTurn = () => {
+    //     if(!hasEmittedTurn.current){
+    //         hasEmittedTurn.current = true;
             
-            //debug
-            console.log("inside getTurn");
-        }
+    //         //debug
+    //         console.log("inside getTurn");
+    //     }
+    // }
 
-        socket.on("turn", ({top_card, current_turn, deck}) => {
-            //debug
-            console.log("Turn update received:", { top_card, current_turn, deck });
-            setGameState({deck, top_card, current_turn});
-        });
-    }
-
-    useEffect(() => {
-        getGameDetails();
-        getTurn();
-        return () => {
-          socket.off("start");
-          socket.off("hand");
-          socket.off("turn");
-        };
-      }, []);
+    // useEffect(() => {
+    //     getTurn();
+    //   }, []);
 
       //debug
       useEffect(() => {

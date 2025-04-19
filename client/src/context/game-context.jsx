@@ -8,6 +8,7 @@ export const GameProvider = ({ children }) => {
     const [players, setPlayers] = useState([]);
     const [gameID, setGameID] = useState('');
     const [gameState, setGameState] = useState({});
+    const [gameStarted, setGameStarted] = useState(false);
     const [sum, setSum] = useState(0);
     const [selectedCards, setSelectedCards] = useState([]);
 
@@ -37,13 +38,45 @@ export const GameProvider = ({ children }) => {
         };
     }, []);
 
+    useEffect(() => {
+        socket.on("start", ({deck, top_card, current_turn}) => {
+            //debug
+            console.log("🌟 Received start event!", { deck, top_card, current_turn });
+            setGameStarted(true);
+            setGameState({deck, top_card, current_turn});
+        });
+
+        socket.on("hand", ({hand, hand_sum}) => {
+            //debug
+            console.log("HAND RECEIVED ON CLIENT:", hand, hand_sum);
+            setPlayer(prev => ({ ...prev, hand }));
+            setSum(hand_sum);
+            console.log("updated sum", sum);
+            setSelectedCards([]);
+        });
+
+        socket.on("turn", ({top_card, current_turn, deck}) => {
+            //debug
+            console.log("Turn update received:", { top_card, current_turn, deck });
+            setGameState({deck, top_card, current_turn});
+        });
+
+        return () => {
+            socket.off("start");
+            socket.off("hand");
+            socket.off("turn");
+        };
+    })
+
     return (
-        <GameContext.Provider value={{ players, setPlayers, 
+        <GameContext.Provider value={{
+            players, setPlayers, 
             gameID, setGameID,
             player, setPlayer,
             gameState, setGameState,
             sum, setSum,
-            selectedCards, setSelectedCards }}>
+            selectedCards, setSelectedCards,
+            gameStarted }}>
             {children}
         </GameContext.Provider>
     );

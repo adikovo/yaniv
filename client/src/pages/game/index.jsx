@@ -11,7 +11,7 @@ export const Game = () => {
     const { player, setPlayer, players, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards } = useGameContext();
 
     //debug
-    console.log("Component rendered");
+    console.log("Component rendered!");
 
     const getGameDetails = () => {
         socket.on("start", ({deck, top_card, current_turn}) => {

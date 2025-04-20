@@ -50,6 +50,7 @@ export const GameProvider = ({ children }) => {
             //debug
             console.log("HAND RECEIVED ON CLIENT:", hand, hand_sum);
             setPlayer(prev => ({ ...prev, hand }));
+            
             setSum(hand_sum);
             console.log("updated sum", sum);
             setSelectedCards([]);

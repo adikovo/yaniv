@@ -106,7 +106,7 @@ function validYaniv(hand_sum){
     }
     return false;
 }
-
+//return object- name and win type: yaniv/asaf
 function yanivCall(game){
     const player = getCurrentPlayer(game);
     const yaniv_sum = player.sum;
@@ -116,12 +116,12 @@ function yanivCall(game){
             const player = game.players[playerKey];
 
             if(player.sum <= yaniv_sum){
-                console.log(`ASAFFFFFFFFF ${player} WONN!!`);
+                console.log(`ASAFFFFFFFFF ${player.name} WONN!!`);
                 return;
             }
         }      
     }
-    console.log(`player # ${game.game_state.current_turn} won!!!!!`);
+    console.log(`player # ${game.game_state.current_turn + 1} won!!!!!`);
     return;
 }
 function drawTopCard(game, side){
@@ -146,15 +146,18 @@ function updateTopCard(game, cards){
     
 //return the actual cards
 function toCards(hand, indexes){
-    let selected = indexes.map(i => hand[i]).filter(card => card !== undefined);;
+    let selected = indexes.map(i => hand[i]).filter(card => card !== undefined);
     return selected;
 }
 
-function validMove(game, selected_cards){
+function validMove(selected_cards){
 
     if(selected_cards.length === 1){
         return true;
     }
+
+    //debug
+    console.log("selected", selected_cards);
     
     const firstVal = selected_cards[0].value;
     const sameVal = selected_cards.every(card => card.value === firstVal);
@@ -166,15 +169,15 @@ function validMove(game, selected_cards){
     const sameSuit = selected_cards.every(card => card.suit === firstSuit);
     if(sameSuit){
         const sorted = selected_cards.sort((a,b) => a.numeric_val - b.numeric_val);
-        for(let i = 0; i < sorted.length; i++){
-            if(sorted[i].numeric_val !== sorted[i + 1].numeric_val){
+        for(let i = 0; i < sorted.length - 1; i++){
+            if(Math.abs(sorted[i].numeric_val - sorted[i + 1].numeric_val) !== 1){
                 //debug
                 console.log("not a seq!!")
                 return false;
             }
         }
         //debug
-        console("valid seq!");
+        console.log("valid seq!");
         return true;
     }
 }
@@ -188,13 +191,12 @@ function removeCardFromHand(hand, selected){
 
 function makeTurnCardFromHand(game, player, indexes){
     let selected = toCards(player.hand, indexes);
+    //debug
+    console.log("after to card", selected);
 
-    if(!validMove(game, selected)){
+    if(!validMove(selected)){
         console.log("invalid move!!!");
     }else{
-        //debug
-        console.log("selected cards: ", selected);
-
         removeCardFromHand(player.hand, indexes);
         handValue(player);
         updateTopCard(game, selected);
@@ -206,17 +208,14 @@ function makeTurnCardFromHand(game, player, indexes){
 function makeTurnCardFromDeck(game, player){
         drawFromDeck(game);
         handValue(player);
-        console.log("new sum:", player.sum);
         nextTurn(game);
-        console.log("next turn:", game.game_state.current_turn);
 }
 
 function makeTurnCardFromTop(game, player, side){
         drawTopCard(game, side);
         handValue(player);
-        console.log("new sum:", player.sum);
         nextTurn(game);
-        console.log("next turn:", game.game_state.current_turn);
+        
 }
 
 

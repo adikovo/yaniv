@@ -13,6 +13,7 @@
 //                 "name": "adiiiii", 
 //                 "playerType": "join"
 //                 "hand": {'1' 'h', '2' 's'...}
+//                  "hand": []
 //             }
 //         }
 //         game_state:{

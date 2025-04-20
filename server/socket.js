@@ -51,7 +51,6 @@ const setupSocket = (server) => {
             whosTurn(games[room]);
             topCard(games[room]);
             
-            console.log(`top card: ${games[room].game_state.top_card}`);
             
             io.to(room).emit("start", {deck: deck, top_card: games[room].game_state.top_card, current_turn: games[room].game_state.current_turn});
             for(let socket_id in rooms[room]){
@@ -59,13 +58,12 @@ const setupSocket = (server) => {
                 const player_id = player.id;
                 const hand = games[room].players[player_id].hand;
                 handValue(games[room].players[player_id]);
-                
-            
+                           
                 //debug
                 console.log(`Sending hand to player ${player.name}:`, hand);
-
                 io.to(socket_id).emit("hand", {hand: hand, hand_sum: games[room].players[player_id].sum});
-
+                
+                
             }            
         });
 
@@ -82,7 +80,6 @@ const setupSocket = (server) => {
 
             const socketPlayer = rooms[room][socket.id];
             const player = games[room].players[socketPlayer.id];
-            console.log(player);
             const game_state = games[room].game_state;
             if(socketPlayer.id !== getCurrentPlayer(games[room]).id){
                 return;
@@ -105,7 +102,6 @@ const setupSocket = (server) => {
                     deck: game_state.deck})
             }     
             if(turn_data.type === "cardFromTop"){
-                //function below gets turn_data.index
                 makeTurnCardFromTop(games[room], player, turn_data.side);
                 socket.emit("hand", {hand: player.hand, hand_sum: player.sum});
                 io.to(room).emit("turn", {

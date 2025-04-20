@@ -3,6 +3,7 @@ import { useGameContext } from '../../context/game-context';
 import { useNavigate } from "react-router-dom";
 import socket from "../../api/socket";
 import './styles.css'
+import { Card } from '../../components/card';
 
 export const Game = () => {
 
@@ -51,36 +52,7 @@ export const Game = () => {
       useEffect(() => {
         console.log("Player updated:", player);
       }, [player]);
-
-    const getCardImageName = (card) => {
-        let new_suit = '';
-        let new_value = card.value;
-
-        if(card.suit === 'H'){
-            new_suit = 'hearts';
-        }
-        if(card.suit === 'C'){
-            new_suit = 'clubs';
-        }
-        if(card.suit === 'D'){
-            new_suit = 'diamonds';
-        }
-        if(card.suit === 'S'){
-            new_suit = 'spades';
-        }
-        if(card.value === 'J'){
-            new_value = 'jack'; 
-        }
-        if(card.value === 'Q'){
-            new_value = 'queen'; 
-        }
-        if(card.value === 'K'){
-            new_value = 'king'; 
-        }
-
-        return `cards/${new_value}_of_${new_suit}.png`;
-    } 
-
+    //not needed?
     const getTopCard = () => {
         if (!gameState.top_card || gameState.top_card.length === 0) return '';
         const top = gameState.top_card[gameState.top_card.length - 1];
@@ -88,6 +60,7 @@ export const Game = () => {
     }
 
     const selectCards = (index) => {
+        
         const card = player.hand[index];
         const firstCard = player.hand[selectedCards[0]];
         const lastCard = player.hand[selectedCards[selectedCards.length - 1]];
@@ -100,6 +73,7 @@ export const Game = () => {
                 const updated = prev.filter(i => i !== index);
                 console.log("❎ Deselected card:", index, "Updated selection:", updated);
                 return updated;
+            
             });
             return;
         }
@@ -109,28 +83,36 @@ export const Game = () => {
             setSelectedCards([index]);
             return;
         }
-        //debug
-        console.log("🆚 Comparing with firstCard:", firstCard);
-        console.log("🧩 lastCard in current selection:", lastCard);
-        console.log("🧪 Comparing values:", card.numeric_val, firstCard.numeric_val);
-        // Same value 
+        //Same value 
         if (card.numeric_val === firstCard.numeric_val) {
             console.log("✅ Same value — added to selectedCards");
             setSelectedCards(prev => [...prev, index]);
             return;
         }
-        // Seq check
+        //Seq check
         if (card.suit === firstCard.suit) {
-            const isPrev = card.numeric_val === firstCard.numeric_val - 1;
-            const isNext = card.numeric_val === lastCard.numeric_val + 1;
-    
-            if (isPrev || isNext) {
+            const cardsArray = [card];
+            for(let cardIndex of selectedCards){
+                const maybeNewCard = player.hand[cardIndex];
+                cardsArray.push(maybeNewCard);
+            }
+            const sorted = cardsArray.sort((a,b) =>  a.numeric_val - b.numeric_val);
+            console.log("SORTEDDD",sorted);
+            let seqOk = true;
+            
+            for(let i = 0; i < sorted.length - 1; i++){
+                if(Math.abs(sorted[i].numeric_val - sorted[i + 1].numeric_val) !== 1){
+                    seqOk = false;
+                    //debug
+                    console.log("not a seq!!")
+                    break;
+                }
+            }
+            if(seqOk){
                 console.log("✅ Valid sequence — added to selectedCards");
                 setSelectedCards(prev => [...prev, index]);
-                return;
             }
         } 
-        console.log("🚫 Invalid card selection — not added");
     };
     
     
@@ -141,7 +123,8 @@ export const Game = () => {
 
     const drawFromTop = (index) => {
         //debug
-        console.log("draw from top index:" ,index);
+        console.log("🔥 drawFromTop was called with index:", index);
+        
         if(index !== 0 && index !== gameState.top_card.length - 1){
             console.log("INVALID DRAW FROM TOP!");
             return;
@@ -165,12 +148,12 @@ export const Game = () => {
                         <li key={index}>{player.name}</li>
                     ))}
                 </ul>
-                <h3>Player #{gameState.current_turn} turn</h3>
+                <h3>{`${players[gameState.current_turn]?.name}'s turn:`}</h3>
                 <button onClick={drawFromDeck} disabled={selectedCards.length < 1}>DECK</button>
                 <h3>TOP CARD:</h3>
                 <div className='top_card_pile'>
                     {gameState.top_card?.map((card, index) => (
-                        <img className='card' key={index} src={getCardImageName(card)} onClick={() => drawFromTop(index)} disabled={selectedCards.length < 1}/>
+                        <Card key={index} card={card} onClick={() => drawFromTop(index)} disabled={selectedCards.length < 1} /> 
                     ))}
                 </div>
             
@@ -178,14 +161,13 @@ export const Game = () => {
                 <h3>Your Hand:</h3>
                 <div className='hand'>
                 {player.hand?.map((card, index) => (
-                    <div key= {index}>
-                        <img  className='card' src={getCardImageName(card)} onClick={ () => selectCards(card.index)}></img>
-                    </div>
+                    <Card key={index} 
+                    card={card} 
+                    onClick={() => selectCards(index)}
+                    selected={selectedCards.includes(index)} />                   
                 ))}
                 </div>
-                
-                <button onClick={makeTurn} disabled={player.id !== gameState.current_turn && selectedCards.length < 1}>make turn</button>
-                <button onClick={yanivCall} disabled={player.id !== gameState.current_turn && sum > 7}>YANIV</button>
+                <button onClick={yanivCall} disabled={player.id !== gameState.current_turn || sum > 7}>YANIV</button>
                 <h4>Sum:{sum}</h4>
                 
 

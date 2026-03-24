@@ -12,7 +12,7 @@ export const GameProvider = ({ children }) => {
     const [sum, setSum] = useState(0);
     const [selectedCards, setSelectedCards] = useState([]);
 
-     useEffect(() => {
+    useEffect(() => {
         const handleJoinRoomResult = (data) => {
             setPlayers((prev) => [...prev, data.player]);
         };
@@ -30,36 +30,36 @@ export const GameProvider = ({ children }) => {
             //debug
             console.log("Players updated:", data.players)
         };
-    
+
         socket.on("playersUpdate", handlePlayersUpdate);
-    
+
         return () => {
             socket.off("playersUpdate", handlePlayersUpdate);
         };
     }, []);
 
     useEffect(() => {
-        socket.on("start", ({deck, top_card, current_turn}) => {
+        socket.on("start", ({ deck, top_card, current_turn }) => {
             //debug
             console.log("🌟 Received start event!", { deck, top_card, current_turn });
             setGameStarted(true);
-            setGameState({deck, top_card, current_turn});
+            setGameState({ deck, top_card, current_turn });
         });
 
-        socket.on("hand", ({hand, hand_sum}) => {
+        socket.on("hand", ({ hand, hand_sum }) => {
             //debug
             console.log("HAND RECEIVED ON CLIENT:", hand, hand_sum);
             setPlayer(prev => ({ ...prev, hand }));
-            
+
             setSum(hand_sum);
             console.log("updated sum", sum);
             setSelectedCards([]);
         });
 
-        socket.on("turn", ({top_card, current_turn, deck}) => {
+        socket.on("turn", ({ top_card, current_turn, deck }) => {
             //debug
             console.log("Turn update received:", { top_card, current_turn, deck });
-            setGameState({deck, top_card, current_turn});
+            setGameState({ deck, top_card, current_turn });
         });
 
         return () => {
@@ -71,13 +71,14 @@ export const GameProvider = ({ children }) => {
 
     return (
         <GameContext.Provider value={{
-            players, setPlayers, 
+            players, setPlayers,
             gameID, setGameID,
             player, setPlayer,
             gameState, setGameState,
             sum, setSum,
             selectedCards, setSelectedCards,
-            gameStarted }}>
+            gameStarted
+        }}>
             {children}
         </GameContext.Provider>
     );

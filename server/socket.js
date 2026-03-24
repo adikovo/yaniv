@@ -1,5 +1,5 @@
 const { Server } = require("socket.io");
-const { createDeck , shuffleDeck, dealCards, getCurrentPlayer, whosTurn, nextTurn, drawFromDeck, handValue, topCard, validYaniv, yanivCall, drawTopCard, updateTopCard, makeTurnCardFromHand, selectCards, removeCardFromHand, rebuildDeck, makeTurnCardFromDeck, makeTurnCardFromTop} = require("./gameLogic");
+const { createDeck, shuffleDeck, dealCards, getCurrentPlayer, whosTurn, nextTurn, drawFromDeck, handValue, topCard, validYaniv, yanivCall, drawTopCard, updateTopCard, makeTurnCardFromHand, selectCards, removeCardFromHand, rebuildDeck, makeTurnCardFromDeck, makeTurnCardFromTop } = require("./gameLogic");
 const { games } = require("./globals");
 
 let io;
@@ -21,9 +21,11 @@ const setupSocket = (server) => {
             socket.join(room);
 
             if (!rooms[room]) {
-                rooms[room] = {}; // Create room if it doesn't exist
+                // Create room if it doesn't exist
+                rooms[room] = {};
             }
-            rooms[room][socket.id] = player; // Store user inside room
+            // Store user inside room
+            rooms[room][socket.id] = player;
 
             io.to(room).emit("joinRoomResult", { user: "Server", player: player });
             console.log(`${player.name} joined room: ${room}`);
@@ -39,7 +41,7 @@ const setupSocket = (server) => {
                 io.to(room).emit("message", { user: rooms[room][socket.id], text: message });
             }
         });
-        
+
         //debug to check gamelogic
         socket.on("startGame", () => {
 
@@ -50,28 +52,28 @@ const setupSocket = (server) => {
             dealCards(games[room]);
             whosTurn(games[room]);
             topCard(games[room]);
-            
-            
-            io.to(room).emit("start", {deck: deck, top_card: games[room].game_state.top_card, current_turn: games[room].game_state.current_turn});
-            for(let socket_id in rooms[room]){
+
+
+            io.to(room).emit("start", { deck: deck, top_card: games[room].game_state.top_card, current_turn: games[room].game_state.current_turn });
+            for (let socket_id in rooms[room]) {
                 const player = rooms[room][socket_id];
                 const player_id = player.id;
                 const hand = games[room].players[player_id].hand;
                 handValue(games[room].players[player_id]);
-                           
+
                 //debug
                 console.log(`Sending hand to player ${player.name}:`, hand);
-                io.to(socket_id).emit("hand", {hand: hand, hand_sum: games[room].players[player_id].sum});
-                
-                
-            }            
+                io.to(socket_id).emit("hand", { hand: hand, hand_sum: games[room].players[player_id].sum });
+
+
+            }
         });
 
 
 
-       // turn = {type: "cardFromDeck"/ "cardFromTop"/"cardFromHand"/"yaniv", 
-       //         value:                             "selectedCards"
-       // }
+        // turn = {type: "cardFromDeck"/ "cardFromTop"/"cardFromHand"/"yaniv", 
+        //         value:                             "selectedCards"
+        // }
 
         socket.on("makeTurn", (room, turn_data) => {
             //const player = getCurrentPlayer(games[room]);
@@ -81,47 +83,51 @@ const setupSocket = (server) => {
             const socketPlayer = rooms[room][socket.id];
             const player = games[room].players[socketPlayer.id];
             const game_state = games[room].game_state;
-            if(socketPlayer.id !== getCurrentPlayer(games[room]).id){
+            if (socketPlayer.id !== getCurrentPlayer(games[room]).id) {
                 return;
             }
 
-            if(turn_data.type === "cardFromHand"){
+            if (turn_data.type === "cardFromHand") {
                 makeTurnCardFromHand(games[room], player, turn_data.selected_cards);
-                socket.emit("hand", {hand: player.hand, hand_sum: player.sum});
+                socket.emit("hand", { hand: player.hand, hand_sum: player.sum });
                 io.to(room).emit("turn", {
-                    top_card: game_state.top_card, 
-                    current_turn: game_state.current_turn, 
-                    deck: game_state.deck})
-            } 
-            if(turn_data.type === "cardFromDeck") {
+                    top_card: game_state.top_card,
+                    current_turn: game_state.current_turn,
+                    deck: game_state.deck
+                })
+            }
+            if (turn_data.type === "cardFromDeck") {
                 makeTurnCardFromDeck(games[room], player);
-                socket.emit("hand", {hand: player.hand, hand_sum: player.sum});
+                socket.emit("hand", { hand: player.hand, hand_sum: player.sum });
                 io.to(room).emit("turn", {
-                    top_card: game_state.top_card, 
-                    current_turn: game_state.current_turn, 
-                    deck: game_state.deck})
-            }     
-            if(turn_data.type === "cardFromTop"){
+                    top_card: game_state.top_card,
+                    current_turn: game_state.current_turn,
+                    deck: game_state.deck
+                })
+            }
+            if (turn_data.type === "cardFromTop") {
                 makeTurnCardFromTop(games[room], player, turn_data.side);
-                socket.emit("hand", {hand: player.hand, hand_sum: player.sum});
+                socket.emit("hand", { hand: player.hand, hand_sum: player.sum });
                 io.to(room).emit("turn", {
-                    top_card: game_state.top_card, 
-                    current_turn: game_state.current_turn, 
-                    deck: game_state.deck})
-            }  
-            if(turn_data.type === "yaniv"){
-                if(validYaniv(player.sum)){
+                    top_card: game_state.top_card,
+                    current_turn: game_state.current_turn,
+                    deck: game_state.deck
+                })
+            }
+            if (turn_data.type === "yaniv") {
+                if (validYaniv(player.sum)) {
                     yanivCall(games[room]);
                     io.to(room).emit("turn", {
-                        top_card: game_state.top_card, 
-                        current_turn: game_state.current_turn, 
-                        deck: game_state.deck})
+                        top_card: game_state.top_card,
+                        current_turn: game_state.current_turn,
+                        deck: game_state.deck
+                    })
                 }
-            }   
-    
+            }
+
         })
-            
-        
+
+
 
         // When a user disconnects
         socket.on("disconnect", () => {

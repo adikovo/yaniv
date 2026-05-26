@@ -87,32 +87,33 @@ const setupSocket = (server) => {
                 return;
             }
 
-            if (turn_data.type === "cardFromHand") {
-                makeTurnCardFromHand(games[room], player, turn_data.selected_cards);
-                socket.emit("hand", { hand: player.hand, hand_sum: player.sum });
-                io.to(room).emit("turn", {
-                    top_card: game_state.top_card,
-                    current_turn: game_state.current_turn,
-                    deck: game_state.deck
-                })
-            }
             if (turn_data.type === "cardFromDeck") {
+                if (!turn_data.selected_cards || turn_data.selected_cards.length === 0) {
+                    socket.emit("turnError", { message: "You must select cards to discard before drawing." });
+                    return;
+                }
+                makeTurnCardFromHand(games[room], player, turn_data.selected_cards);
                 makeTurnCardFromDeck(games[room], player);
                 socket.emit("hand", { hand: player.hand, hand_sum: player.sum });
                 io.to(room).emit("turn", {
                     top_card: game_state.top_card,
                     current_turn: game_state.current_turn,
                     deck: game_state.deck
-                })
+                });
             }
             if (turn_data.type === "cardFromTop") {
+                if (!turn_data.selected_cards || turn_data.selected_cards.length === 0) {
+                    socket.emit("turnError", { message: "You must select cards to discard before drawing." });
+                    return;
+                }
                 makeTurnCardFromTop(games[room], player, turn_data.side);
+                makeTurnCardFromHand(games[room], player, turn_data.selected_cards);
                 socket.emit("hand", { hand: player.hand, hand_sum: player.sum });
                 io.to(room).emit("turn", {
                     top_card: game_state.top_card,
                     current_turn: game_state.current_turn,
                     deck: game_state.deck
-                })
+                });
             }
             if (turn_data.type === "yaniv") {
                 if (validYaniv(player.sum)) {
@@ -140,7 +141,9 @@ const setupSocket = (server) => {
                     delete rooms[room]; // Delete room if empty
                 }
 
-                io.to(room).emit("playersUpdate", { players: games[room].players });
+                if (games[room]) {
+                    io.to(room).emit("playersUpdate", { players: games[room].players });
+                }
 
                 io.to(room).emit("message", { user: "Server", text: `${player.name} has left the chat.` });
                 console.log(`User disconnected: ${socket.id}`);

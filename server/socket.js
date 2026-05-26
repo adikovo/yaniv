@@ -87,15 +87,6 @@ const setupSocket = (server) => {
                 return;
             }
 
-            if (turn_data.type === "cardFromHand") {
-                makeTurnCardFromHand(games[room], player, turn_data.selected_cards);
-                socket.emit("hand", { hand: player.hand, hand_sum: player.sum });
-                io.to(room).emit("turn", {
-                    top_card: game_state.top_card,
-                    current_turn: game_state.current_turn,
-                    deck: game_state.deck
-                })
-            }
             if (turn_data.type === "cardFromDeck") {
                 if (!turn_data.selected_cards || turn_data.selected_cards.length === 0) {
                     socket.emit("turnError", { message: "You must select cards to discard before drawing." });
@@ -115,8 +106,8 @@ const setupSocket = (server) => {
                     socket.emit("turnError", { message: "You must select cards to discard before drawing." });
                     return;
                 }
-                makeTurnCardFromHand(games[room], player, turn_data.selected_cards);
                 makeTurnCardFromTop(games[room], player, turn_data.side);
+                makeTurnCardFromHand(games[room], player, turn_data.selected_cards);
                 socket.emit("hand", { hand: player.hand, hand_sum: player.sum });
                 io.to(room).emit("turn", {
                     top_card: game_state.top_card,

@@ -85,12 +85,7 @@ function handValue(player) {
     const hand = player.hand;
     let sum = 0;
     for (let card of hand) {
-        if (!isNaN(card.value)) {
-            sum += Number(card.value);
-        }
-        if (['J', 'Q', 'K'].includes(card.value)) {
-            sum += 10;
-        }
+        sum += ['J', 'Q', 'K'].includes(card.value) ? 10 : card.numeric_val;
     }
     player.sum = sum;
 }
@@ -155,9 +150,6 @@ function validMove(selected_cards) {
         return true;
     }
 
-    //debug
-    console.log("selected", selected_cards);
-
     const firstVal = selected_cards[0].value;
     const sameVal = selected_cards.every(card => card.value === firstVal);
     if (sameVal) {
@@ -166,17 +158,13 @@ function validMove(selected_cards) {
 
     const firstSuit = selected_cards[0].suit;
     const sameSuit = selected_cards.every(card => card.suit === firstSuit);
-    if (sameSuit) {
+    if (sameSuit && selected_cards.length >= 3) {
         const sorted = selected_cards.sort((a, b) => a.numeric_val - b.numeric_val);
         for (let i = 0; i < sorted.length - 1; i++) {
             if (Math.abs(sorted[i].numeric_val - sorted[i + 1].numeric_val) !== 1) {
-                //debug
-                console.log("not a seq!!")
                 return false;
             }
         }
-        //debug
-        console.log("valid seq!");
         return true;
     }
 }

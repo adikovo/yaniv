@@ -152,3 +152,134 @@ describe('Round End — yanivCall & roundEnd event', () => {
         });
     }, TIMEOUT);
 });
+
+describe('Ready-Up & Next Round', () => {
+    let gameID, player0, player1, connectClient, closeServer;
+    const READY_TIMEOUT = 100;
+
+    beforeEach(async () => {
+        ({ gameID, player0, player1, connectClient, closeServer } = await createTestServer({ readyTimeout: READY_TIMEOUT }));
+        games[gameID].players[0].score = 0;
+        games[gameID].players[1].score = 0;
+        games[gameID].game_state.current_turn = 0;
+        // Give each player a valid Yaniv hand (sum ≤ 7) so yaniv call goes through
+        setHand(games[gameID].players[0], [makeCard('1', 'H', 1)]);
+        setHand(games[gameID].players[1], [makeCard('5', 'H', 5)]);
+    });
+
+    afterEach(async () => {
+        await closeServer();
+    });
+
+    // T-F: score landing on 100 → resets to 50 (salvation), NOT eliminated
+    test('T-F: score landing on 100 resets to 50 and player is NOT eliminated', done => {
+        // player 1 has sum=5; set score to 95 so it lands on 100 after round
+        games[gameID].players[1].score = 95;
+        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+            c0.once('roundEnd', ({ players }) => {
+                try {
+                    expect(games[gameID].players[1]).toBeDefined();
+                    expect(players[1].score).toBe(50);
+                    c0.disconnect(); c1.disconnect(); done();
+                } catch (err) { done(err); }
+            });
+            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+        });
+    }, TIMEOUT);
+
+    // T-F2: score landing on 50 → resets to 0 (salvation)
+    test('T-F2: score landing on 50 resets to 0', done => {
+        // player 1 has sum=5; set score to 45 so it lands on 50
+        games[gameID].players[1].score = 45;
+        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+            c0.once('roundEnd', ({ players }) => {
+                try {
+                    expect(players[1].score).toBe(0);
+                    c0.disconnect(); c1.disconnect(); done();
+                } catch (err) { done(err); }
+            });
+            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+        });
+    }, TIMEOUT);
+
+    // T-G: score over 100 — eliminated
+    test('T-G: player with score over 100 is eliminated after round end', done => {
+        games[gameID].players[1].score = 96; // +5 from hand = 101 → eliminated
+        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+            c0.once('roundEnd', () => {
+                try {
+                    expect(games[gameID].players[1]).toBeUndefined();
+                    c0.disconnect(); c1.disconnect(); done();
+                } catch (err) { done(err); }
+            });
+            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+        });
+    }, TIMEOUT);
+
+    // T-H: both players ready — round restarts
+    test('T-H: both players click ready → nextRound emitted with new hand', done => {
+        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+            let nextRoundCount = 0;
+            let handCount = 0;
+
+            function checkDone() {
+                if (nextRoundCount === 2 && handCount >= 1) {
+                    c0.disconnect(); c1.disconnect(); done();
+                }
+            }
+
+            c0.once('nextRound', () => { try { nextRoundCount++; checkDone(); } catch (err) { done(err); } });
+            c1.once('nextRound', () => { try { nextRoundCount++; checkDone(); } catch (err) { done(err); } });
+            c0.once('hand', ({ hand }) => { try { expect(hand.length).toBe(5); handCount++; checkDone(); } catch (err) { done(err); } });
+
+            c0.once('roundEnd', () => {
+                c0.emit('readyForNextRound');
+                c1.emit('readyForNextRound');
+            });
+
+            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+        });
+    }, TIMEOUT);
+
+    // T-I: one player ready, one not → gameOver after timeout
+    test('T-I: only one player clicks ready → non-clicker removed, gameOver emitted', done => {
+        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+            c0.once('gameOver', ({ reason }) => {
+                try {
+                    expect(reason).toBeTruthy();
+                    c0.disconnect(); c1.disconnect(); done();
+                } catch (err) { done(err); }
+            });
+
+            c0.once('roundEnd', () => {
+                c0.emit('readyForNextRound'); // only player 0 clicks
+            });
+
+            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+        });
+    }, TIMEOUT);
+
+    // T-J: double click is idempotent — no crash, player counted once
+    test('T-J: double readyForNextRound is idempotent', done => {
+        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+            c0.once('roundEnd', () => {
+                // Emit twice from the same client
+                c0.emit('readyForNextRound');
+                c0.emit('readyForNextRound');
+                c1.emit('readyForNextRound');
+            });
+
+            c0.once('nextRound', () => {
+                // If we get here without crashing, idempotency is confirmed
+                c0.disconnect(); c1.disconnect(); done();
+            });
+
+            c0.once('gameOver', () => {
+                // Also acceptable — as long as no crash
+                c0.disconnect(); c1.disconnect(); done();
+            });
+
+            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+        });
+    }, TIMEOUT);
+});

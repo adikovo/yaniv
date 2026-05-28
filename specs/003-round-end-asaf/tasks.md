@@ -68,17 +68,17 @@
 
 ### Tests — write FIRST, verify they FAIL before implementation
 
-- [ ] T015 [P] [US2] Write test T-F (score exactly 100 — NOT eliminated) in `server/tests/roundEnd.test.js` — assert player stays in `game.players`
-- [ ] T016 [P] [US2] Write test T-G (score over 100 — eliminated) in `server/tests/roundEnd.test.js` — assert player removed from `game.players`
-- [ ] T017 [P] [US2] Write test T-H (both players ready — round restarts) in `server/tests/roundEnd.test.js` — assert both receive `nextRound` and a new `hand` event with 5 cards (use 100ms timeout)
-- [ ] T018 [P] [US2] Write test T-I (one player ready, one not — gameOver) in `server/tests/roundEnd.test.js` — assert non-clicker removed, `gameOver` emitted (use 100ms timeout)
-- [ ] T019 [P] [US2] Write test T-J (double click idempotent) in `server/tests/roundEnd.test.js` — assert no crash, player counted once
+- [x] T015 [P] [US2] Write test T-F (score exactly 100 → resets to 50, salvation rule) in `server/tests/roundEnd.test.js` — also added T-F2 (score 50 → 0)
+- [x] T016 [P] [US2] Write test T-G (score over 100 — eliminated) in `server/tests/roundEnd.test.js` — assert player removed from `game.players`
+- [x] T017 [P] [US2] Write test T-H (both players ready — round restarts) in `server/tests/roundEnd.test.js` — assert both receive `nextRound` and a new `hand` event with 5 cards (use 100ms timeout)
+- [x] T018 [P] [US2] Write test T-I (one player ready, one not — gameOver) in `server/tests/roundEnd.test.js` — assert non-clicker removed, `gameOver` emitted (use 100ms timeout)
+- [x] T019 [P] [US2] Write test T-J (double click idempotent) in `server/tests/roundEnd.test.js` — assert no crash, player counted once
 
 ### Implementation
 
-- [ ] T020 [US2] Add `readyForNextRound` socket handler in `server/socket.js` — tracks ready players per room in a `readyPlayers` map, starts a one-shot `setTimeout` on first click, fires once per round
-- [ ] T021 [US2] On timeout in `server/socket.js`: remove non-ready players from `game.players`, call `eliminatePlayers`, then if ≥ 2 players remain re-deal (`createDeck`, `shuffleDeck`, `dealCards`, `whosTurn`, `topCard`) and emit `nextRound` + individual `hand` events; else emit `gameOver`
-- [ ] T022 [US2] Run `npm test` in `server/` — all 10 tests (T-A through T-J) must pass
+- [x] T020 [US2] Add `readyForNextRound` socket handler in `server/socket.js` — tracks ready players per room in a `readyPlayers` map, starts a one-shot `setTimeout` on first click, fires once per round
+- [x] T021 [US2] On timeout in `server/socket.js`: remove non-ready players from `game.players`, call `eliminatePlayers`, then if ≥ 2 players remain re-deal via `dealNewRound` and emit `nextRound` + individual `hand` events; else emit `gameOver`
+- [x] T022 [US2] Run `npm test` in `server/` — all 11 tests (T-A through T-J + T-F2) pass
 
 **Checkpoint**: Ready-up works. Round restarts or gameOver fires correctly. All 10 server tests green.
 

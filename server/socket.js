@@ -4,6 +4,8 @@ const { games } = require("./globals");
 
 let io;
 const rooms = {}; // Store users per room { roomId: { socketId: username, ... }, ... }
+const readyPlayers = {}; // { roomId: Set of player ids that clicked ready }
+const readyTimers = {};  // { roomId: timeout handle }
 
 const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
     io = new Server(server, {
@@ -44,29 +46,8 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
 
         //debug to check gamelogic
         socket.on("startGame", () => {
-
-            let room = getUserRoom(socket.id);
-            const players = games[room]["players"];
-            let deck = createDeck();
-            shuffleDeck(games[room], deck);
-            dealCards(games[room]);
-            whosTurn(games[room]);
-            topCard(games[room]);
-
-
-            io.to(room).emit("start", { deck: deck, top_card: games[room].game_state.top_card, current_turn: games[room].game_state.current_turn });
-            for (let socket_id in rooms[room]) {
-                const player = rooms[room][socket_id];
-                const player_id = player.id;
-                const hand = games[room].players[player_id].hand;
-                handValue(games[room].players[player_id]);
-
-                //debug
-                console.log(`Sending hand to player ${player.name}:`, hand);
-                io.to(socket_id).emit("hand", { hand: hand, hand_sum: games[room].players[player_id].sum });
-
-
-            }
+            const room = getUserRoom(socket.id);
+            dealNewRound(room, "start");
         });
 
 
@@ -137,6 +118,43 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
 
 
 
+        socket.on("readyForNextRound", () => {
+            const room = getUserRoom(socket.id);
+            if (!room || !games[room]) return;
+
+            const socketPlayer = rooms[room][socket.id];
+            if (!socketPlayer) return;
+
+            if (!readyPlayers[room]) readyPlayers[room] = new Set();
+            if (readyPlayers[room].has(socketPlayer.id)) return; // idempotent
+            readyPlayers[room].add(socketPlayer.id);
+
+            if (!readyTimers[room]) {
+                readyTimers[room] = setTimeout(() => {
+                    delete readyTimers[room];
+                    const ready = readyPlayers[room] || new Set();
+                    delete readyPlayers[room];
+
+                    // Remove players who didn't click ready
+                    for (const key in games[room].players) {
+                        if (!ready.has(games[room].players[key].id)) {
+                            delete games[room].players[key];
+                        }
+                    }
+
+                    eliminatePlayers(games[room]);
+
+                    const remaining = Object.keys(games[room].players).length;
+                    if (remaining < 2) {
+                        io.to(room).emit("gameOver", { reason: "not enough players" });
+                        return;
+                    }
+
+                    dealNewRound(room, "nextRound");
+                }, readyTimeout);
+            }
+        });
+
         // When a user disconnects
         socket.on("disconnect", () => {
             let room = getUserRoom(socket.id);
@@ -145,7 +163,9 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
                 delete rooms[room][socket.id]; // Remove user from room
 
                 if (Object.keys(rooms[room]).length === 0) {
-                    delete rooms[room]; // Delete room if empty
+                    delete rooms[room];
+                    delete readyPlayers[room];
+                    if (readyTimers[room]) { clearTimeout(readyTimers[room]); delete readyTimers[room]; }
                 }
 
                 if (games[room]) {
@@ -160,6 +180,26 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
 
     return io;
 };
+
+function dealNewRound(room, eventName) {
+    const deck = createDeck();
+    shuffleDeck(games[room], deck);
+    dealCards(games[room]);
+    whosTurn(games[room]);
+    topCard(games[room]);
+
+    const gs = games[room].game_state;
+    io.to(room).emit(eventName, { top_card: gs.top_card, current_turn: gs.current_turn, deck: gs.deck });
+
+    for (const socket_id in rooms[room]) {
+        const socketPlayer = rooms[room][socket_id];
+        const gamePlayer = games[room].players[socketPlayer.id];
+        if (gamePlayer) {
+            handValue(gamePlayer);
+            io.to(socket_id).emit("hand", { hand: gamePlayer.hand, hand_sum: gamePlayer.sum });
+        }
+    }
+}
 
 // Utility function to get a user's room
 const getUserRoom = (socketId) => {

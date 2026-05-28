@@ -125,6 +125,13 @@ function yanivCall(game) {
         }
     }
 
+    // Salvation rule: landing exactly on 100 → 50, exactly on 50 → 0
+    for (const key in game.players) {
+        const p = game.players[key];
+        if (p.score === 100) p.score = 50;
+        else if (p.score === 50) p.score = 0;
+    }
+
     return { winner, asaf, asafCaller: asaf ? caller : null };
 }
 

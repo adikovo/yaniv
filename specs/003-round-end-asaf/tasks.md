@@ -52,9 +52,9 @@
 
 **Independent Test**: Open two browser tabs — call Yaniv — both tabs show result screen with winner name, Asaf label (if applicable), and each player's score.
 
-- [ ] T012 [P] [US1] Create `client/src/components/round-result/index.jsx` — accepts `{ winner, asaf, asafCaller, players }` props, shows winner name, Asaf label if triggered, each player's hand cards and updated score
-- [ ] T013 [P] [US1] Create `client/src/components/round-result/styles.css` — basic layout for result screen
-- [ ] T014 [US1] Add `roundResult` state to `client/src/pages/game/index.jsx` — set it on `roundEnd` socket event, render `<RoundResult>` when state is set (replaces game UI)
+- [x] T012 [P] [US1] Create `client/src/components/round-result/index.jsx` — accepts `{ winner, asaf, asafCaller, players }` props, shows winner name, Asaf label if triggered, each player's updated score; renders as a modal dialog overlaid on the game
+- [x] T013 [P] [US1] Create `client/src/components/round-result/styles.css` — modal overlay + centered dialog layout
+- [x] T014 [US1] Add `roundResult` state to `client/src/pages/game/index.jsx` — set it on `roundEnd` socket event, render `<RoundResult>` as an overlay on top of the game UI (game stays visible behind it)
 
 **Checkpoint**: Result screen appears for all players after Yaniv is called.
 

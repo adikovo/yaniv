@@ -122,7 +122,7 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
                     const players = {};
                     for (const key in games[room].players) {
                         const p = games[room].players[key];
-                        players[key] = { hand: p.hand, sum: p.sum, score: p.score };
+                        players[key] = { id: p.id, name: p.name, hand: p.hand, sum: p.sum, score: p.score };
                     }
                     io.to(room).emit("roundEnd", {
                         winner: { id: winner.id, name: winner.name },

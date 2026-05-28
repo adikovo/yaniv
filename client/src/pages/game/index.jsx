@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useGameContext } from '../../context/game-context';
 import { useNavigate } from "react-router-dom";
 import socket from "../../api/socket";
@@ -7,25 +7,10 @@ import { Card } from '../../components/card';
 
 export const Game = () => {
 
-    let hasEmittedTurn = useRef(false);
-
     const { player, setPlayer, players, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards } = useGameContext();
 
     //debug
     console.log("Component rendered!");
-
-    const makeTurn = () => {
-        if (selectedCards.length >= 1) {
-            //debug
-            console.log("SENDING TURN:", selectedCards);
-
-            socket.emit("makeTurn", gameID, {
-                type: "cardFromHand",
-                selected_cards: selectedCards
-            });
-            setSelectedCards([]);
-        }
-    }
 
     const yanivCall = () => {
         socket.emit("makeTurn", gameID, { type: "yaniv" });
@@ -118,22 +103,18 @@ export const Game = () => {
 
 
     const drawFromDeck = () => {
-        makeTurn();
-        socket.emit("makeTurn", gameID, { type: "cardFromDeck" });
+        socket.emit("makeTurn", gameID, { type: "cardFromDeck", selected_cards: selectedCards });
+        setSelectedCards([]);
     }
 
     const drawFromTop = (index) => {
-
         if (index !== 0 && index !== gameState.top_card.length - 1) {
             console.log("INVALID DRAW FROM TOP!");
             return;
         }
         const side = index === 0 ? "start" : "end";
-        socket.emit("makeTurn", gameID, {
-            type: "cardFromTop",
-            side
-        });
-        makeTurn();
+        socket.emit("makeTurn", gameID, { type: "cardFromTop", side, selected_cards: selectedCards });
+        setSelectedCards([]);
     }
 
     const game = () => {

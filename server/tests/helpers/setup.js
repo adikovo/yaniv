@@ -50,8 +50,8 @@ async function createTestServer() {
         return new Promise((resolve, reject) => {
             const client = ClientIO(`http://localhost:${port}`, { forceNew: true });
             client.on('connect', () => {
+                client.once('joinRoomResult', () => resolve(client));
                 client.emit('joinRoom', { player: playerObj, room: gameID });
-                resolve(client);
             });
             client.on('connect_error', reject);
         });

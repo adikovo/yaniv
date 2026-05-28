@@ -1,5 +1,5 @@
 const { Server } = require("socket.io");
-const { createDeck, shuffleDeck, dealCards, getCurrentPlayer, whosTurn, nextTurn, drawFromDeck, handValue, topCard, validYaniv, yanivCall, drawTopCard, updateTopCard, makeTurnCardFromHand, selectCards, removeCardFromHand, rebuildDeck, makeTurnCardFromDeck, makeTurnCardFromTop } = require("./gameLogic");
+const { createDeck, shuffleDeck, dealCards, getCurrentPlayer, whosTurn, nextTurn, drawFromDeck, handValue, topCard, validYaniv, yanivCall, eliminatePlayers, drawTopCard, updateTopCard, makeTurnCardFromHand, selectCards, removeCardFromHand, rebuildDeck, makeTurnCardFromDeck, makeTurnCardFromTop } = require("./gameLogic");
 const { games } = require("./globals");
 
 let io;
@@ -117,12 +117,19 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
             }
             if (turn_data.type === "yaniv") {
                 if (validYaniv(player.sum)) {
-                    yanivCall(games[room]);
-                    io.to(room).emit("turn", {
-                        top_card: game_state.top_card,
-                        current_turn: game_state.current_turn,
-                        deck: game_state.deck
-                    })
+                    const { winner, asaf, asafCaller } = yanivCall(games[room]);
+                    eliminatePlayers(games[room]);
+                    const players = {};
+                    for (const key in games[room].players) {
+                        const p = games[room].players[key];
+                        players[key] = { hand: p.hand, sum: p.sum, score: p.score };
+                    }
+                    io.to(room).emit("roundEnd", {
+                        winner: { id: winner.id, name: winner.name },
+                        asaf,
+                        asafCaller: asafCaller ? { id: asafCaller.id, name: asafCaller.name } : null,
+                        players
+                    });
                 }
             }
 

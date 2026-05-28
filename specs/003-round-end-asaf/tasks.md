@@ -29,18 +29,18 @@
 
 ### Tests — write FIRST, verify they FAIL before implementation
 
-- [ ] T003 [P] [US1] Write test T-A (normal Yaniv win) in `server/tests/roundEnd.test.js` — assert `roundEnd.winner.id === 0`, `players[1].score === their sum`, `asaf === false`
-- [ ] T004 [P] [US1] Write test T-B (Asaf — caller has higher sum) in `server/tests/roundEnd.test.js` — assert `asaf === true`, `players[0].score === 35`, `players[1].score === 4`
-- [ ] T005 [P] [US1] Write test T-C (Asaf — tied hand value) in `server/tests/roundEnd.test.js` — assert Asaf triggered when sums are equal
-- [ ] T006 [P] [US1] Write test T-D (multiple Asaf candidates, 3-player) in `server/tests/roundEnd.test.js` — assert lowest hand wins, caller gets sum+30, all others add their sum
-- [ ] T007 [P] [US1] Write test T-E (Asaf with caller sum = 0) in `server/tests/roundEnd.test.js` — assert penalty is exactly 30
+- [x] T003 [P] [US1] Write test T-A (normal Yaniv win) in `server/tests/roundEnd.test.js` — assert `roundEnd.winner.id === 0`, `players[1].score === their sum`, `asaf === false`
+- [x] T004 [P] [US1] Write test T-B (Asaf — caller has higher sum) in `server/tests/roundEnd.test.js` — assert `asaf === true`, `players[0].score === 35`, `players[1].score === 4`
+- [x] T005 [P] [US1] Write test T-C (Asaf — tied hand value) in `server/tests/roundEnd.test.js` — assert Asaf triggered when sums are equal
+- [x] T006 [P] [US1] Write test T-D (multiple Asaf candidates, 3-player) in `server/tests/roundEnd.test.js` — assert lowest hand wins, caller gets sum+30, all others add their sum
+- [x] T007 [P] [US1] Write test T-E (Asaf with caller sum = 0) in `server/tests/roundEnd.test.js` — assert penalty is exactly 30
 
 ### Implementation
 
-- [ ] T008 [US1] Modify `yanivCall(game)` in `server/gameLogic.js` — detect Asaf (any other player sum ≤ caller sum), update all player scores (normal: winner +0, others add sum; Asaf: caller adds sum+30, everyone else adds their sum), return `{ winner, asaf, asafCaller }`
-- [ ] T009 [US1] Add `eliminatePlayers(game)` to `server/gameLogic.js` — removes players with `score > 100`, returns array of eliminated player objects
-- [ ] T010 [US1] Modify `yaniv` handler in `server/socket.js` — call `yanivCall`, call `eliminatePlayers`, emit `roundEnd` to room with `{ winner, asaf, asafCaller, players: { [id]: { hand, sum, score } } }`
-- [ ] T011 [US1] Run `npm test` in `server/` — tests T-A through T-E must all pass
+- [x] T008 [US1] Modify `yanivCall(game)` in `server/gameLogic.js` — detect Asaf (any other player sum ≤ caller sum), update all player scores (normal: winner +0, others add sum; Asaf: caller adds sum+30, everyone else adds their sum), return `{ winner, asaf, asafCaller }`
+- [x] T009 [US1] Add `eliminatePlayers(game)` to `server/gameLogic.js` — removes players with `score > 100`, returns array of eliminated player objects
+- [x] T010 [US1] Modify `yaniv` handler in `server/socket.js` — call `yanivCall`, call `eliminatePlayers`, emit `roundEnd` to room with `{ winner, asaf, asafCaller, players: { [id]: { hand, sum, score } } }`
+- [x] T011 [US1] Run `npm test` in `server/` — tests T-A through T-E must all pass
 
 **Checkpoint**: Yaniv call → `roundEnd` emitted with correct scores and Asaf detection. All 5 server tests green.
 

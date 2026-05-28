@@ -30,9 +30,9 @@ router.get('/host', function(req, res, next) {
 
     const id = 0;
     const playerType = 'host';
-    const player = {id: id, name: playerName, playerType: playerType};
+    const player = {id: id, name: playerName, playerType: playerType, score: 0};
     games[gameID]["players"][id] = player;
-    
+
     console.log(`Crearted new game with game id: ${gameID}`);
     console.log(`${playerName} player #${id} had joined the game!`);
 
@@ -53,7 +53,7 @@ router.get('/join', function(req, res, next) {
 
     const id = Object.keys(games[gameID].players).length;
     const playerType = 'join';
-    const player = {id: id, name: playerName, playerType: playerType};
+    const player = {id: id, name: playerName, playerType: playerType, score: 0};
     games[gameID]["players"][id] = player;
     //debug
     console.log(games);

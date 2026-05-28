@@ -5,7 +5,7 @@ const { games } = require("./globals");
 let io;
 const rooms = {}; // Store users per room { roomId: { socketId: username, ... }, ... }
 
-const setupSocket = (server) => {
+const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
     io = new Server(server, {
         cors: {
             origin: "*",

@@ -90,6 +90,31 @@ describe('Atomic turn flow', () => {
         });
     }, TIMEOUT);
 
+    // ── T008b ─────────────────────────────────────────────────────────────────
+    test('discarding two same-value cards selected in reverse order leaves correct hand size', done => {
+        connectClient(player0).then(client => {
+            // Give player0 exactly 2 cards so after discard+draw they should have exactly 1
+            const makeCard = (value, suit, nv) => ({ value, suit, numeric_val: nv, index: 0 });
+            games[gameID].players[0].hand = [makeCard('2', 'H', 2), makeCard('2', 'C', 2)];
+            games[gameID].players[0].hand[1].index = 1;
+            games[gameID].players[0].sum = 4;
+
+            client.once('hand', ({ hand }) => {
+                try {
+                    expect(hand.length).toBe(1);
+                    client.disconnect();
+                    done();
+                } catch (err) { done(err); }
+            });
+
+            // selected_cards in reverse order — highest index first
+            client.emit('makeTurn', gameID, {
+                type: 'cardFromDeck',
+                selected_cards: [1, 0]
+            });
+        });
+    }, TIMEOUT);
+
     // ── T009 ──────────────────────────────────────────────────────────────────
     test('out-of-turn draw is rejected and game state unchanged', done => {
         Promise.all([connectClient(player0), connectClient(player1)]).then(([client0, client1]) => {

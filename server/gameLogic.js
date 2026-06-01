@@ -197,8 +197,9 @@ function validMove(selected_cards) {
 }
 
 function removeCardFromHand(hand, selected) {
-    for (let i = selected.length - 1; i >= 0; i--) {
-        hand.splice(selected[i], 1);
+    const descending = [...selected].sort((a, b) => b - a);
+    for (const idx of descending) {
+        hand.splice(idx, 1);
     }
     hand.forEach((card, i) => card.index = i);
 }

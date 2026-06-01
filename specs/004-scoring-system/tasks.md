@@ -28,9 +28,9 @@
 
 **Independent Test**: Trigger elimination in-game — eliminated player appears on the round-result screen labelled as eliminated with their final score.
 
-- [ ] T005 [US3] In `client/src/context/game-context.jsx` — store `eliminated` array from `roundEnd` event in context
-- [ ] T006 [US3] In `client/src/components/round-result/index.jsx` — render eliminated players below the score list with an "Eliminated" label, using `eliminated` from context
-- [ ] T007 [P] [US3] In `client/src/components/round-result/styles.css` — style eliminated player rows (greyed out)
+- [x] T005 [US3] In `client/src/context/game-context.jsx` — store `eliminated` array from `roundEnd` event in context
+- [x] T006 [US3] In `client/src/components/round-result/index.jsx` — render eliminated players below the score list with an "Eliminated" label, using `eliminated` from context
+- [x] T007 [P] [US3] In `client/src/components/round-result/styles.css` — style eliminated player rows (greyed out)
 
 **Checkpoint**: Round-result dialog shows active + eliminated players correctly.
 

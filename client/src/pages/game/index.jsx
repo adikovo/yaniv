@@ -8,12 +8,15 @@ import { RoundResult } from '../../components/round-result';
 
 export const Game = () => {
 
-    const { player, setPlayer, players, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards } = useGameContext();
+    const { player, setPlayer, players, eliminatedPlayers, setEliminatedPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards } = useGameContext();
     const [roundResult, setRoundResult] = useState(null);
     const [gameOver, setGameOver] = useState(false);
 
     useEffect(() => {
-        socket.on('roundEnd', (data) => setRoundResult(data));
+        socket.on('roundEnd', (data) => {
+            setRoundResult(data);
+            if (data.eliminated?.length) setEliminatedPlayers(prev => [...prev, ...data.eliminated]);
+        });
         socket.on('nextRound', ({ top_card, current_turn, deck }) => {
             setGameState({ top_card, current_turn, deck });
             setRoundResult(null);
@@ -189,6 +192,7 @@ export const Game = () => {
                     asaf={roundResult.asaf}
                     asafCaller={roundResult.asafCaller}
                     players={roundResult.players}
+                    eliminated={roundResult.eliminated}
                 />
             )}
         </div>

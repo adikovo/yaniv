@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import socket from '../../api/socket';
 import './styles.css';
 
-export const RoundResult = ({ winner, asaf, asafCaller, players }) => {
+export const RoundResult = ({ winner, asaf, asafCaller, players, eliminated = [] }) => {
     const [timeLeft, setTimeLeft] = useState(15);
     const [clicked, setClicked] = useState(false);
 
@@ -32,6 +32,12 @@ export const RoundResult = ({ winner, asaf, asafCaller, players }) => {
                         <li key={p.id}>
                             <span>{p.name}</span>
                             <span>{p.score} pts</span>
+                        </li>
+                    ))}
+                    {eliminated.map((p) => (
+                        <li key={p.id} className="round-result-eliminated">
+                            <span>{p.name}</span>
+                            <span>{p.score} pts — Eliminated</span>
                         </li>
                     ))}
                 </ul>

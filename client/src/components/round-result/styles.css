@@ -46,6 +46,11 @@
     font-size: 1rem;
 }
 
+.round-result-eliminated {
+    color: #9ca3af;
+    font-style: italic;
+}
+
 .round-result-next-btn {
     margin-top: 8px;
     padding: 10px 24px;

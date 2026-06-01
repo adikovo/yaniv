@@ -47,7 +47,17 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
         //debug to check gamelogic
         socket.on("startGame", () => {
             const room = getUserRoom(socket.id);
+            games[room].eliminated = [];
             dealNewRound(room, "start");
+        });
+
+        // DEBUG ONLY — remove before production
+        socket.on("debugSetScore", ({ score }) => {
+            const room = getUserRoom(socket.id);
+            if (!room || !games[room]) return;
+            const socketPlayer = rooms[room][socket.id];
+            const player = games[room].players[socketPlayer.id];
+            if (player) player.score = score;
         });
 
 
@@ -99,7 +109,7 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
             if (turn_data.type === "yaniv") {
                 if (validYaniv(player.sum)) {
                     const { winner, asaf, asafCaller } = yanivCall(games[room]);
-                    eliminatePlayers(games[room]);
+                    const newlyEliminated = eliminatePlayers(games[room]);
                     const players = {};
                     for (const key in games[room].players) {
                         const p = games[room].players[key];
@@ -109,7 +119,8 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
                         winner: { id: winner.id, name: winner.name },
                         asaf,
                         asafCaller: asafCaller ? { id: asafCaller.id, name: asafCaller.name } : null,
-                        players
+                        players,
+                        eliminated: newlyEliminated
                     });
                 }
             }

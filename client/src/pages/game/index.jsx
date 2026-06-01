@@ -8,12 +8,15 @@ import { RoundResult } from '../../components/round-result';
 
 export const Game = () => {
 
-    const { player, setPlayer, players, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards } = useGameContext();
+    const { player, setPlayer, players, eliminatedPlayers, setEliminatedPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards } = useGameContext();
     const [roundResult, setRoundResult] = useState(null);
     const [gameOver, setGameOver] = useState(false);
 
     useEffect(() => {
-        socket.on('roundEnd', (data) => setRoundResult(data));
+        socket.on('roundEnd', (data) => {
+            setRoundResult(data);
+            if (data.eliminated?.length) setEliminatedPlayers(prev => [...prev, ...data.eliminated]);
+        });
         socket.on('nextRound', ({ top_card, current_turn, deck }) => {
             setGameState({ top_card, current_turn, deck });
             setRoundResult(null);
@@ -169,6 +172,10 @@ export const Game = () => {
                     disabled={player.id !== gameState.current_turn || sum > 7}>
                     YANIV
                 </button>
+                {/* DEBUG ONLY */}
+                <button onClick={() => socket.emit('debugSetScore', { score: 96 })} style={{ marginLeft: 8, background: '#f87171', color: 'white', border: 'none', borderRadius: 4, padding: '4px 8px', cursor: 'pointer' }}>
+                    DEBUG: set my score to 96
+                </button>
                 <h4>Sum:{sum}</h4>
 
 
@@ -189,6 +196,7 @@ export const Game = () => {
                     asaf={roundResult.asaf}
                     asafCaller={roundResult.asafCaller}
                     players={roundResult.players}
+                    eliminated={roundResult.eliminated}
                 />
             )}
         </div>

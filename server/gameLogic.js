@@ -137,9 +137,13 @@ function yanivCall(game) {
 
 function eliminatePlayers(game) {
     const eliminated = [];
+    if (!game.eliminated) game.eliminated = [];
     for (const key in game.players) {
         if (game.players[key].score > 100) {
-            eliminated.push(game.players[key]);
+            const p = game.players[key];
+            const record = { id: p.id, name: p.name, score: p.score };
+            eliminated.push(record);
+            game.eliminated.push(record);
             delete game.players[key];
         }
     }

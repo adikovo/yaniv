@@ -39,10 +39,28 @@ When all but one player have been eliminated, the game ends and the remaining pl
 
 ---
 
+### User Story 3 — Eliminated Player Spectator Mode (Priority: P2)
+
+When a player is eliminated they can choose to leave the game or stay and watch. If they stay, they see the game as a read-only spectator and can exit to the home screen at any time. When the current game ends and a new game is offered, eliminated players are invited to join.
+
+**Why this priority**: Keeps eliminated players engaged rather than abruptly kicked out; lets them join the next game with the same group.
+
+**Independent Test**: Player gets eliminated — a dialog appears with "Leave" and "Watch" options. Choosing Watch shows the live game board (no hand, no action buttons). Choosing Leave returns to home.
+
+**Acceptance Scenarios**:
+
+1. **Given** a player is eliminated, **When** the round result screen closes, **Then** they see a choice: Leave (→ home) or Watch
+2. **Given** an eliminated player chooses Watch, **When** the next round starts, **Then** they see the game board in read-only mode (no hand, no turn controls)
+3. **Given** an eliminated player is watching, **When** they press Exit, **Then** they are returned to the home screen
+4. **Given** the current game ends, **When** the new game invitation appears, **Then** eliminated spectators see it and can choose to join
+
+---
+
 ### Edge Cases
 
 - What if the last two players are both eliminated in the same round — treated as a draw
 - A timeout auto-advances past the result screen if not all players acknowledge within 10 seconds
+- An eliminated spectator who disconnects is simply removed silently; it does not affect the active game
 
 ---
 
@@ -55,6 +73,12 @@ When all but one player have been eliminated, the game ends and the remaining pl
 - **FR-003**: System MUST start the next round automatically after the result screen is acknowledged (or after 10 second timeout)
 - **FR-004**: System MUST end the game when only one non-eliminated player remains
 - **FR-005**: System MUST broadcast a game-over event with the overall winner when the game ends
+- **FR-006**: System MUST keep eliminated players connected to the room as spectators (they remain in the socket room but are excluded from `game.players`)
+- **FR-007**: Client MUST present eliminated players with a Leave / Watch choice after the round result screen
+- **FR-008**: Spectating players MUST receive all game state broadcasts (`nextRound`, `turn`, `hand` of others is not sent — only public state)
+- **FR-009**: Client MUST show eliminated spectators a read-only game board with no hand and no action controls
+- **FR-010**: Client MUST show an Exit button to spectators at all times, returning them to the home screen
+- **FR-011**: When the game ends, the new-game invitation MUST also be shown to eliminated spectators still in the room
 
 ---
 

@@ -88,9 +88,9 @@
 
 **Goal**: "Next Round" button with 15-second countdown visible on result screen.
 
-- [ ] T023 [P] [US2] Add "Next Round" button with 15s visual countdown to `client/src/components/round-result/index.jsx` — button emits `readyForNextRound` once on click, disables after click
-- [ ] T024 [P] [US2] Wire `nextRound` event in `client/src/pages/game/index.jsx` — update `gameState` with new top card / turn, update `player.hand`, clear `roundResult` state (hides result screen)
-- [ ] T025 [US2] Wire `gameOver` event in `client/src/pages/game/index.jsx` — show a simple game over message or navigate away
+- [x] T023 [P] [US2] Add "Next Round" button with 15s visual countdown to `client/src/components/round-result/index.jsx` — button emits `readyForNextRound` once on click, disables after click
+- [x] T024 [P] [US2] Wire `nextRound` event in `client/src/pages/game/index.jsx` — update `gameState` with new top card / turn, update `player.hand`, clear `roundResult` state (hides result screen)
+- [x] T025 [US2] Wire `gameOver` event in `client/src/pages/game/index.jsx` — show a simple game over message or navigate away
 
 **Checkpoint**: Full round cycle works end-to-end in browser.
 

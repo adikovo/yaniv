@@ -45,3 +45,19 @@
     border-bottom: 1px solid #eee;
     font-size: 1rem;
 }
+
+.round-result-next-btn {
+    margin-top: 8px;
+    padding: 10px 24px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+.round-result-next-btn:disabled {
+    background: #9ca3af;
+    cursor: default;
+}

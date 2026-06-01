@@ -10,10 +10,20 @@ export const Game = () => {
 
     const { player, setPlayer, players, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards } = useGameContext();
     const [roundResult, setRoundResult] = useState(null);
+    const [gameOver, setGameOver] = useState(false);
 
     useEffect(() => {
         socket.on('roundEnd', (data) => setRoundResult(data));
-        return () => socket.off('roundEnd');
+        socket.on('nextRound', ({ top_card, current_turn, deck }) => {
+            setGameState({ top_card, current_turn, deck });
+            setRoundResult(null);
+        });
+        socket.on('gameOver', () => setGameOver(true));
+        return () => {
+            socket.off('roundEnd');
+            socket.off('nextRound');
+            socket.off('gameOver');
+        };
     }, []);
 
     //debug
@@ -164,6 +174,10 @@ export const Game = () => {
 
             </div>
         );
+    }
+
+    if (gameOver) {
+        return <div className='home'><h2>Game Over</h2></div>;
     }
 
     return (

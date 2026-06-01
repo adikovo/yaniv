@@ -98,9 +98,9 @@
 
 ## Phase 6: Polish
 
-- [ ] T026 Export `eliminatePlayers` from `server/gameLogic.js` module.exports
-- [ ] T027 Run full `npm test` in `server/` — all tests green
-- [ ] T028 [P] Remove `readyPlayers` map entries for a room when the room is cleaned up in the `disconnect` handler in `server/socket.js`
+- [x] T026 Export `eliminatePlayers` from `server/gameLogic.js` module.exports
+- [x] T027 Run full `npm test` in `server/` — all tests green
+- [x] T028 [P] Remove `readyPlayers` map entries for a room when the room is cleaned up in the `disconnect` handler in `server/socket.js`
 
 ---
 

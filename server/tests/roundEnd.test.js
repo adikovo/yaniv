@@ -259,6 +259,32 @@ describe('Ready-Up & Next Round', () => {
         });
     }, TIMEOUT);
 
+    // T-K: all players ready immediately — fires without waiting for timeout
+    test('T-K: all players click ready → nextRound fires immediately, not after timeout', done => {
+        // Use a 5-second timeout — if the fix works, nextRound arrives well before that
+        closeServer().then(() => createTestServer({ readyTimeout: 5000 })).then(ctx => {
+            const { gameID: gID, player0: p0, player1: p1, connectClient: cc, closeServer: cs } = ctx;
+            games[gID].players[0].score = 0;
+            games[gID].players[1].score = 0;
+            games[gID].game_state.current_turn = 0;
+            setHand(games[gID].players[0], [makeCard('1', 'H', 1)]);
+
+            Promise.all([cc(p0), cc(p1)]).then(([c0, c1]) => {
+                c0.once('nextRound', () => {
+                    try { c0.disconnect(); c1.disconnect(); cs().then(done); }
+                    catch (err) { done(err); }
+                });
+
+                c0.once('roundEnd', () => {
+                    c0.emit('readyForNextRound');
+                    c1.emit('readyForNextRound');
+                });
+
+                c0.emit('makeTurn', gID, { type: 'yaniv', selected_cards: [] });
+            });
+        });
+    }, TIMEOUT);
+
     // T-J: double click is idempotent — no crash, player counted once
     test('T-J: double readyForNextRound is idempotent', done => {
         Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {

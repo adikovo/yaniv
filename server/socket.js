@@ -129,29 +129,36 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
             if (readyPlayers[room].has(socketPlayer.id)) return; // idempotent
             readyPlayers[room].add(socketPlayer.id);
 
+            function resolveRound() {
+                if (readyTimers[room]) { clearTimeout(readyTimers[room]); delete readyTimers[room]; }
+                const ready = readyPlayers[room] || new Set();
+                delete readyPlayers[room];
+
+                for (const key in games[room].players) {
+                    if (!ready.has(games[room].players[key].id)) {
+                        delete games[room].players[key];
+                    }
+                }
+
+                eliminatePlayers(games[room]);
+
+                const remaining = Object.keys(games[room].players).length;
+                if (remaining < 2) {
+                    io.to(room).emit("gameOver", { reason: "not enough players" });
+                    return;
+                }
+
+                dealNewRound(room, "nextRound");
+            }
+
+            const totalPlayers = Object.keys(games[room].players).length;
+            if (readyPlayers[room].size >= totalPlayers) {
+                resolveRound();
+                return;
+            }
+
             if (!readyTimers[room]) {
-                readyTimers[room] = setTimeout(() => {
-                    delete readyTimers[room];
-                    const ready = readyPlayers[room] || new Set();
-                    delete readyPlayers[room];
-
-                    // Remove players who didn't click ready
-                    for (const key in games[room].players) {
-                        if (!ready.has(games[room].players[key].id)) {
-                            delete games[room].players[key];
-                        }
-                    }
-
-                    eliminatePlayers(games[room]);
-
-                    const remaining = Object.keys(games[room].players).length;
-                    if (remaining < 2) {
-                        io.to(room).emit("gameOver", { reason: "not enough players" });
-                        return;
-                    }
-
-                    dealNewRound(room, "nextRound");
-                }, readyTimeout);
+                readyTimers[room] = setTimeout(resolveRound, readyTimeout);
             }
         });
 

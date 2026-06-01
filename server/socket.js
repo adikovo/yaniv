@@ -51,6 +51,15 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
             dealNewRound(room, "start");
         });
 
+        // DEBUG ONLY — remove before production
+        socket.on("debugSetScore", ({ score }) => {
+            const room = getUserRoom(socket.id);
+            if (!room || !games[room]) return;
+            const socketPlayer = rooms[room][socket.id];
+            const player = games[room].players[socketPlayer.id];
+            if (player) player.score = score;
+        });
+
 
 
         // turn = {type: "cardFromDeck"/ "cardFromTop"/"cardFromHand"/"yaniv", 

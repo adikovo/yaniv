@@ -80,7 +80,7 @@ When a player's cumulative score exceeds 100, they are eliminated from the game 
 - **FR-006**: ✅ System MUST eliminate a player when their cumulative score exceeds 100 (after reset is applied)
 - **FR-007**: ✅ Eliminated players MUST NOT be dealt cards or allowed to take turns in subsequent rounds
 - **FR-008**: ❌ System MUST include eliminated players (with their final score) in the `roundEnd` event payload
-- **FR-009**: ❌ Client MUST display eliminated players on the scoreboard with their final score
+- **FR-009**: ⏸ DEFERRED — Client display of eliminated players on the scoreboard. Server already sends `eliminated[]` in `roundEnd` and the client stores it in context. Whether/where to surface this in the UI is TBD — revisit when designing the full scoreboard in 006-scoreboard-ui.
 
 ### Key Entities
 

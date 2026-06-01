@@ -172,6 +172,10 @@ export const Game = () => {
                     disabled={player.id !== gameState.current_turn || sum > 7}>
                     YANIV
                 </button>
+                {/* DEBUG ONLY */}
+                <button onClick={() => socket.emit('debugSetScore', { score: 96 })} style={{ marginLeft: 8, background: '#f87171', color: 'white', border: 'none', borderRadius: 4, padding: '4px 8px', cursor: 'pointer' }}>
+                    DEBUG: set my score to 96
+                </button>
                 <h4>Sum:{sum}</h4>
 
 

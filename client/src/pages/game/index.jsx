@@ -1,13 +1,30 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useGameContext } from '../../context/game-context';
 import { useNavigate } from "react-router-dom";
 import socket from "../../api/socket";
 import './styles.css'
 import { Card } from '../../components/card';
+import { RoundResult } from '../../components/round-result';
 
 export const Game = () => {
 
     const { player, setPlayer, players, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards } = useGameContext();
+    const [roundResult, setRoundResult] = useState(null);
+    const [gameOver, setGameOver] = useState(false);
+
+    useEffect(() => {
+        socket.on('roundEnd', (data) => setRoundResult(data));
+        socket.on('nextRound', ({ top_card, current_turn, deck }) => {
+            setGameState({ top_card, current_turn, deck });
+            setRoundResult(null);
+        });
+        socket.on('gameOver', () => setGameOver(true));
+        return () => {
+            socket.off('roundEnd');
+            socket.off('nextRound');
+            socket.off('gameOver');
+        };
+    }, []);
 
     //debug
     console.log("Component rendered!");
@@ -159,10 +176,21 @@ export const Game = () => {
         );
     }
 
+    if (gameOver) {
+        return <div className='home'><h2>Game Over</h2></div>;
+    }
+
     return (
         <div className='home'>
             {game()}
-
+            {roundResult && (
+                <RoundResult
+                    winner={roundResult.winner}
+                    asaf={roundResult.asaf}
+                    asafCaller={roundResult.asafCaller}
+                    players={roundResult.players}
+                />
+            )}
         </div>
     )
 }

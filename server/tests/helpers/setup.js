@@ -15,12 +15,12 @@ function attachSocketHandlers(io, rooms) {
  * Seeds a game with two players and starts it.
  * Returns { httpServer, port, gameID, player0, player1, connectClient }
  */
-async function createTestServer() {
+async function createTestServer({ readyTimeout } = {}) {
     const app = require('../../app');
     const { setupSocket } = require('../../socket');
 
     const httpServer = http.createServer(app);
-    setupSocket(httpServer);
+    setupSocket(httpServer, ...(readyTimeout !== undefined ? [{ readyTimeout }] : []));
 
     await new Promise(resolve => httpServer.listen(0, resolve));
     const port = httpServer.address().port;
@@ -50,8 +50,8 @@ async function createTestServer() {
         return new Promise((resolve, reject) => {
             const client = ClientIO(`http://localhost:${port}`, { forceNew: true });
             client.on('connect', () => {
+                client.once('joinRoomResult', () => resolve(client));
                 client.emit('joinRoom', { player: playerObj, room: gameID });
-                resolve(client);
             });
             client.on('connect_error', reject);
         });

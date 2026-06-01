@@ -1,0 +1,63 @@
+.round-result-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.round-result-dialog {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    min-width: 320px;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.round-result-dialog h2 {
+    margin: 0 0 8px;
+    font-size: 1.6rem;
+}
+
+.round-result-asaf {
+    color: crimson;
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 16px;
+}
+
+.round-result-scores {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 24px;
+    text-align: left;
+}
+
+.round-result-scores li {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 1rem;
+}
+
+.round-result-next-btn {
+    margin-top: 8px;
+    padding: 10px 24px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    cursor: pointer;
+}
+
+.round-result-next-btn:disabled {
+    background: #9ca3af;
+    cursor: default;
+}

@@ -101,22 +101,49 @@ function validYaniv(hand_sum) {
     }
     return false;
 }
-//return object- name and win type: yaniv/asaf
 function yanivCall(game) {
-    let currWinner = getCurrentPlayer(game);
+    const caller = getCurrentPlayer(game);
+    let winner = caller;
+    let asaf = false;
 
-    for (let playerKey in game.players) {
-        if (game.players[playerKey] !== currWinner) {
-            const player = game.players[playerKey];
-
-            if (player.sum <= currWinner.sum) {
-                currWinner = player;
-                console.log(`ASAFFFFFFFFF ${player.name} !!`);
-            }
+    for (const key in game.players) {
+        const p = game.players[key];
+        if (p === caller) continue;
+        if (p.sum <= caller.sum) {
+            asaf = true;
+            winner = p;
         }
     }
-    console.log(`${currWinner.name} won!!!!!`);
-    return;
+
+    if (asaf) {
+        caller.score = (caller.score || 0) + caller.sum + 30;
+    }
+    for (const key in game.players) {
+        const p = game.players[key];
+        if (p !== caller) {
+            p.score = (p.score || 0) + p.sum;
+        }
+    }
+
+    // Salvation rule: landing exactly on 100 → 50, exactly on 50 → 0
+    for (const key in game.players) {
+        const p = game.players[key];
+        if (p.score === 100) p.score = 50;
+        else if (p.score === 50) p.score = 0;
+    }
+
+    return { winner, asaf, asafCaller: asaf ? caller : null };
+}
+
+function eliminatePlayers(game) {
+    const eliminated = [];
+    for (const key in game.players) {
+        if (game.players[key].score > 100) {
+            eliminated.push(game.players[key]);
+            delete game.players[key];
+        }
+    }
+    return eliminated;
 }
 function drawTopCard(game, side) {
     const player = getCurrentPlayer(game);
@@ -215,7 +242,6 @@ function rebuildDeck(game) {
 
 module.exports = {
     createDeck,
-    createDeck,
     shuffleDeck,
     dealCards,
     getCurrentPlayer,
@@ -226,6 +252,7 @@ module.exports = {
     topCard,
     validYaniv,
     yanivCall,
+    eliminatePlayers,
     drawTopCard,
     updateTopCard,
     makeTurnCardFromHand,

@@ -6,7 +6,7 @@
 
 **Status**: Draft
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 — Round Ends When Yaniv is Called (Priority: P1)
 
@@ -26,35 +26,36 @@ When a player calls Yaniv, the round ends immediately. All players receive a rou
 
 ### User Story 2 — Asaf Penalty Applied (Priority: P1)
 
-If a player calls Yaniv but another player holds an equal or lower hand value, Asaf is triggered. The caller receives a +30 penalty instead of winning the round.
+If a player calls Yaniv but another player holds an equal or lower hand value, Asaf is triggered. In an Asaf round, all players add their hand sum to their score — the caller also receives an extra +30 penalty.
 
 **Why this priority**: Asaf is a core Yaniv rule. Without it the game rewards incorrect Yaniv calls with no consequence.
 
-**Independent Test**: Player A calls Yaniv with 5 points; player B holds 4 points. Player A's score increases by 30. Player B wins the round.
+**Independent Test**: Player A calls Yaniv with 5 points; player B holds 4 points. Player A's score increases by 35 (30 + 5). Player B's score increases by 4 (their hand sum). Player B wins the round.
 
 **Acceptance Scenarios**:
 
-1. **Given** player A calls Yaniv with hand value X, **When** player B holds hand value ≤ X, **Then** player A receives +30 penalty (Asaf)
-2. **Given** Asaf is triggered, **When** the result screen appears, **Then** it clearly labels the caller as "Asaf" and shows the +30 penalty
+1. **Given** player A calls Yaniv with hand value X, **When** player B holds hand value ≤ X, **Then** player A receives +(30 + X) penalty and all other players add their own hand sum to their score
+2. **Given** Asaf is triggered, **When** the result screen appears, **Then** it clearly labels the caller as "Asaf" and shows the +(30 + X) penalty
 3. **Given** Asaf is triggered, **When** scores are updated, **Then** the player with the lowest hand wins (not the Yaniv caller)
-4. **Given** the Yaniv caller has the strictly lowest hand, **When** the round ends, **Then** no Asaf penalty is applied and the caller wins
+4. **Given** the Yaniv caller has the strictly lowest hand, **When** the round ends, **Then** no Asaf penalty is applied, the caller adds nothing to their score, and all other players add their hand sum
 
 ---
 
 ### Edge Cases
 
-- What if two players tie for the lowest hand when Yaniv is called — does Asaf apply if the tie is with someone other than the caller?
-- What if the Yaniv caller ties with another player (equal hands) — does Asaf apply?
+- **Two non-caller players tie for lowest hand**: Asaf applies (caller still loses). Winner is the tied player who comes first in turn order.
+- **Yaniv caller ties with another player (equal hands)**: Asaf applies — equal hand value triggers Asaf.
+- **All players have the same hand sum including caller**: Asaf applies. Everyone adds their sum; caller also gets +30.
 
 ---
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
 - **FR-001**: System MUST emit a `roundEnd` event to all clients when a player calls Yaniv
 - **FR-002**: The `roundEnd` payload MUST include: winner player ID, all players' hand values, Asaf flag, and the Asaf penalty recipient (if any)
-- **FR-003**: System MUST apply a +30 point penalty to the player who called Yaniv if any other player holds an equal or lower hand value
+- **FR-003**: System MUST apply a +30 + hand sum penalty to the player who called Yaniv if any other player holds an equal or lower hand value (e.g. caller holds 6 points → penalty is 36)
 - **FR-004**: Client MUST render a result screen upon receiving `roundEnd`
 - **FR-005**: The result screen MUST show each player's hand, the winner, and whether Asaf occurred
 
@@ -64,12 +65,12 @@ If a player calls Yaniv but another player holds an equal or lower hand value, A
 
 ---
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
 - **SC-001**: `roundEnd` event is received by all clients within 1 second of Yaniv being called
-- **SC-002**: Asaf penalty is applied correctly in 100% of cases where another player holds ≤ the caller's hand value
+- **SC-002**: In Asaf rounds, caller receives +(30 + their sum) and all other players add their own sum — applied correctly in 100% of cases
 - **SC-003**: Result screen appears for all players without requiring a page reload
 
 ---

@@ -216,6 +216,23 @@ describe('Ready-Up & Next Round', () => {
         });
     }, TIMEOUT);
 
+    // T-G2: eliminated player appears in roundEnd.eliminated with correct data
+    test('T-G2: eliminated player appears in roundEnd.eliminated with id, name, score', done => {
+        games[gameID].players[1].score = 96; // +5 from hand = 101 → eliminated
+        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+            c0.once('roundEnd', ({ eliminated }) => {
+                try {
+                    expect(eliminated).toHaveLength(1);
+                    expect(eliminated[0].id).toBe(1);
+                    expect(eliminated[0].name).toBe(player1.name);
+                    expect(eliminated[0].score).toBe(101);
+                    c0.disconnect(); c1.disconnect(); done();
+                } catch (err) { done(err); }
+            });
+            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+        });
+    }, TIMEOUT);
+
     // T-H: both players ready — round restarts
     test('T-H: both players click ready → nextRound emitted with new hand', done => {
         Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {

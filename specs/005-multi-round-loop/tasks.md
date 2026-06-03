@@ -23,7 +23,7 @@ description: "Task list for Multi-Round Loop implementation"
 
 **Purpose**: No new infrastructure needed — existing server/client structure is reused.
 
-- [ ] T001 Confirm `server/tests/` runs green before changes: `cd server && npm test`
+- [x] T001 Confirm `server/tests/` runs green before changes: `cd server && npm test`
 
 ---
 
@@ -33,8 +33,8 @@ description: "Task list for Multi-Round Loop implementation"
 
 **⚠️ CRITICAL**: Must complete before US1.
 
-- [ ] T002 Remove `readyPlayers`, `readyTimers` module state and the entire `readyForNextRound` socket handler (incl. nested `resolveRound`) from [server/socket.js](../../server/socket.js)
-- [ ] T003 Remove `readyForNextRound` cleanup from the `disconnect` handler in [server/socket.js](../../server/socket.js)
+- [x] T002 Remove `readyPlayers`, `readyTimers` module state and the entire `readyForNextRound` socket handler (incl. nested `resolveRound`) from [server/socket.js](../../server/socket.js)
+- [x] T003 Remove `readyForNextRound` cleanup from the `disconnect` handler in [server/socket.js](../../server/socket.js)
 
 **Checkpoint**: Server no longer waits for acknowledgement; round loop is ready to be rebuilt.
 

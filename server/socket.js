@@ -4,10 +4,8 @@ const { games } = require("./globals");
 
 let io;
 const rooms = {}; // Store users per room { roomId: { socketId: username, ... }, ... }
-const readyPlayers = {}; // { roomId: Set of player ids that clicked ready }
-const readyTimers = {};  // { roomId: timeout handle }
 
-const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
+const setupSocket = (server) => {
     io = new Server(server, {
         cors: {
             origin: "*",
@@ -129,50 +127,6 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
 
 
 
-        socket.on("readyForNextRound", () => {
-            const room = getUserRoom(socket.id);
-            if (!room || !games[room]) return;
-
-            const socketPlayer = rooms[room][socket.id];
-            if (!socketPlayer) return;
-
-            if (!readyPlayers[room]) readyPlayers[room] = new Set();
-            if (readyPlayers[room].has(socketPlayer.id)) return; // idempotent
-            readyPlayers[room].add(socketPlayer.id);
-
-            function resolveRound() {
-                if (readyTimers[room]) { clearTimeout(readyTimers[room]); delete readyTimers[room]; }
-                const ready = readyPlayers[room] || new Set();
-                delete readyPlayers[room];
-
-                for (const key in games[room].players) {
-                    if (!ready.has(games[room].players[key].id)) {
-                        delete games[room].players[key];
-                    }
-                }
-
-                eliminatePlayers(games[room]);
-
-                const remaining = Object.keys(games[room].players).length;
-                if (remaining < 2) {
-                    io.to(room).emit("gameOver", { reason: "not enough players" });
-                    return;
-                }
-
-                dealNewRound(room, "nextRound");
-            }
-
-            const totalPlayers = Object.keys(games[room].players).length;
-            if (readyPlayers[room].size >= totalPlayers) {
-                resolveRound();
-                return;
-            }
-
-            if (!readyTimers[room]) {
-                readyTimers[room] = setTimeout(resolveRound, readyTimeout);
-            }
-        });
-
         // When a user disconnects
         socket.on("disconnect", () => {
             let room = getUserRoom(socket.id);
@@ -182,8 +136,6 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
 
                 if (Object.keys(rooms[room]).length === 0) {
                     delete rooms[room];
-                    delete readyPlayers[room];
-                    if (readyTimers[room]) { clearTimeout(readyTimers[room]); delete readyTimers[room]; }
                 }
 
                 if (games[room]) {

@@ -49,15 +49,6 @@ const setupSocket = (server) => {
             dealNewRound(room, "start");
         });
 
-        // DEBUG ONLY — remove before production
-        socket.on("debugSetScore", ({ score }) => {
-            const room = getUserRoom(socket.id);
-            if (!room || !games[room]) return;
-            const socketPlayer = rooms[room][socket.id];
-            const player = games[room].players[socketPlayer.id];
-            if (player) player.score = score;
-        });
-
 
 
         // turn = {type: "cardFromDeck"/ "cardFromTop"/"cardFromHand"/"yaniv", 
@@ -120,6 +111,11 @@ const setupSocket = (server) => {
                         players,
                         eliminated: newlyEliminated
                     });
+
+                    const remaining = Object.keys(games[room].players).length;
+                    if (remaining >= 2) {
+                        setTimeout(() => dealNewRound(room, "nextRound"), 2000);
+                    }
                 }
             }
 

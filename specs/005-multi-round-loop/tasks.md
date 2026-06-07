@@ -48,16 +48,16 @@ description: "Task list for Multi-Round Loop implementation"
 
 ### Tests for User Story 1 (write first, confirm red) ⚠️
 
-- [ ] T004 [US1] Write failing test T-MR1 in [server/tests/multiRound.test.js](../../server/tests/multiRound.test.js): yaniv call → `roundEnd` fires → within ~2 s both clients receive `nextRound` and a fresh `hand` event
-- [ ] T005 [US1] Write failing test T-MR2 in [server/tests/multiRound.test.js](../../server/tests/multiRound.test.js): after auto-advance, `game_state` is fully reset (new deck length, new single top card)
+- [x] T004 [US1] Write failing test T-MR1 in [server/tests/multiRound.test.js](../../server/tests/multiRound.test.js): yaniv call → `roundEnd` fires → within ~2 s both clients receive `nextRound` and a fresh `hand` event
+- [x] T005 [US1] Write failing test T-MR2 in [server/tests/multiRound.test.js](../../server/tests/multiRound.test.js): after auto-advance, `game_state` is fully reset (new deck length, new single top card)
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] In the `yaniv` handler in [server/socket.js](../../server/socket.js), after emitting `roundEnd`: if ≥ 2 active players remain, schedule `setTimeout(() => dealNewRound(room, "nextRound"), 2000)`
-- [ ] T007 [US1] Run `cd server && npm test` — confirm T-MR1 and T-MR2 go green
-- [ ] T008 [P] [US1] Create non-blocking overlay component [client/src/components/yaniv-overlay/index.jsx](../../client/src/components/yaniv-overlay/index.jsx) + styles.css: shows "YANIV!" + caller name + round scores, positioned over the board
-- [ ] T009 [US1] In [client/src/pages/game/index.jsx](../../client/src/pages/game/index.jsx): on `roundEnd` store result in a `yanivResult` state to render `<YanivOverlay>`; clear it on `nextRound`; remove the per-round `<RoundResult>` render
-- [ ] T010 [US1] Remove the DEBUG score button from [client/src/pages/game/index.jsx](../../client/src/pages/game/index.jsx) and the `debugSetScore` handler from [server/socket.js](../../server/socket.js)
+- [x] T006 [US1] In the `yaniv` handler in [server/socket.js](../../server/socket.js), after emitting `roundEnd`: if ≥ 2 active players remain, schedule `setTimeout(() => dealNewRound(room, "nextRound"), 2000)`
+- [x] T007 [US1] Run `cd server && npm test` — confirm T-MR1 and T-MR2 go green
+- [x] T008 [P] [US1] Create non-blocking overlay component [client/src/components/yaniv-overlay/index.jsx](../../client/src/components/yaniv-overlay/index.jsx) + styles.css: shows "YANIV!" + caller name + round scores, positioned over the board
+- [x] T009 [US1] In [client/src/pages/game/index.jsx](../../client/src/pages/game/index.jsx): on `roundEnd` store result in a `yanivResult` state to render `<YanivOverlay>`; clear it on `nextRound`; remove the per-round `<RoundResult>` render
+- [x] T010 [US1] Remove the DEBUG score button from [client/src/pages/game/index.jsx](../../client/src/pages/game/index.jsx) and the `debugSetScore` handler from [server/socket.js](../../server/socket.js)
 
 **Checkpoint**: Full round loop works automatically with the YANIV overlay. MVP complete.
 

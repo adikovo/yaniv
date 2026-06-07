@@ -153,12 +153,11 @@ describe('Round End — yanivCall & roundEnd event', () => {
     }, TIMEOUT);
 });
 
-describe('Ready-Up & Next Round', () => {
+describe('Elimination & Scoring', () => {
     let gameID, player0, player1, connectClient, closeServer;
-    const READY_TIMEOUT = 100;
 
     beforeEach(async () => {
-        ({ gameID, player0, player1, connectClient, closeServer } = await createTestServer({ readyTimeout: READY_TIMEOUT }));
+        ({ gameID, player0, player1, connectClient, closeServer } = await createTestServer());
         games[gameID].players[0].score = 0;
         games[gameID].players[1].score = 0;
         games[gameID].game_state.current_turn = 0;
@@ -233,96 +232,4 @@ describe('Ready-Up & Next Round', () => {
         });
     }, TIMEOUT);
 
-    // T-H: both players ready — round restarts
-    test('T-H: both players click ready → nextRound emitted with new hand', done => {
-        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
-            let nextRoundCount = 0;
-            let handCount = 0;
-
-            function checkDone() {
-                if (nextRoundCount === 2 && handCount >= 1) {
-                    c0.disconnect(); c1.disconnect(); done();
-                }
-            }
-
-            c0.once('nextRound', () => { try { nextRoundCount++; checkDone(); } catch (err) { done(err); } });
-            c1.once('nextRound', () => { try { nextRoundCount++; checkDone(); } catch (err) { done(err); } });
-            c0.once('hand', ({ hand }) => { try { expect(hand.length).toBe(5); handCount++; checkDone(); } catch (err) { done(err); } });
-
-            c0.once('roundEnd', () => {
-                c0.emit('readyForNextRound');
-                c1.emit('readyForNextRound');
-            });
-
-            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
-        });
-    }, TIMEOUT);
-
-    // T-I: one player ready, one not → gameOver after timeout
-    test('T-I: only one player clicks ready → non-clicker removed, gameOver emitted', done => {
-        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
-            c0.once('gameOver', ({ reason }) => {
-                try {
-                    expect(reason).toBeTruthy();
-                    c0.disconnect(); c1.disconnect(); done();
-                } catch (err) { done(err); }
-            });
-
-            c0.once('roundEnd', () => {
-                c0.emit('readyForNextRound'); // only player 0 clicks
-            });
-
-            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
-        });
-    }, TIMEOUT);
-
-    // T-K: all players ready immediately — fires without waiting for timeout
-    test('T-K: all players click ready → nextRound fires immediately, not after timeout', done => {
-        // Use a 5-second timeout — if the fix works, nextRound arrives well before that
-        closeServer().then(() => createTestServer({ readyTimeout: 5000 })).then(ctx => {
-            const { gameID: gID, player0: p0, player1: p1, connectClient: cc, closeServer: cs } = ctx;
-            games[gID].players[0].score = 0;
-            games[gID].players[1].score = 0;
-            games[gID].game_state.current_turn = 0;
-            setHand(games[gID].players[0], [makeCard('1', 'H', 1)]);
-
-            Promise.all([cc(p0), cc(p1)]).then(([c0, c1]) => {
-                c0.once('nextRound', () => {
-                    try { c0.disconnect(); c1.disconnect(); cs().then(done); }
-                    catch (err) { done(err); }
-                });
-
-                c0.once('roundEnd', () => {
-                    c0.emit('readyForNextRound');
-                    c1.emit('readyForNextRound');
-                });
-
-                c0.emit('makeTurn', gID, { type: 'yaniv', selected_cards: [] });
-            });
-        });
-    }, TIMEOUT);
-
-    // T-J: double click is idempotent — no crash, player counted once
-    test('T-J: double readyForNextRound is idempotent', done => {
-        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
-            c0.once('roundEnd', () => {
-                // Emit twice from the same client
-                c0.emit('readyForNextRound');
-                c0.emit('readyForNextRound');
-                c1.emit('readyForNextRound');
-            });
-
-            c0.once('nextRound', () => {
-                // If we get here without crashing, idempotency is confirmed
-                c0.disconnect(); c1.disconnect(); done();
-            });
-
-            c0.once('gameOver', () => {
-                // Also acceptable — as long as no crash
-                c0.disconnect(); c1.disconnect(); done();
-            });
-
-            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
-        });
-    }, TIMEOUT);
 });

@@ -8,19 +8,20 @@
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 — Game Resets and Next Round Starts (Priority: P1)
+### User Story 1 — Round Ends with YANIV Animation and Next Round Starts Automatically (Priority: P1)
 
-After the round result screen is dismissed, the game automatically resets — the deck is reshuffled, new hands are dealt to all non-eliminated players, and the next round begins.
+When a player calls Yaniv, a "YANIV!" overlay appears briefly on the board (over the caller's area). After a short delay (~2 seconds) the server automatically deals a new round — no acknowledgement or button press required.
 
-**Why this priority**: Without a round loop the game ends after one round and players must refresh to play again.
+**Why this priority**: The core game loop. Without this the game ends after one round.
 
-**Independent Test**: Complete a round, dismiss the result screen — all players receive new hands and the turn indicator moves to the starting player.
+**Independent Test**: Player calls Yaniv → "YANIV!" appears on screen for ~2 seconds → all players receive new hands and the board resets automatically.
 
 **Acceptance Scenarios**:
 
-1. **Given** the round result screen is dismissed, **When** the next round starts, **Then** the deck is reshuffled and new hands are dealt to all non-eliminated players
-2. **Given** a new round starts, **When** the game state is broadcast, **Then** the discard pile is reset to one face-up card and the draw pile is full
-3. **Given** a new round starts, **When** turn order is set, **Then** the first turn goes to the player after the previous round's winner
+1. **Given** a player calls Yaniv, **When** the server processes the call, **Then** a `roundEnd` event is broadcast immediately with the round result (winner, scores, asaf flag)
+2. **Given** `roundEnd` is received, **When** the client renders it, **Then** a "YANIV!" visual overlay appears on the game board (not a blocking modal)
+3. **Given** ~2 seconds pass after `roundEnd`, **When** the server auto-starts the next round, **Then** a `nextRound` event is broadcast and all active players receive new `hand` events
+4. **Given** a new round starts, **When** the game state is broadcast, **Then** the discard pile is reset to one face-up card and the draw pile is full
 
 ---
 
@@ -34,33 +35,32 @@ When all but one player have been eliminated, the game ends and the remaining pl
 
 **Acceptance Scenarios**:
 
-1. **Given** only one non-eliminated player remains, **When** scores are updated, **Then** the game ends instead of starting a new round
-2. **Given** the game ends, **When** all players view the screen, **Then** it shows the overall winner and final scores
+1. **Given** only one non-eliminated player remains after scores are applied, **When** the server checks for game end, **Then** it emits `gameOver` instead of scheduling a next round
+2. **Given** the game ends, **When** all players view the screen, **Then** it shows the overall winner's name and final scores for all players
 
 ---
 
 ### User Story 3 — Eliminated Player Spectator Mode (Priority: P2)
 
-When a player is eliminated they can choose to leave the game or stay and watch. If they stay, they see the game as a read-only spectator and can exit to the home screen at any time. When the current game ends and a new game is offered, eliminated players are invited to join.
+When a player is eliminated they can choose to leave the game or stay and watch. If they stay, they see the game as a read-only spectator and can exit to the home screen at any time.
 
-**Why this priority**: Keeps eliminated players engaged rather than abruptly kicked out; lets them join the next game with the same group.
+**Why this priority**: Keeps eliminated players engaged rather than abruptly kicked out.
 
-**Independent Test**: Player gets eliminated — a dialog appears with "Leave" and "Watch" options. Choosing Watch shows the live game board (no hand, no action buttons). Choosing Leave returns to home.
+**Independent Test**: Player gets eliminated → a dialog appears with "Leave" and "Watch" options. Choosing Watch shows the live game board (no hand, no action buttons). Choosing Leave returns to home.
 
 **Acceptance Scenarios**:
 
-1. **Given** a player is eliminated, **When** the round result screen closes, **Then** they see a choice: Leave (→ home) or Watch
+1. **Given** a player is eliminated, **When** the `roundEnd` overlay clears, **Then** they see a choice: Leave (→ home) or Watch
 2. **Given** an eliminated player chooses Watch, **When** the next round starts, **Then** they see the game board in read-only mode (no hand, no turn controls)
 3. **Given** an eliminated player is watching, **When** they press Exit, **Then** they are returned to the home screen
-4. **Given** the current game ends, **When** the new game invitation appears, **Then** eliminated spectators see it and can choose to join
+4. **Given** the game ends, **When** the game-over / rematch screen appears, **Then** eliminated spectators see it too
 
 ---
 
 ### Edge Cases
 
-- What if the last two players are both eliminated in the same round — treated as a draw
-- A timeout auto-advances past the result screen if not all players acknowledge within 10 seconds
-- An eliminated spectator who disconnects is simply removed silently; it does not affect the active game
+- If the last two players are eliminated in the same round, continue to the next round until one survivor remains
+- An eliminated player's socket stays connected but they are excluded from `game.players`
 
 ---
 
@@ -70,15 +70,15 @@ When a player is eliminated they can choose to leave the game or stay and watch.
 
 - **FR-001**: System MUST reset the deck, discard pile, and all player hands at the start of each new round
 - **FR-002**: System MUST deal new hands only to non-eliminated players
-- **FR-003**: System MUST start the next round automatically after the result screen is acknowledged (or after 10 second timeout)
+- **FR-003**: Server MUST auto-start the next round ~2 seconds after `roundEnd` is emitted — no client acknowledgement required
 - **FR-004**: System MUST end the game when only one non-eliminated player remains
-- **FR-005**: System MUST broadcast a game-over event with the overall winner when the game ends
-- **FR-006**: System MUST keep eliminated players connected to the room as spectators (they remain in the socket room but are excluded from `game.players`)
-- **FR-007**: Client MUST present eliminated players with a Leave / Watch choice after the round result screen
-- **FR-008**: Spectating players MUST receive all game state broadcasts (`nextRound`, `turn`, `hand` of others is not sent — only public state)
-- **FR-009**: Client MUST show eliminated spectators a read-only game board with no hand and no action controls
-- **FR-010**: Client MUST show an Exit button to spectators at all times, returning them to the home screen
-- **FR-011**: When the game ends, the new-game invitation MUST also be shown to eliminated spectators still in the room
+- **FR-005**: System MUST broadcast a `gameOver` event with the overall winner and final scores when the game ends
+- **FR-006**: Client MUST show a non-blocking "YANIV!" overlay on the game board when `roundEnd` is received — not a modal that blocks the view
+- **FR-007**: Client overlay MUST disappear automatically when the `nextRound` event arrives
+- **FR-008**: Eliminated players MUST remain connected to the room (socket stays in room, excluded from `game.players`)
+- **FR-009**: Client MUST present eliminated players a Leave / Watch choice once the YANIV overlay clears
+- **FR-010**: Spectating (Watch) players MUST receive public game-state broadcasts (`nextRound`, `turn`) but no private `hand`
+- **FR-011**: Client MUST render spectators a read-only board — no hand, no action controls — with an always-visible Exit button returning to home
 
 ---
 
@@ -86,14 +86,14 @@ When a player is eliminated they can choose to leave the game or stay and watch.
 
 ### Measurable Outcomes
 
-- **SC-001**: A new round starts within 2 seconds of the result screen being dismissed
-- **SC-002**: No player state (score, eliminated flag) is lost between rounds
+- **SC-001**: Next round starts automatically ~2 seconds after a Yaniv call — no button press needed
+- **SC-002**: No player state (scores, eliminated list) is lost between rounds
 - **SC-003**: The game-over screen appears correctly when the last elimination occurs
 
 ---
 
 ## Assumptions
 
-- All players must acknowledge the result screen before the next round starts, or a 10-second timeout triggers it automatically
-- Simultaneous last-round eliminations are treated as a draw with no overall winner
-- The player to the left of the round winner goes first in the next round
+- The 2-second auto-advance delay is server-side (`setTimeout` in the `yaniv` handler)
+- The player to the left of the round winner goes first in the next round (can be random initially)
+- Simultaneous last-round eliminations that leave ≥ 2 survivors continue to the next round

@@ -6,12 +6,13 @@ const GameContext = createContext();
 export const GameProvider = ({ children }) => {
     const [player, setPlayer] = useState({});
     const [players, setPlayers] = useState([]);
-    const [eliminatedPlayers, setEliminatedPlayers] = useState([]);
     const [gameID, setGameID] = useState('');
     const [gameState, setGameState] = useState({});
     const [gameStarted, setGameStarted] = useState(false);
     const [sum, setSum] = useState(0);
     const [selectedCards, setSelectedCards] = useState([]);
+    const [gameOverData, setGameOverData] = useState(null);
+    const [isSpectator, setIsSpectator] = useState(false);
 
     useEffect(() => {
         const handleJoinRoomResult = (data) => {
@@ -28,8 +29,6 @@ export const GameProvider = ({ children }) => {
     useEffect(() => {
         const handlePlayersUpdate = (data) => {
             setPlayers(data.players);
-            //debug
-            console.log("Players updated:", data.players)
         };
 
         socket.on("playersUpdate", handlePlayersUpdate);
@@ -73,13 +72,14 @@ export const GameProvider = ({ children }) => {
     return (
         <GameContext.Provider value={{
             players, setPlayers,
-            eliminatedPlayers, setEliminatedPlayers,
             gameID, setGameID,
             player, setPlayer,
             gameState, setGameState,
             sum, setSum,
             selectedCards, setSelectedCards,
-            gameStarted
+            gameStarted,
+            gameOverData, setGameOverData,
+            isSpectator, setIsSpectator
         }}>
             {children}
         </GameContext.Provider>

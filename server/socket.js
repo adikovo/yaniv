@@ -4,10 +4,8 @@ const { games } = require("./globals");
 
 let io;
 const rooms = {}; // Store users per room { roomId: { socketId: username, ... }, ... }
-const readyPlayers = {}; // { roomId: Set of player ids that clicked ready }
-const readyTimers = {};  // { roomId: timeout handle }
 
-const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
+const setupSocket = (server) => {
     io = new Server(server, {
         cors: {
             origin: "*",
@@ -49,15 +47,6 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
             const room = getUserRoom(socket.id);
             games[room].eliminated = [];
             dealNewRound(room, "start");
-        });
-
-        // DEBUG ONLY — remove before production
-        socket.on("debugSetScore", ({ score }) => {
-            const room = getUserRoom(socket.id);
-            if (!room || !games[room]) return;
-            const socketPlayer = rooms[room][socket.id];
-            const player = games[room].players[socketPlayer.id];
-            if (player) player.score = score;
         });
 
 
@@ -122,6 +111,31 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
                         players,
                         eliminated: newlyEliminated
                     });
+
+                    const remaining = Object.keys(games[room].players).length;
+                    if (remaining === 1) {
+                        const winner = Object.values(games[room].players)[0];
+                        const allPlayers = {};
+                        for (const key in games[room].players) {
+                            const p = games[room].players[key];
+                            allPlayers[key] = { id: p.id, name: p.name, score: p.score };
+                        }
+                        for (const p of (games[room].eliminated || [])) {
+                            allPlayers[p.id] = { id: p.id, name: p.name, score: p.score };
+                        }
+                        io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, players: allPlayers });
+                    } else {
+                        // remaining >= 2: game continues; remaining === 0: draw, restore both players
+                        if (remaining === 0) {
+                            for (const p of newlyEliminated) {
+                                games[room].players[p.id] = { id: p.id, name: p.name, score: p.score };
+                            }
+                            games[room].eliminated = (games[room].eliminated || []).filter(
+                                e => !newlyEliminated.some(n => n.id === e.id)
+                            );
+                        }
+                        setTimeout(() => dealNewRound(room, "nextRound"), 2000);
+                    }
                 }
             }
 
@@ -129,47 +143,57 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
 
 
 
-        socket.on("readyForNextRound", () => {
+        socket.on("spectatorJoin", () => {
             const room = getUserRoom(socket.id);
             if (!room || !games[room]) return;
 
             const socketPlayer = rooms[room][socket.id];
             if (!socketPlayer) return;
 
-            if (!readyPlayers[room]) readyPlayers[room] = new Set();
-            if (readyPlayers[room].has(socketPlayer.id)) return; // idempotent
-            readyPlayers[room].add(socketPlayer.id);
+            if (!games[room].spectators) games[room].spectators = [];
+            const alreadySpectating = games[room].spectators.some(s => s.id === socketPlayer.id);
+            if (alreadySpectating) return;
 
-            function resolveRound() {
-                if (readyTimers[room]) { clearTimeout(readyTimers[room]); delete readyTimers[room]; }
-                const ready = readyPlayers[room] || new Set();
-                delete readyPlayers[room];
+            games[room].spectators.push({ id: socketPlayer.id, name: socketPlayer.name, socketId: socket.id });
+        });
+
+        socket.on("rematchReady", () => {
+            const room = getUserRoom(socket.id);
+            if (!room || !games[room]) return;
+
+            const socketPlayer = rooms[room][socket.id];
+            if (!socketPlayer) return;
+
+            if (!games[room].rematchReady) games[room].rematchReady = new Set();
+            if (games[room].rematchReady.has(socketPlayer.id)) return; // idempotent
+
+            games[room].rematchReady.add(socketPlayer.id);
+
+            const totalInRoom = Object.keys(rooms[room]).length;
+
+            function startRematch() {
+                if (games[room].rematchTimer) { clearTimeout(games[room].rematchTimer); delete games[room].rematchTimer; }
+                delete games[room].rematchReady;
+
+                for (const p of (games[room].eliminated || [])) {
+                    games[room].players[p.id] = { id: p.id, name: p.name, score: 0 };
+                }
+                games[room].eliminated = [];
 
                 for (const key in games[room].players) {
-                    if (!ready.has(games[room].players[key].id)) {
-                        delete games[room].players[key];
-                    }
+                    games[room].players[key].score = 0;
                 }
 
-                eliminatePlayers(games[room]);
-
-                const remaining = Object.keys(games[room].players).length;
-                if (remaining < 2) {
-                    io.to(room).emit("gameOver", { reason: "not enough players" });
-                    return;
-                }
-
-                dealNewRound(room, "nextRound");
+                dealNewRound(room, "start");
             }
 
-            const totalPlayers = Object.keys(games[room].players).length;
-            if (readyPlayers[room].size >= totalPlayers) {
-                resolveRound();
+            if (games[room].rematchReady.size >= totalInRoom) {
+                startRematch();
                 return;
             }
 
-            if (!readyTimers[room]) {
-                readyTimers[room] = setTimeout(resolveRound, readyTimeout);
+            if (!games[room].rematchTimer) {
+                games[room].rematchTimer = setTimeout(startRematch, 10000);
             }
         });
 
@@ -182,8 +206,6 @@ const setupSocket = (server, { readyTimeout = 15000 } = {}) => {
 
                 if (Object.keys(rooms[room]).length === 0) {
                     delete rooms[room];
-                    delete readyPlayers[room];
-                    if (readyTimers[room]) { clearTimeout(readyTimers[room]); delete readyTimers[room]; }
                 }
 
                 if (games[room]) {
@@ -209,8 +231,11 @@ function dealNewRound(room, eventName) {
     const gs = games[room].game_state;
     io.to(room).emit(eventName, { top_card: gs.top_card, current_turn: gs.current_turn, deck: gs.deck });
 
+    const spectatorIds = new Set((games[room].spectators || []).map(s => s.id));
+
     for (const socket_id in rooms[room]) {
         const socketPlayer = rooms[room][socket_id];
+        if (spectatorIds.has(socketPlayer.id)) continue;
         const gamePlayer = games[room].players[socketPlayer.id];
         if (gamePlayer) {
             handValue(gamePlayer);

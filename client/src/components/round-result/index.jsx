@@ -2,51 +2,35 @@ import { useState, useEffect } from 'react';
 import socket from '../../api/socket';
 import './styles.css';
 
-export const RoundResult = ({ winner, asaf, asafCaller, players, eliminated = [] }) => {
-    const [timeLeft, setTimeLeft] = useState(15);
+export const RoundResult = ({ winner }) => {
+    const [timeLeft, setTimeLeft] = useState(10);
     const [clicked, setClicked] = useState(false);
 
     useEffect(() => {
-        if (timeLeft <= 0) return;
+        if (timeLeft <= 0) {
+            if (!clicked) socket.emit('rematchReady');
+            return;
+        }
         const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
         return () => clearInterval(timer);
     }, [timeLeft]);
 
-    const handleReady = () => {
-        if (clicked || timeLeft <= 0) return;
+    const handleRematch = () => {
+        if (clicked) return;
         setClicked(true);
-        socket.emit('readyForNextRound');
+        socket.emit('rematchReady');
     };
 
     return (
         <div className="round-result-overlay">
             <div className="round-result-dialog">
-                <h2>{asaf ? `Asaf! ${winner.name} wins` : `${winner.name} called Yaniv!`}</h2>
-                {asaf && (
-                    <p className="round-result-asaf">
-                        {asafCaller.name} is penalised (Asaf)
-                    </p>
-                )}
-                <ul className="round-result-scores">
-                    {Object.values(players).map((p) => (
-                        <li key={p.id}>
-                            <span>{p.name}</span>
-                            <span>{p.score} pts</span>
-                        </li>
-                    ))}
-                    {eliminated.map((p) => (
-                        <li key={p.id} className="round-result-eliminated">
-                            <span>{p.name}</span>
-                            <span>{p.score} pts — Eliminated</span>
-                        </li>
-                    ))}
-                </ul>
+                <h2>Game Over — {winner.name} wins!</h2>
                 <button
                     className="round-result-next-btn"
-                    onClick={handleReady}
-                    disabled={clicked || timeLeft <= 0}
+                    onClick={handleRematch}
+                    disabled={clicked}
                 >
-                    {clicked ? 'Waiting...' : `Next Round (${timeLeft}s)`}
+                    {clicked ? 'Waiting...' : `Rematch (${timeLeft}s)`}
                 </button>
             </div>
         </div>

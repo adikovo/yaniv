@@ -10,23 +10,24 @@ import { SpectatorPrompt } from '../../components/spectator-prompt';
 
 export const Game = () => {
 
-    const { player, setPlayer, players, eliminatedPlayers, setEliminatedPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator } = useGameContext();
+    const { player, setPlayer, players, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
 
     useEffect(() => {
         socket.on('roundEnd', (data) => {
             setYanivResult(data);
-            if (data.eliminated?.length) setEliminatedPlayers(prev => [...prev, ...data.eliminated]);
         });
         socket.on('nextRound', ({ top_card, current_turn, deck }) => {
             setGameState({ top_card, current_turn, deck });
-            setYanivResult(prev => {
-                if (prev?.eliminated?.some(e => e.id === player.id)) {
-                    setShowSpectatorPrompt(true);
-                }
-                return null;
-            });
+            setTimeout(() => {
+                setYanivResult(prev => {
+                    if (prev?.eliminated?.some(e => e.id === player.id)) {
+                        setShowSpectatorPrompt(true);
+                    }
+                    return null;
+                });
+            }, 1500);
         });
         socket.on('gameOver', (data) => setGameOverData(data));
         socket.on('start', () => setGameOverData(null));
@@ -227,8 +228,6 @@ export const Game = () => {
                         winner={yanivResult.winner}
                         asaf={yanivResult.asaf}
                         asafCaller={yanivResult.asafCaller}
-                        players={yanivResult.players}
-                        eliminated={yanivResult.eliminated}
                     />
                 )}
             </div>

@@ -114,7 +114,7 @@ description: "Task list for Multi-Round Loop implementation"
 ## Phase 6: Polish
 
 - [ ] T027 Manual end-to-end check: 3-player game → rounds auto-advance with overlay → eliminate one (Watch) → eliminate down to 1 → game-over → rematch resets and replays
-- [ ] T028 Remove any now-unused round-result/eliminated wiring left over from the old flow in [client/src/context/game-context.jsx](../../client/src/context/game-context.jsx)
+- [x] T028 Remove any now-unused round-result/eliminated wiring left over from the old flow in [client/src/context/game-context.jsx](../../client/src/context/game-context.jsx)
 
 ---
 

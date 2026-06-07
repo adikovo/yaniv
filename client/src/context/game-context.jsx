@@ -13,6 +13,7 @@ export const GameProvider = ({ children }) => {
     const [sum, setSum] = useState(0);
     const [selectedCards, setSelectedCards] = useState([]);
     const [gameOverData, setGameOverData] = useState(null);
+    const [isSpectator, setIsSpectator] = useState(false);
 
     useEffect(() => {
         const handleJoinRoomResult = (data) => {
@@ -81,7 +82,8 @@ export const GameProvider = ({ children }) => {
             sum, setSum,
             selectedCards, setSelectedCards,
             gameStarted,
-            gameOverData, setGameOverData
+            gameOverData, setGameOverData,
+            isSpectator, setIsSpectator
         }}>
             {children}
         </GameContext.Provider>

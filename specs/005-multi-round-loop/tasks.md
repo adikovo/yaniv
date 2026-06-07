@@ -95,17 +95,17 @@ description: "Task list for Multi-Round Loop implementation"
 
 ### Tests for User Story 3 (write first, confirm red) ⚠️
 
-- [ ] T019 [US3] Write failing test T-MR5 in [server/tests/multiRound.test.js](../../server/tests/multiRound.test.js): after a player is eliminated and emits `spectatorJoin`, they are in `game.spectators`, their socket stays in the room, and they receive `nextRound` but no `hand`
+- [x] T019 [US3] Write failing test T-MR5 in [server/tests/multiRound.test.js](../../server/tests/multiRound.test.js): after a player is eliminated and emits `spectatorJoin`, they are in `game.spectators`, their socket stays in the room, and they receive `nextRound` but no `hand`
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Add a `spectatorJoin` handler in [server/socket.js](../../server/socket.js): push `{ id, name, socketId }` into `game.spectators` (init `[]` if absent); keep the socket in the room
-- [ ] T021 [US3] In `dealNewRound` in [server/socket.js](../../server/socket.js): emit `hand` only to sockets whose player is in `game.players` (spectators get the public `nextRound` broadcast but no `hand`)
-- [ ] T022 [US3] Run `cd server && npm test` — confirm T-MR5 goes green
-- [ ] T023 [P] [US3] Create [client/src/components/spectator-prompt/index.jsx](../../client/src/components/spectator-prompt/index.jsx) + styles.css: Leave / Watch dialog
-- [ ] T024 [US3] Add `isSpectator` state to [client/src/context/game-context.jsx](../../client/src/context/game-context.jsx)
-- [ ] T025 [US3] In [client/src/pages/game/index.jsx](../../client/src/pages/game/index.jsx): when the YANIV overlay clears and the local player is in `roundEnd.eliminated`, show `<SpectatorPrompt>`; Leave → navigate home; Watch → emit `spectatorJoin` and set `isSpectator`
-- [ ] T026 [US3] In [client/src/pages/game/index.jsx](../../client/src/pages/game/index.jsx): when `isSpectator`, render a read-only board (no hand section, no action buttons) with an always-visible Exit button that navigates home
+- [x] T020 [US3] Add a `spectatorJoin` handler in [server/socket.js](../../server/socket.js): push `{ id, name, socketId }` into `game.spectators` (init `[]` if absent); keep the socket in the room
+- [x] T021 [US3] In `dealNewRound` in [server/socket.js](../../server/socket.js): emit `hand` only to sockets whose player is in `game.players` (spectators get the public `nextRound` broadcast but no `hand`)
+- [x] T022 [US3] Run `cd server && npm test` — confirm T-MR5 goes green
+- [x] T023 [P] [US3] Create [client/src/components/spectator-prompt/index.jsx](../../client/src/components/spectator-prompt/index.jsx) + styles.css: Leave / Watch dialog
+- [x] T024 [US3] Add `isSpectator` state to [client/src/context/game-context.jsx](../../client/src/context/game-context.jsx)
+- [x] T025 [US3] In [client/src/pages/game/index.jsx](../../client/src/pages/game/index.jsx): when the YANIV overlay clears and the local player is in `roundEnd.eliminated`, show `<SpectatorPrompt>`; Leave → navigate home; Watch → emit `spectatorJoin` and set `isSpectator`
+- [x] T026 [US3] In [client/src/pages/game/index.jsx](../../client/src/pages/game/index.jsx): when `isSpectator`, render a read-only board (no hand section, no action buttons) with an always-visible Exit button that navigates home
 
 **Checkpoint**: Eliminated players can watch or leave; spectators see live public state only.
 

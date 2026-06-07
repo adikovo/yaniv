@@ -6,11 +6,13 @@ import './styles.css'
 import { Card } from '../../components/card';
 import { YanivOverlay } from '../../components/yaniv-overlay';
 import { RoundResult } from '../../components/round-result';
+import { SpectatorPrompt } from '../../components/spectator-prompt';
 
 export const Game = () => {
 
-    const { player, setPlayer, players, eliminatedPlayers, setEliminatedPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData } = useGameContext();
+    const { player, setPlayer, players, eliminatedPlayers, setEliminatedPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
+    const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
 
     useEffect(() => {
         socket.on('roundEnd', (data) => {
@@ -19,7 +21,12 @@ export const Game = () => {
         });
         socket.on('nextRound', ({ top_card, current_turn, deck }) => {
             setGameState({ top_card, current_turn, deck });
-            setYanivResult(null);
+            setYanivResult(prev => {
+                if (prev?.eliminated?.some(e => e.id === player.id)) {
+                    setShowSpectatorPrompt(true);
+                }
+                return null;
+            });
         });
         socket.on('gameOver', (data) => setGameOverData(data));
         socket.on('start', () => setGameOverData(null));
@@ -179,6 +186,16 @@ export const Game = () => {
         );
     }
 
+    const handleWatch = () => {
+        setShowSpectatorPrompt(false);
+        setIsSpectator(true);
+        socket.emit('spectatorJoin');
+    };
+
+    const handleLeave = () => {
+        navigate('/');
+    };
+
     if (gameOverData) {
         return (
             <div className='home'>
@@ -187,10 +204,44 @@ export const Game = () => {
         );
     }
 
+    if (isSpectator) {
+        return (
+            <div className='home'>
+                <h1>Spectating</h1>
+                <h3>Players:</h3>
+                <ul>
+                    {players.map((p, index) => (
+                        <li key={index}>{p.name}</li>
+                    ))}
+                </ul>
+                <h3>{`${players[gameState.current_turn]?.name}'s turn`}</h3>
+                <h3>TOP CARD:</h3>
+                <div className='top_card_pile'>
+                    {gameState.top_card?.map((card, index) => (
+                        <Card key={index} card={card} disabled />
+                    ))}
+                </div>
+                <button onClick={handleLeave}>Exit</button>
+                {yanivResult && (
+                    <YanivOverlay
+                        winner={yanivResult.winner}
+                        asaf={yanivResult.asaf}
+                        asafCaller={yanivResult.asafCaller}
+                        players={yanivResult.players}
+                        eliminated={yanivResult.eliminated}
+                    />
+                )}
+            </div>
+        );
+    }
+
     return (
         <div className='home'>
             {game()}
-            {yanivResult && (
+            {showSpectatorPrompt && (
+                <SpectatorPrompt onWatch={handleWatch} onLeave={handleLeave} />
+            )}
+            {yanivResult && !showSpectatorPrompt && (
                 <YanivOverlay
                     winner={yanivResult.winner}
                     asaf={yanivResult.asaf}

@@ -143,6 +143,20 @@ const setupSocket = (server) => {
 
 
 
+        socket.on("spectatorJoin", () => {
+            const room = getUserRoom(socket.id);
+            if (!room || !games[room]) return;
+
+            const socketPlayer = rooms[room][socket.id];
+            if (!socketPlayer) return;
+
+            if (!games[room].spectators) games[room].spectators = [];
+            const alreadySpectating = games[room].spectators.some(s => s.id === socketPlayer.id);
+            if (alreadySpectating) return;
+
+            games[room].spectators.push({ id: socketPlayer.id, name: socketPlayer.name, socketId: socket.id });
+        });
+
         socket.on("rematchReady", () => {
             const room = getUserRoom(socket.id);
             if (!room || !games[room]) return;
@@ -217,8 +231,11 @@ function dealNewRound(room, eventName) {
     const gs = games[room].game_state;
     io.to(room).emit(eventName, { top_card: gs.top_card, current_turn: gs.current_turn, deck: gs.deck });
 
+    const spectatorIds = new Set((games[room].spectators || []).map(s => s.id));
+
     for (const socket_id in rooms[room]) {
         const socketPlayer = rooms[room][socket_id];
+        if (spectatorIds.has(socketPlayer.id)) continue;
         const gamePlayer = games[room].players[socketPlayer.id];
         if (gamePlayer) {
             handValue(gamePlayer);

@@ -1,0 +1,53 @@
+.spectator-prompt-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.spectator-prompt-dialog {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    min-width: 300px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.spectator-prompt-dialog h2 {
+    margin: 0 0 8px;
+    font-size: 1.5rem;
+}
+
+.spectator-prompt-dialog p {
+    color: #6b7280;
+    margin: 0 0 24px;
+}
+
+.spectator-prompt-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.spectator-btn {
+    padding: 10px 28px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.spectator-btn-watch {
+    background: #2563eb;
+    color: white;
+}
+
+.spectator-btn-leave {
+    background: #f3f4f6;
+    color: #374151;
+}

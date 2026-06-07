@@ -200,3 +200,76 @@ describe('Game Over & Rematch', () => {
         });
     }, 12000); // needs to outlast the 10 s rematch timeout
 });
+
+describe('Spectator Mode', () => {
+    let gameID, player0, player1, player2, connectClient, closeServer;
+
+    beforeEach(async () => {
+        ({ gameID, player0, player1, connectClient, closeServer } = await createTestServer());
+        player2 = { id: 2, name: 'Charlie', playerType: 'join' };
+
+        // 3-player game: player1 will be eliminated, player0 and player2 continue
+        games[gameID].players[2] = { ...player2, score: 0 };
+        games[gameID].eliminated = [];
+        games[gameID].players[0].score = 0;
+        games[gameID].players[1].score = 96; // +5 = 101 → eliminated
+        games[gameID].game_state.current_turn = 0;
+        setHand(games[gameID].players[0], [makeCard('1', 'H', 1)]); // caller, sum=1
+        setHand(games[gameID].players[1], [makeCard('5', 'H', 5)]); // sum=5, score → 101
+        setHand(games[gameID].players[2], [makeCard('3', 'H', 3)]); // sum=3, survives
+    });
+
+    afterEach(async () => {
+        await closeServer();
+    });
+
+    // T-MR5: eliminated player emits spectatorJoin → in game.spectators, receives nextRound, no hand
+    test('T-MR5: spectatorJoin → player in game.spectators, gets nextRound but no hand', done => {
+        Promise.all([connectClient(player0), connectClient(player1), connectClient(player2)]).then(([c0, c1, c2]) => {
+            let handReceived = false;
+            c1.on('hand', () => { handReceived = true; });
+
+            c0.once('roundEnd', () => {
+                c1.emit('spectatorJoin');
+            });
+
+            c1.once('nextRound', () => {
+                setTimeout(() => {
+                    try {
+                        expect(handReceived).toBe(false);
+                        const spectators = games[gameID].spectators || [];
+                        expect(spectators.some(s => s.id === player1.id)).toBe(true);
+                        c0.disconnect(); c1.disconnect(); c2.disconnect(); done();
+                    } catch (e) { done(e); }
+                }, 200);
+            });
+
+            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+        });
+    }, TIMEOUT);
+
+    // T-MR5b: active players still receive their hands after spectator joins
+    test('T-MR5b: active players still receive hands when a spectator is in the room', done => {
+        Promise.all([connectClient(player0), connectClient(player1), connectClient(player2)]).then(([c0, c1, c2]) => {
+            let handsReceived = 0;
+            c0.once('hand', () => { handsReceived++; });
+            c2.once('hand', () => { handsReceived++; });
+
+            c0.once('roundEnd', () => {
+                c1.emit('spectatorJoin');
+            });
+
+            // Wait until both active players got their hands
+            c0.once('nextRound', () => {
+                setTimeout(() => {
+                    try {
+                        expect(handsReceived).toBe(2);
+                        c0.disconnect(); c1.disconnect(); c2.disconnect(); done();
+                    } catch (e) { done(e); }
+                }, 300);
+            });
+
+            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+        });
+    }, TIMEOUT);
+});

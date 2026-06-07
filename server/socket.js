@@ -113,7 +113,27 @@ const setupSocket = (server) => {
                     });
 
                     const remaining = Object.keys(games[room].players).length;
-                    if (remaining >= 2) {
+                    if (remaining === 1) {
+                        const winner = Object.values(games[room].players)[0];
+                        const allPlayers = {};
+                        for (const key in games[room].players) {
+                            const p = games[room].players[key];
+                            allPlayers[key] = { id: p.id, name: p.name, score: p.score };
+                        }
+                        for (const p of (games[room].eliminated || [])) {
+                            allPlayers[p.id] = { id: p.id, name: p.name, score: p.score };
+                        }
+                        io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, players: allPlayers });
+                    } else {
+                        // remaining >= 2: game continues; remaining === 0: draw, restore both players
+                        if (remaining === 0) {
+                            for (const p of newlyEliminated) {
+                                games[room].players[p.id] = { id: p.id, name: p.name, score: p.score };
+                            }
+                            games[room].eliminated = (games[room].eliminated || []).filter(
+                                e => !newlyEliminated.some(n => n.id === e.id)
+                            );
+                        }
                         setTimeout(() => dealNewRound(room, "nextRound"), 2000);
                     }
                 }
@@ -122,6 +142,46 @@ const setupSocket = (server) => {
         })
 
 
+
+        socket.on("rematchReady", () => {
+            const room = getUserRoom(socket.id);
+            if (!room || !games[room]) return;
+
+            const socketPlayer = rooms[room][socket.id];
+            if (!socketPlayer) return;
+
+            if (!games[room].rematchReady) games[room].rematchReady = new Set();
+            if (games[room].rematchReady.has(socketPlayer.id)) return; // idempotent
+
+            games[room].rematchReady.add(socketPlayer.id);
+
+            const totalInRoom = Object.keys(rooms[room]).length;
+
+            function startRematch() {
+                if (games[room].rematchTimer) { clearTimeout(games[room].rematchTimer); delete games[room].rematchTimer; }
+                delete games[room].rematchReady;
+
+                for (const p of (games[room].eliminated || [])) {
+                    games[room].players[p.id] = { id: p.id, name: p.name, score: 0 };
+                }
+                games[room].eliminated = [];
+
+                for (const key in games[room].players) {
+                    games[room].players[key].score = 0;
+                }
+
+                dealNewRound(room, "start");
+            }
+
+            if (games[room].rematchReady.size >= totalInRoom) {
+                startRematch();
+                return;
+            }
+
+            if (!games[room].rematchTimer) {
+                games[room].rematchTimer = setTimeout(startRematch, 10000);
+            }
+        });
 
         // When a user disconnects
         socket.on("disconnect", () => {

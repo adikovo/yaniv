@@ -5,12 +5,12 @@ import socket from "../../api/socket";
 import './styles.css'
 import { Card } from '../../components/card';
 import { YanivOverlay } from '../../components/yaniv-overlay';
+import { RoundResult } from '../../components/round-result';
 
 export const Game = () => {
 
-    const { player, setPlayer, players, eliminatedPlayers, setEliminatedPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards } = useGameContext();
+    const { player, setPlayer, players, eliminatedPlayers, setEliminatedPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
-    const [gameOver, setGameOver] = useState(false);
 
     useEffect(() => {
         socket.on('roundEnd', (data) => {
@@ -21,11 +21,13 @@ export const Game = () => {
             setGameState({ top_card, current_turn, deck });
             setYanivResult(null);
         });
-        socket.on('gameOver', () => setGameOver(true));
+        socket.on('gameOver', (data) => setGameOverData(data));
+        socket.on('start', () => setGameOverData(null));
         return () => {
             socket.off('roundEnd');
             socket.off('nextRound');
             socket.off('gameOver');
+            socket.off('start');
         };
     }, []);
 
@@ -177,8 +179,12 @@ export const Game = () => {
         );
     }
 
-    if (gameOver) {
-        return <div className='home'><h2>Game Over</h2></div>;
+    if (gameOverData) {
+        return (
+            <div className='home'>
+                <RoundResult winner={gameOverData.winner} />
+            </div>
+        );
     }
 
     return (

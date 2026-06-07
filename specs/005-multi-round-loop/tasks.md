@@ -71,17 +71,17 @@ description: "Task list for Multi-Round Loop implementation"
 
 ### Tests for User Story 2 (write first, confirm red) ⚠️
 
-- [ ] T011 [US2] Write failing test T-MR3 in [server/tests/multiRound.test.js](../../server/tests/multiRound.test.js): when scoring leaves 1 survivor, `gameOver` payload contains `winner.name` and a `players` map with final scores (no `nextRound` fires)
-- [ ] T012 [US2] Write failing test T-MR4 in [server/tests/multiRound.test.js](../../server/tests/multiRound.test.js): after `gameOver`, both clients emit `rematchReady` → `start` fires, all scores reset to 0, `game.eliminated` cleared
+- [x] T011 [US2] Write failing test T-MR3 in [server/tests/multiRound.test.js](../../server/tests/multiRound.test.js): when scoring leaves 1 survivor, `gameOver` payload contains `winner.name` and a `players` map with final scores (no `nextRound` fires)
+- [x] T012 [US2] Write failing test T-MR4 in [server/tests/multiRound.test.js](../../server/tests/multiRound.test.js): after `gameOver`, both clients emit `rematchReady` → `start` fires, all scores reset to 0, `game.eliminated` cleared
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] In the `yaniv` handler in [server/socket.js](../../server/socket.js): when only 1 active player remains after elimination, emit `gameOver` with `{ winner: { id, name }, players: { [key]: { id, name, score } } }` instead of scheduling `nextRound`
-- [ ] T014 [US2] Add a `rematchReady` socket handler in [server/socket.js](../../server/socket.js): ready-set + 10 s timeout; on resolve reset `game.eliminated = []`, set every player `score = 0`, then `dealNewRound(room, "start")`
-- [ ] T015 [US2] Run `cd server && npm test` — confirm T-MR3 and T-MR4 go green
-- [ ] T016 [US2] Add `gameOverData` state to [client/src/context/game-context.jsx](../../client/src/context/game-context.jsx)
-- [ ] T017 [US2] In [client/src/pages/game/index.jsx](../../client/src/pages/game/index.jsx): replace the bare `gameOver` boolean with `gameOverData` (winner + players); render `<RoundResult isGameOver ... />` when set
-- [ ] T018 [US2] In [client/src/components/round-result/index.jsx](../../client/src/components/round-result/index.jsx): add `isGameOver` prop — heading "Game Over — {winner.name} wins!", button label "Rematch" emitting `rematchReady`, keep the 10 s countdown
+- [x] T013 [US2] In the `yaniv` handler in [server/socket.js](../../server/socket.js): when only 1 active player remains after elimination, emit `gameOver` with `{ winner: { id, name }, players: { [key]: { id, name, score } } }` instead of scheduling `nextRound`
+- [x] T014 [US2] Add a `rematchReady` socket handler in [server/socket.js](../../server/socket.js): ready-set + 10 s timeout; on resolve reset `game.eliminated = []`, set every player `score = 0`, then `dealNewRound(room, "start")`
+- [x] T015 [US2] Run `cd server && npm test` — confirm T-MR3 and T-MR4 go green
+- [x] T016 [US2] Add `gameOverData` state to [client/src/context/game-context.jsx](../../client/src/context/game-context.jsx)
+- [x] T017 [US2] In [client/src/pages/game/index.jsx](../../client/src/pages/game/index.jsx): replace the bare `gameOver` boolean with `gameOverData` (winner + players); render `<RoundResult isGameOver ... />` when set
+- [x] T018 [US2] In [client/src/components/round-result/index.jsx](../../client/src/components/round-result/index.jsx): add `isGameOver` prop — heading "Game Over — {winner.name} wins!", button label "Rematch" emitting `rematchReady`, keep the 10 s countdown
 
 **Checkpoint**: Game reaches a winner, shows the game-over screen, and rematch starts a fresh game.
 

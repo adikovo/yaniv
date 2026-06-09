@@ -220,7 +220,7 @@ const setupSocket = (server) => {
 
                     if (remaining === 1) {
                         const winner = Object.values(games[room].players)[0];
-                        io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name } });
+                        io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, reason: 'disconnect' });
                     } else if (remaining >= 2) {
                         const gs = games[room].game_state;
                         if (gs && gs.current_turn === player.id) {

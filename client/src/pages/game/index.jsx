@@ -206,7 +206,7 @@ export const Game = () => {
     if (gameOverData) {
         return (
             <div className='home'>
-                <RoundResult winner={gameOverData.winner} />
+                <RoundResult winner={gameOverData.winner} canRematch={gameOverData.reason !== 'disconnect'} />
             </div>
         );
     }

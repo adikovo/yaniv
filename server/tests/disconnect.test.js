@@ -129,6 +129,22 @@ describe('Disconnect — game over when 1 player remains (US2)', () => {
         });
     }, TIMEOUT);
 
+    test('gameOver from disconnect includes reason: disconnect', done => {
+        createTestServer({ playerCount: 2 }).then(s => {
+            server = s;
+            const { player0, player1, connectClient } = s;
+
+            Promise.all([connectClient(player0), connectClient(player1)]).then(([client0, client1]) => {
+                client0.once('gameOver', ({ reason }) => {
+                    expect(reason).toBe('disconnect');
+                    client0.disconnect();
+                    done();
+                });
+                client1.disconnect();
+            });
+        });
+    }, TIMEOUT);
+
     // T011: 0 players left — no crash (both disconnect almost simultaneously)
     test('T011 — no crash when all players disconnect', done => {
         createTestServer({ playerCount: 2 }).then(s => {

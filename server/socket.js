@@ -60,10 +60,13 @@ const setupSocket = (server) => {
             //debug
             console.log("RECEIVED selected_cards:", turn_data.selected_cards);
 
-            const socketPlayer = rooms[room][socket.id];
-            const player = games[room].players[socketPlayer.id];
+            const socketPlayer = rooms[room]?.[socket.id];
+            if (!socketPlayer) return;
+            const player = games[room]?.players?.[socketPlayer.id];
+            if (!player) return;
             const game_state = games[room].game_state;
-            if (socketPlayer.id !== getCurrentPlayer(games[room]).id) {
+            const currentPlayer = getCurrentPlayer(games[room]);
+            if (!currentPlayer || socketPlayer.id !== currentPlayer.id) {
                 return;
             }
 

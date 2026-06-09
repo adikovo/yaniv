@@ -74,8 +74,8 @@
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T016 [P] Update `server/socket.js` import line to include `getNextPlayerId` if it ends up being needed directly in socket.js (it may only be needed inside `gameLogic.js`)
-- [ ] T017 Review the `makeTurn` guard in `server/socket.js` (`if socketPlayer.id !== getCurrentPlayer(games[room]).id`) — ensure it handles `getCurrentPlayer` returning `undefined` gracefully when the current player has been removed mid-turn
+- [x] T016 [P] Update `server/socket.js` import line to include `getNextPlayerId` if it ends up being needed directly in socket.js (it may only be needed inside `gameLogic.js`)
+- [x] T017 Review the `makeTurn` guard in `server/socket.js` (`if socketPlayer.id !== getCurrentPlayer(games[room]).id`) — ensure it handles `getCurrentPlayer` returning `undefined` gracefully when the current player has been removed mid-turn
 - [ ] T018 Manual end-to-end test: 3-player game → disconnect mid-round → confirm remaining 2 finish round → new round starts correctly with winner going first
 
 ---

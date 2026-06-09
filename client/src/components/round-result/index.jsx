@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import socket from '../../api/socket';
 import './styles.css';
 
 export const RoundResult = ({ winner, canRematch = true }) => {
+    const navigate = useNavigate();
     const [timeLeft, setTimeLeft] = useState(10);
     const [clicked, setClicked] = useState(false);
 
@@ -37,6 +39,9 @@ export const RoundResult = ({ winner, canRematch = true }) => {
                 ) : (
                     <p>All other players have left the game.</p>
                 )}
+                <button className="round-result-home-btn" onClick={() => navigate('/')}>
+                    Go Home
+                </button>
             </div>
         </div>
     );

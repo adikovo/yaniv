@@ -65,9 +65,15 @@ function whosTurn(game) {
     game.game_state.current_turn = first_player;
 }
 
+function getNextPlayerId(game) {
+    const keys = Object.keys(game.players).map(Number).sort((a, b) => a - b);
+    const idx = keys.indexOf(game.game_state.current_turn);
+    return keys[(idx + 1) % keys.length];
+}
+
 function nextTurn(game) {
-    const next_player = (game.game_state.current_turn + 1) % Object.keys(game.players).length;
-    game.game_state.current_turn = next_player;
+    if (Object.keys(game.players).length === 0) return;
+    game.game_state.current_turn = getNextPlayerId(game);
 }
 
 function drawFromDeck(game) {
@@ -251,6 +257,7 @@ module.exports = {
     dealCards,
     getCurrentPlayer,
     whosTurn,
+    getNextPlayerId,
     nextTurn,
     drawFromDeck,
     handValue,

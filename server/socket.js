@@ -202,18 +202,39 @@ const setupSocket = (server) => {
             let room = getUserRoom(socket.id);
             if (room) {
                 const player = rooms[room][socket.id];
-                delete rooms[room][socket.id]; // Remove user from room
+                delete rooms[room][socket.id];
 
                 if (Object.keys(rooms[room]).length === 0) {
                     delete rooms[room];
                 }
 
-                if (games[room]) {
-                    io.to(room).emit("playersUpdate", { players: games[room].players });
+                if (games[room] && player && games[room].players[player.id]) {
+                    delete games[room].players[player.id];
+
+                    io.to(room).emit("playerDisconnected", { name: player.name, id: player.id });
+
+                    const remaining = Object.keys(games[room].players).length;
+
+                    if (remaining === 1) {
+                        const winner = Object.values(games[room].players)[0];
+                        io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name } });
+                    } else if (remaining >= 2) {
+                        const gs = games[room].game_state;
+                        if (gs && gs.current_turn === player.id) {
+                            nextTurn(games[room]);
+                            io.to(room).emit("turn", {
+                                top_card: gs.top_card,
+                                current_turn: gs.current_turn,
+                                deck: gs.deck
+                            });
+                        }
+                    }
                 }
 
-                io.to(room).emit("message", { user: "Server", text: `${player.name} has left the chat.` });
-                console.log(`User disconnected: ${socket.id}`);
+                if (player) {
+                    io.to(room).emit("message", { user: "Server", text: `${player.name} has left the chat.` });
+                    console.log(`User disconnected: ${socket.id}`);
+                }
             }
         });
     });

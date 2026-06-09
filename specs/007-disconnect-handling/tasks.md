@@ -33,11 +33,11 @@
 
 **Independent Test**: Start a 3-player game, disconnect one player mid-round. The remaining two players can take turns and finish the round normally.
 
-- [ ] T004 [US1] In the `disconnect` handler in `server/socket.js`, after removing the player from `rooms[room]`, also delete them from `games[room].players` if a game is in progress
-- [ ] T005 [US1] Emit a `playerDisconnected` event to the room with `{ name: player.name, id: player.id }` after removing the player from game state in `server/socket.js`
-- [ ] T006 [US1] After removing the player, check if it was their turn (`games[room].game_state.current_turn === disconnectedPlayer.id`); if so, call `nextTurn(games[room])` in `server/socket.js`
-- [ ] T007 [US1] After advancing the turn (if needed), emit a `turn` event to the room with the updated `current_turn`, `top_card`, and `deck` in `server/socket.js`
-- [ ] T008 [P] [US1] Add a `playerDisconnected` listener on the client in `client/src/` (whichever component handles game state) that displays "[Name] has left the game" as a notification
+- [x] T004 [US1] In the `disconnect` handler in `server/socket.js`, after removing the player from `rooms[room]`, also delete them from `games[room].players` if a game is in progress
+- [x] T005 [US1] Emit a `playerDisconnected` event to the room with `{ name: player.name, id: player.id }` after removing the player from game state in `server/socket.js`
+- [x] T006 [US1] After removing the player, check if it was their turn (`games[room].game_state.current_turn === disconnectedPlayer.id`); if so, call `nextTurn(games[room])` in `server/socket.js`
+- [x] T007 [US1] After advancing the turn (if needed), emit a `turn` event to the room with the updated `current_turn`, `top_card`, and `deck` in `server/socket.js`
+- [x] T008 [P] [US1] Add a `playerDisconnected` listener on the client in `client/src/` (whichever component handles game state) that displays "[Name] has left the game" as a notification
 
 **Checkpoint**: In a 3-player game, disconnecting one player mid-round lets the other two continue. The UI shows who left and the correct player's turn is shown.
 
@@ -49,10 +49,10 @@
 
 **Independent Test**: Start a 2-player game, disconnect one player. The remaining player sees the game-over screen declaring them the winner.
 
-- [ ] T009 [US2] In the disconnect handler in `server/socket.js`, after removing the disconnected player and emitting `playerDisconnected`, check the remaining player count in `games[room].players`
-- [ ] T010 [US2] If exactly 1 player remains, emit `gameOver` with `{ winner: { id, name }, players: allPlayers }` to the room in `server/socket.js` (mirror the existing gameOver emit structure used in the yaniv call flow)
-- [ ] T011 [US2] If 0 players remain (all disconnected simultaneously), skip `nextTurn` and `gameOver` — just clean up silently in `server/socket.js`
-- [ ] T012 [US2] Guard the turn-advance logic (T006–T007) so it only runs when 2+ players remain — it must not fire after a `gameOver` has been emitted in `server/socket.js`
+- [x] T009 [US2] In the disconnect handler in `server/socket.js`, after removing the disconnected player and emitting `playerDisconnected`, check the remaining player count in `games[room].players`
+- [x] T010 [US2] If exactly 1 player remains, emit `gameOver` with `{ winner: { id, name } }` to the room in `server/socket.js`
+- [x] T011 [US2] If 0 players remain (all disconnected simultaneously), skip `nextTurn` and `gameOver` — just clean up silently in `server/socket.js`
+- [x] T012 [US2] Guard the turn-advance logic (T006–T007) so it only runs when 2+ players remain — it must not fire after a `gameOver` has been emitted in `server/socket.js`
 
 **Checkpoint**: A 2-player game where one player disconnects shows the game-over screen on the remaining client. A 3-player game where one disconnects does NOT trigger game-over and instead continues (US1 checkpoint still passes).
 
@@ -64,9 +64,9 @@
 
 **Independent Test**: In a 3-player game (IDs 0, 1, 2), eliminate player 1 via score. Confirm turns cycle between 0 and 2 only, with no undefined lookups or skipped turns.
 
-- [ ] T013 [US3] Verify `eliminatePlayers` in `server/gameLogic.js` removes players from `game.players` by key — confirm the existing deletion (`delete game.players[key]`) leaves the remaining keys intact (no re-indexing needed)
-- [ ] T014 [US3] Verify `nextTurn` (now using `getNextPlayerId` from Phase 1) correctly handles the post-elimination ID set `{0, 2}` — manual trace: from 0 → next is 2; from 2 → next is 0
-- [ ] T015 [US3] Add a guard in `nextTurn` in `server/gameLogic.js`: if `Object.keys(game.players).length === 0`, return early without updating `current_turn` to avoid a crash on empty player sets
+- [x] T013 [US3] Verify `eliminatePlayers` in `server/gameLogic.js` removes players from `game.players` by key — confirm the existing deletion (`delete game.players[key]`) leaves the remaining keys intact (no re-indexing needed)
+- [x] T014 [US3] Verify `nextTurn` (now using `getNextPlayerId` from Phase 1) correctly handles the post-elimination ID set `{0, 2}` — manual trace: from 0 → next is 2; from 2 → next is 0
+- [x] T015 [US3] Add a guard in `nextTurn` in `server/gameLogic.js`: if `Object.keys(game.players).length === 0`, return early without updating `current_turn` to avoid a crash on empty player sets
 
 **Checkpoint**: After player 1 is eliminated (IDs `{0, 2}`), calling `nextTurn` from player 0 sets `current_turn` to 2. Calling it again sets it back to 0. No undefined lookups.
 

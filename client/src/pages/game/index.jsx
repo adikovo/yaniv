@@ -13,6 +13,7 @@ export const Game = () => {
     const { player, setPlayer, players, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
+    const [disconnectNotice, setDisconnectNotice] = useState(null);
 
     useEffect(() => {
         socket.on('roundEnd', (data) => {
@@ -31,11 +32,16 @@ export const Game = () => {
         });
         socket.on('gameOver', (data) => setGameOverData(data));
         socket.on('start', () => setGameOverData(null));
+        socket.on('playerDisconnected', ({ name }) => {
+            setDisconnectNotice(`${name} has left the game`);
+            setTimeout(() => setDisconnectNotice(null), 4000);
+        });
         return () => {
             socket.off('roundEnd');
             socket.off('nextRound');
             socket.off('gameOver');
             socket.off('start');
+            socket.off('playerDisconnected');
         };
     }, []);
 
@@ -236,6 +242,9 @@ export const Game = () => {
 
     return (
         <div className='home'>
+            {disconnectNotice && (
+                <div className='disconnect-notice'>{disconnectNotice}</div>
+            )}
             {game()}
             {showSpectatorPrompt && (
                 <SpectatorPrompt onWatch={handleWatch} onLeave={handleLeave} />

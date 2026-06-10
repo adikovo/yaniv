@@ -104,12 +104,13 @@ const setupSocket = (server) => {
             if (turn_data.type === "yaniv") {
                 if (validYaniv(player.sum)) {
                     const { winner, asaf, caller, asafPlayers } = yanivCall(games[room]);
-                    const newlyEliminated = eliminatePlayers(games[room]);
+                    // Snapshot scores before eliminatePlayers deletes over-100 players from the map
                     const players = {};
                     for (const key in games[room].players) {
                         const p = games[room].players[key];
                         players[key] = { id: p.id, name: p.name, hand: p.hand, sum: p.sum, score: p.score };
                     }
+                    const newlyEliminated = eliminatePlayers(games[room]);
                     io.to(room).emit("roundEnd", {
                         winner: { id: winner.id, name: winner.name },
                         asaf,

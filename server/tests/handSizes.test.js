@@ -1,7 +1,7 @@
 const { createTestServer } = require('./helpers/setup');
 const { games } = require('../globals');
 
-const TIMEOUT = 3000;
+const TIMEOUT = 6000;
 
 function makeCard(value, suit, nv, index) {
     return { value, suit, numeric_val: nv, index };

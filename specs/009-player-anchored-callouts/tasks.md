@@ -23,7 +23,7 @@ Web app: `client/src/` (React, Vitest + Testing Library, colocated `*.test.jsx`,
 
 **Purpose**: Confirm a green baseline before TDD begins
 
-- [ ] T001 Run the existing client test suite (`cd client && npm run test`) and confirm green; verify the server Jest setup runs (`cd server && npm test` — use `--passWithNoTests` if no tests exist yet)
+- [x] T001 Run the existing client test suite (`cd client && npm run test`) and confirm green; verify the server Jest setup runs (`cd server && npm test` — use `--passWithNoTests` if no tests exist yet)
 
 ---
 
@@ -33,8 +33,8 @@ Web app: `client/src/` (React, Vitest + Testing Library, colocated `*.test.jsx`,
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 Write failing Jest tests in `server/gameLogic.test.js`: `yanivCall` returns `caller` as the calling player in the normal case (caller wins) and in the asaf case (where `winner` must be the countering player and `asaf` true)
-- [ ] T003 Make T002 pass: change `yanivCall` in `server/gameLogic.js` to `return { winner, asaf, caller }` (drop `asafCaller`), then update the `roundEnd` emit in `server/socket.js` (~line 112) to send `yanivCaller: { id: caller.id, name: caller.name }` and remove the `asafCaller` field
+- [x] T002 Write failing Jest tests in `server/gameLogic.test.js`: `yanivCall` returns `caller` as the calling player in the normal case (caller wins) and in the asaf case (where `winner` must be the countering player and `asaf` true)
+- [x] T003 Make T002 pass: change `yanivCall` in `server/gameLogic.js` to `return { winner, asaf, caller }` (drop `asafCaller`), then update the `roundEnd` emit in `server/socket.js` (~line 112) to send `yanivCaller: { id: caller.id, name: caller.name }` and remove the `asafCaller` field
 - [ ] T004 [P] Write failing Vitest tests for the CallOut component in `client/src/components/call-out/call-out.test.jsx`: renders "YANIV!" for variant `yaniv` and "ASAF!" for variant `asaf`; applies `call-out-yaniv` / `call-out-asaf` container classes; shows "+30" only when `penalty` is true
 - [ ] T005 Make T004 pass: implement the CallOut component in `client/src/components/call-out/index.jsx` (props: `variant`, `penalty` — per plan.md Phase 2)
 - [ ] T006 [P] Create comic-style CSS in `client/src/components/call-out/styles.css`: absolute centering over parent, yellow→orange gradient text with dark layered text-shadow outline, slight rotation, pop-in keyframes (scale 0 → 1.15 → 1, ~350ms), red/orange `call-out-asaf` variant, `pointer-events: none`, `z-index: 60`

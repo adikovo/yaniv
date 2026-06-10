@@ -139,7 +139,7 @@ const setupSocket = (server) => {
                                 e => !newlyEliminated.some(n => n.id === e.id)
                             );
                         }
-                        setTimeout(() => dealNewRound(room, "nextRound"), 2000);
+                        setTimeout(() => dealNewRound(room, "nextRound", winner.id), 2000);
                     }
                 }
             }
@@ -247,11 +247,15 @@ const setupSocket = (server) => {
     return io;
 };
 
-function dealNewRound(room, eventName) {
+function dealNewRound(room, eventName, winnerId) {
     const deck = createDeck();
     shuffleDeck(games[room], deck);
     dealCards(games[room]);
-    whosTurn(games[room]);
+    if (winnerId !== undefined && games[room].players[winnerId]) {
+        games[room].game_state.current_turn = winnerId;
+    } else {
+        whosTurn(games[room]);
+    }
     topCard(games[room]);
 
     const gs = games[room].game_state;

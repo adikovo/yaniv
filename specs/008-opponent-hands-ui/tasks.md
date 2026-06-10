@@ -105,7 +105,7 @@
 
 - [x] T027 [P] Remove the legacy text player list (`<ul>` and `<h3>` turn indicator text) from `client/src/pages/game/index.jsx` now that OpponentArea replaces it
 - [x] T028 [P] Remove the legacy text player list from the spectator view in `client/src/pages/game/index.jsx` and apply the same OpponentArea layout for spectators
-- [ ] T029 Smoke test full 2-player, 3-player, and 4-player games end-to-end; verify card counts, scores, highlights, layout, and disconnect behavior all work together
+- [x] T029 Smoke test full 2-player, 3-player, and 4-player games end-to-end; verify card counts, scores, highlights, layout, and disconnect behavior all work together
 
 ---
 

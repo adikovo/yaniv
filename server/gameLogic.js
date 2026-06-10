@@ -6,7 +6,7 @@ const NUM_OF_CARDS = 5;
 function createDeck() {
     let deck = [];
     let suits = ['H', 'C', 'D', 'S'];
-    let card_values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'J', 'Q', 'K'];
+    let card_values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
     const valueToNumber = {
         '1': 1,

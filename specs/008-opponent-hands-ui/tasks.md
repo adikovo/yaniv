@@ -64,11 +64,11 @@
 
 **Independent Test**: Start games with 2, 3, and 4 players; verify each player count shows the correct opponent positions with no visual overlap.
 
-- [ ] T017 [US2] Add CSS Grid layout to `client/src/pages/game/styles.css` — define `.game-board` with grid-template-areas for `players-2` (top/center/bottom), `players-3` (left+right/center/bottom), `players-4` (left+top+right/center/bottom) variants
-- [ ] T018 [US2] Wrap the game board contents in a `<div className={`game-board players-${players.length}`}>` in `client/src/pages/game/index.jsx`
-- [ ] T019 [US2] Assign `grid-area` CSS to `.opponent-top`, `.opponent-left`, `.opponent-right`, `.center-area`, and `.local-player-area` in `client/src/components/opponent-area/styles.css` and `client/src/pages/game/styles.css`
-- [ ] T020 [US2] Wrap the local player hand + controls in a `<div className="local-player-area">` in `client/src/pages/game/index.jsx`
-- [ ] T021 [US2] Wrap the deck + top card in a `<div className="center-area">` in `client/src/pages/game/index.jsx`
+- [x] T017 [US2] Add CSS Grid layout to `client/src/pages/game/styles.css` — define `.game-board` with grid-template-areas for `players-2` (top/center/bottom), `players-3` (left+right/center/bottom), `players-4` (left+top+right/center/bottom) variants
+- [x] T018 [US2] Wrap the game board contents in a `<div className={`game-board players-${players.length}`}>` in `client/src/pages/game/index.jsx`
+- [x] T019 [US2] Assign `grid-area` CSS to `.opponent-top`, `.opponent-left`, `.opponent-right`, `.center-area`, and `.local-player-area` in `client/src/components/opponent-area/styles.css` and `client/src/pages/game/styles.css`
+- [x] T020 [US2] Wrap the local player hand + controls in a `<div className="local-player-area">` in `client/src/pages/game/index.jsx`
+- [x] T021 [US2] Wrap the deck + top card in a `<div className="center-area">` in `client/src/pages/game/index.jsx`
 
 **Checkpoint**: All 3 player-count layouts display correctly with opponents at the right positions
 
@@ -80,9 +80,9 @@
 
 **Independent Test**: Play through a few turns and verify the highlight moves to the correct player's area on each turn change.
 
-- [ ] T022 [US3] Add `.active-turn` highlight style (e.g., `box-shadow: 0 0 12px #ffd700; border-radius: 8px`) to `client/src/components/opponent-area/styles.css`
-- [ ] T023 [US3] Add `.active-turn` highlight style for the local player area to `client/src/pages/game/styles.css`
-- [ ] T024 [US3] Apply `active-turn` class to the local player area div when `gameState.current_turn === player.id` in `client/src/pages/game/index.jsx`
+- [x] T022 [US3] Add `.active-turn` highlight style (e.g., `box-shadow: 0 0 12px #ffd700; border-radius: 8px`) to `client/src/components/opponent-area/styles.css`
+- [x] T023 [US3] Add `.active-turn` highlight style for the local player area to `client/src/pages/game/styles.css`
+- [x] T024 [US3] Apply `active-turn` class to the local player area div when `gameState.current_turn === player.id` in `client/src/pages/game/index.jsx`
 
 **Checkpoint**: Highlight moves to the correct player area on each turn; only one player is highlighted at a time
 

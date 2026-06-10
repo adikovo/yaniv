@@ -187,7 +187,7 @@ export const Game = () => {
                     </div>
                 </div>
 
-                <div className="local-player-area">
+                <div className={`local-player-area${gameState.current_turn === player.id ? ' active-turn' : ''}`}>
                     <span className="score-badge">{opponentScores[player.id] ?? 0}</span>
                     <h3>Your Hand:</h3>
                     <div className='hand'>

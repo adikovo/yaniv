@@ -48,7 +48,12 @@
 .opponent-left   { grid-area: left; }
 .opponent-right  { grid-area: right; }
 .center-area     { grid-area: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.local-player-area { grid-area: bottom; display: flex; flex-direction: column; align-items: center; }
+.local-player-area { grid-area: bottom; display: flex; flex-direction: column; align-items: center; width: fit-content; margin: 0 auto; padding: 8px; }
+
+.local-player-area.active-turn {
+    box-shadow: 0 0 12px #ffd700;
+    border-radius: 8px;
+}
 
 .disconnect-notice {
     position: fixed;

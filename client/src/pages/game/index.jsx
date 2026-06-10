@@ -33,7 +33,12 @@ export const Game = () => {
             }, 1500);
         };
 
-        const handleGameOver = (data) => setGameOverData(data);
+        const handleGameOver = (data) => {
+            setGameOverData(data);
+            // No nextRound follows a gameOver, so clear the round-end state here
+            // to avoid a stale call-out appearing after a rematch
+            setYanivResult(null);
+        };
         const handleStart = () => setGameOverData(null);
         const handlePlayerDisconnected = ({ name, id }) => {
             setDisconnectNotice(`${name} has left the game`);

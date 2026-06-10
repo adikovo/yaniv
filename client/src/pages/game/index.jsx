@@ -20,8 +20,9 @@ export const Game = () => {
     useEffect(() => {
         const handleRoundEnd = (data) => setYanivResult(data);
 
-        const handleNextRound = ({ top_card, current_turn, deck }) => {
+        const handleNextRound = ({ top_card, current_turn, deck, hand_sizes }) => {
             setGameState({ top_card, current_turn, deck });
+            if (hand_sizes) setHandSizes(hand_sizes);
             setTimeout(() => {
                 setYanivResult(prev => {
                     if (prev?.eliminated?.some(e => e.id === player.id)) {

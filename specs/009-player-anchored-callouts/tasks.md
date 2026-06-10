@@ -50,11 +50,11 @@ Web app: `client/src/` (React, Vitest + Testing Library, colocated `*.test.jsx`,
 
 **Independent Test**: 2+ player round where each role (local caller / opponent caller) triggers Yaniv → call-out appears inside the correct player container; old `.yaniv-overlay` never renders
 
-- [ ] T007 [US1] Write failing tests in `client/src/components/opponent-area/opponent-area.test.jsx`: renders the CallOut inside the area when the `callout` prop is set; renders no call-out when `callout` is null/undefined
-- [ ] T008 [US1] Make T007 pass: add the `callout` prop to `client/src/components/opponent-area/index.jsx` (render `<CallOut>` as last child) and ensure `.opponent-area { position: relative; }` in `client/src/components/opponent-area/styles.css`
-- [ ] T009 [US1] Wire the game page `client/src/pages/game/index.jsx`: add `calloutFor(id)` (id comparison against `yanivResult.yanivCaller.id` — yaniv branch only for now, per plan.md Phase 5); pass `callout={calloutFor(p.id)}` to every OpponentArea in **both** the main and spectator views; render `<CallOut>` inside `.local-player-area` when `calloutFor(player.id)` is non-null; ensure `.local-player-area { position: relative; }` in `client/src/pages/game/styles.css`
-- [ ] T010 [US1] Remove both `<YanivOverlay>` renders and the import from `client/src/pages/game/index.jsx`, then delete `client/src/components/yaniv-overlay/` (index.jsx + styles.css)
-- [ ] T011 [US1] Run both suites (`cd client && npm run test`, `cd server && npm test`) — all green; quick manual check of a 2-player round (caller and non-caller perspectives)
+- [x] T007 [US1] Write failing tests in `client/src/components/opponent-area/opponent-area.test.jsx`: renders the CallOut inside the area when the `callout` prop is set; renders no call-out when `callout` is null/undefined
+- [x] T008 [US1] Make T007 pass: add the `callout` prop to `client/src/components/opponent-area/index.jsx` (render `<CallOut>` as last child) and ensure `.opponent-area { position: relative; }` in `client/src/components/opponent-area/styles.css`
+- [x] T009 [US1] Wire the game page `client/src/pages/game/index.jsx`: add `calloutFor(id)` (id comparison against `yanivResult.yanivCaller.id` — yaniv branch only for now, per plan.md Phase 5); pass `callout={calloutFor(p.id)}` to every OpponentArea in **both** the main and spectator views; render `<CallOut>` inside `.local-player-area` when `calloutFor(player.id)` is non-null; ensure `.local-player-area { position: relative; }` in `client/src/pages/game/styles.css`
+- [x] T010 [US1] Remove both `<YanivOverlay>` renders and the import from `client/src/pages/game/index.jsx`, then delete `client/src/components/yaniv-overlay/` (index.jsx + styles.css)
+- [x] T011 [US1] Run both suites (`cd client && npm run test`, `cd server && npm test`) — all green; quick manual check of a 2-player round (caller and non-caller perspectives)
 
 **Checkpoint**: US1 is a shippable MVP — positional Yaniv call-out, old overlay removed
 

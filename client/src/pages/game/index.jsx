@@ -1,26 +1,28 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useGameContext } from '../../context/game-context';
 import { useNavigate } from "react-router-dom";
 import socket from "../../api/socket";
 import './styles.css'
 import { Card } from '../../components/card';
+import { OpponentArea } from '../../components/opponent-area';
+import { getOpponentPositions } from '../../utils/opponent-positions';
 import { YanivOverlay } from '../../components/yaniv-overlay';
 import { RoundResult } from '../../components/round-result';
 import { SpectatorPrompt } from '../../components/spectator-prompt';
 
 export const Game = () => {
 
-    const { player, setPlayer, players, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator } = useGameContext();
+    const { player, setPlayer, players, setPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator, handSizes, setHandSizes, opponentScores } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
     const [disconnectNotice, setDisconnectNotice] = useState(null);
 
     useEffect(() => {
-        socket.on('roundEnd', (data) => {
-            setYanivResult(data);
-        });
-        socket.on('nextRound', ({ top_card, current_turn, deck }) => {
+        const handleRoundEnd = (data) => setYanivResult(data);
+
+        const handleNextRound = ({ top_card, current_turn, deck, hand_sizes }) => {
             setGameState({ top_card, current_turn, deck });
+            if (hand_sizes) setHandSizes(hand_sizes);
             setTimeout(() => {
                 setYanivResult(prev => {
                     if (prev?.eliminated?.some(e => e.id === player.id)) {
@@ -29,19 +31,28 @@ export const Game = () => {
                     return null;
                 });
             }, 1500);
-        });
-        socket.on('gameOver', (data) => setGameOverData(data));
-        socket.on('start', () => setGameOverData(null));
-        socket.on('playerDisconnected', ({ name }) => {
+        };
+
+        const handleGameOver = (data) => setGameOverData(data);
+        const handleStart = () => setGameOverData(null);
+        const handlePlayerDisconnected = ({ name, id }) => {
             setDisconnectNotice(`${name} has left the game`);
             setTimeout(() => setDisconnectNotice(null), 4000);
-        });
+            setPlayers(prev => prev.filter(p => p.id !== id));
+        };
+
+        socket.on('roundEnd', handleRoundEnd);
+        socket.on('nextRound', handleNextRound);
+        socket.on('gameOver', handleGameOver);
+        socket.on('start', handleStart);
+        socket.on('playerDisconnected', handlePlayerDisconnected);
+
         return () => {
-            socket.off('roundEnd');
-            socket.off('nextRound');
-            socket.off('gameOver');
-            socket.off('start');
-            socket.off('playerDisconnected');
+            socket.off('roundEnd', handleRoundEnd);
+            socket.off('nextRound', handleNextRound);
+            socket.off('gameOver', handleGameOver);
+            socket.off('start', handleStart);
+            socket.off('playerDisconnected', handlePlayerDisconnected);
         };
     }, []);
 
@@ -151,43 +162,60 @@ export const Game = () => {
         setSelectedCards([]);
     }
 
+    const positionMap = useMemo(
+        () => getOpponentPositions(players, player.id),
+        [players, player.id]
+    );
+
     const game = () => {
         return (
-            <div>
+            <div className={`game-board players-${players.length}`}>
 
-                <h1>in game page</h1>
-                <h3>Players:</h3>
-                <ul>
-                    {players.map((player, index) => (
-                        <li key={index}>{player.name}</li>
-                    ))}
-                </ul>
-                <h3>{`${players[gameState.current_turn]?.name}'s turn:`}</h3>
-                <button onClick={drawFromDeck} disabled={selectedCards.length < 1}>DECK</button>
-                <h3>TOP CARD:</h3>
-                <div className='top_card_pile'>
-                    {gameState.top_card?.map((card, index) => (
-                        <Card key={index} card={card} onClick={() => drawFromTop(index)} disabled={selectedCards.length < 1} />
-                    ))}
+                {players
+                    .filter(p => p.id !== player.id)
+                    .map(p => (
+                        <OpponentArea
+                            key={p.id}
+                            name={p.name}
+                            handCount={handSizes[p.id] ?? 0}
+                            score={opponentScores[p.id] ?? 0}
+                            isActive={gameState.current_turn === p.id}
+                            position={positionMap[p.id]}
+                        />
+                    ))
+                }
+
+                <div className="center-area">
+                    <button onClick={drawFromDeck} disabled={selectedCards.length < 1}>DECK</button>
+                    <h3>TOP CARD:</h3>
+                    <div className='top_card_pile'>
+                        {gameState.top_card?.map((card, index) => (
+                            <Card key={index} card={card} onClick={() => drawFromTop(index)} disabled={selectedCards.length < 1} />
+                        ))}
+                    </div>
                 </div>
 
-
-                <h3>Your Hand:</h3>
-                <div className='hand'>
-                    {player.hand?.map((card, index) => (
-                        <Card key={index}
-                            card={card}
-                            onClick={() => selectCards(index)}
-                            selected={selectedCards.includes(index)} />
-                    ))}
+                <div className={`local-player-area${gameState.current_turn === player.id ? ' active-turn' : ''}`}>
+                    <div className="local-score">
+                        <span className="local-score-label">Score</span>
+                        <span className="score-badge">{opponentScores[player.id] ?? 0}</span>
+                    </div>
+                    <h3>Your Hand:</h3>
+                    <div className='hand'>
+                        {player.hand?.map((card, index) => (
+                            <Card key={index}
+                                card={card}
+                                onClick={() => selectCards(index)}
+                                selected={selectedCards.includes(index)} />
+                        ))}
+                    </div>
+                    <button
+                        onClick={yanivCall}
+                        disabled={player.id !== gameState.current_turn || sum > 7}>
+                        YANIV
+                    </button>
+                    <h4>Sum:{sum}</h4>
                 </div>
-                <button
-                    onClick={yanivCall}
-                    disabled={player.id !== gameState.current_turn || sum > 7}>
-                    YANIV
-                </button>
-                <h4>Sum:{sum}</h4>
-
 
             </div>
         );
@@ -214,21 +242,29 @@ export const Game = () => {
     if (isSpectator) {
         return (
             <div className='home'>
-                <h1>Spectating</h1>
-                <h3>Players:</h3>
-                <ul>
-                    {players.map((p, index) => (
-                        <li key={index}>{p.name}</li>
-                    ))}
-                </ul>
-                <h3>{`${players[gameState.current_turn]?.name}'s turn`}</h3>
-                <h3>TOP CARD:</h3>
-                <div className='top_card_pile'>
-                    {gameState.top_card?.map((card, index) => (
-                        <Card key={index} card={card} disabled />
-                    ))}
+                <div className={`game-board players-${players.length}`}>
+                    {players
+                        .map(p => (
+                            <OpponentArea
+                                key={p.id}
+                                name={p.name}
+                                handCount={handSizes[p.id] ?? 0}
+                                score={opponentScores[p.id] ?? 0}
+                                isActive={gameState.current_turn === p.id}
+                                position={positionMap[p.id]}
+                            />
+                        ))
+                    }
+                    <div className="center-area">
+                        <h3>TOP CARD:</h3>
+                        <div className='top_card_pile'>
+                            {gameState.top_card?.map((card, index) => (
+                                <Card key={index} card={card} disabled />
+                            ))}
+                        </div>
+                        <button onClick={handleLeave}>Exit</button>
+                    </div>
                 </div>
-                <button onClick={handleLeave}>Exit</button>
                 {yanivResult && (
                     <YanivOverlay
                         winner={yanivResult.winner}

@@ -81,7 +81,8 @@ const setupSocket = (server) => {
                 io.to(room).emit("turn", {
                     top_card: game_state.top_card,
                     current_turn: game_state.current_turn,
-                    deck: game_state.deck
+                    deck: game_state.deck,
+                    hand_sizes: getHandSizes(games[room])
                 });
             }
             if (turn_data.type === "cardFromTop") {
@@ -95,7 +96,8 @@ const setupSocket = (server) => {
                 io.to(room).emit("turn", {
                     top_card: game_state.top_card,
                     current_turn: game_state.current_turn,
-                    deck: game_state.deck
+                    deck: game_state.deck,
+                    hand_sizes: getHandSizes(games[room])
                 });
             }
             if (turn_data.type === "yaniv") {
@@ -137,7 +139,7 @@ const setupSocket = (server) => {
                                 e => !newlyEliminated.some(n => n.id === e.id)
                             );
                         }
-                        setTimeout(() => dealNewRound(room, "nextRound"), 2000);
+                        setTimeout(() => dealNewRound(room, "nextRound", winner.id), 2000);
                     }
                 }
             }
@@ -245,15 +247,19 @@ const setupSocket = (server) => {
     return io;
 };
 
-function dealNewRound(room, eventName) {
+function dealNewRound(room, eventName, winnerId) {
     const deck = createDeck();
     shuffleDeck(games[room], deck);
     dealCards(games[room]);
-    whosTurn(games[room]);
+    if (winnerId !== undefined && games[room].players[winnerId]) {
+        games[room].game_state.current_turn = winnerId;
+    } else {
+        whosTurn(games[room]);
+    }
     topCard(games[room]);
 
     const gs = games[room].game_state;
-    io.to(room).emit(eventName, { top_card: gs.top_card, current_turn: gs.current_turn, deck: gs.deck });
+    io.to(room).emit(eventName, { top_card: gs.top_card, current_turn: gs.current_turn, deck: gs.deck, hand_sizes: getHandSizes(games[room]) });
 
     const spectatorIds = new Set((games[room].spectators || []).map(s => s.id));
 
@@ -266,6 +272,12 @@ function dealNewRound(room, eventName) {
             io.to(socket_id).emit("hand", { hand: gamePlayer.hand, hand_sum: gamePlayer.sum });
         }
     }
+}
+
+function getHandSizes(game) {
+    const sizes = {};
+    for (const id in game.players) sizes[id] = game.players[id].hand.length;
+    return sizes;
 }
 
 // Utility function to get a user's room

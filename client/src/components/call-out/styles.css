@@ -1,0 +1,53 @@
+.call-out {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    z-index: 60;
+    pointer-events: none;
+    text-align: center;
+    max-width: 90vw;
+    animation: call-out-pop 350ms ease-out forwards;
+}
+
+.call-out-text {
+    display: block;
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    font-weight: 900;
+    font-style: italic;
+    text-transform: uppercase;
+    rotate: -6deg;
+    background: linear-gradient(180deg, #ffe033 0%, #ff8c00 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow:
+        2px 2px 0 #1a0800,
+        -2px -2px 0 #1a0800,
+        2px -2px 0 #1a0800,
+        -2px 2px 0 #1a0800;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+}
+
+.call-out-asaf .call-out-text {
+    background: linear-gradient(180deg, #ff4444 0%, #cc0000 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.call-out-penalty {
+    display: block;
+    font-size: clamp(0.9rem, 3vw, 1.2rem);
+    font-weight: 700;
+    color: #fff;
+    background: #cc0000;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-top: 2px;
+}
+
+@keyframes call-out-pop {
+    0%   { scale: 0; }
+    70%  { scale: 1.15; }
+    100% { scale: 1; }
+}

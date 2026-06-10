@@ -100,3 +100,74 @@ describe('yanivCall', () => {
         });
     });
 });
+
+describe('asafPlayers', () => {
+    test('empty array when no asaf — all opponents have sum > caller', () => {
+        const game = makeGame(
+            { 0: { id: 'p0', name: 'Alice', sum: 4, score: 0 },
+              1: { id: 'p1', name: 'Bob',   sum: 8, score: 0 },
+              2: { id: 'p2', name: 'Carol', sum: 12, score: 0 } },
+            0
+        );
+        const result = yanivCall(game);
+        expect(result.asaf).toBe(false);
+        expect(result.asafPlayers).toEqual([]);
+    });
+
+    test('single counter — one opponent with sum < caller returns that player', () => {
+        const game = makeGame(
+            { 0: { id: 'p0', name: 'Alice', sum: 7, score: 0 },
+              1: { id: 'p1', name: 'Bob',   sum: 4, score: 0 },
+              2: { id: 'p2', name: 'Carol', sum: 10, score: 0 } },
+            0
+        );
+        const result = yanivCall(game);
+        expect(result.asaf).toBe(true);
+        expect(result.asafPlayers).toHaveLength(1);
+        expect(result.asafPlayers[0].id).toBe('p1');
+        expect(result.asafPlayers[0].name).toBe('Bob');
+    });
+
+    test('equal sum also counts as a counter — opponent with same sum appears in asafPlayers', () => {
+        const game = makeGame(
+            { 0: { id: 'p0', name: 'Alice', sum: 5, score: 0 },
+              1: { id: 'p1', name: 'Bob',   sum: 5, score: 0 },
+              2: { id: 'p2', name: 'Carol', sum: 9, score: 0 } },
+            0
+        );
+        const result = yanivCall(game);
+        expect(result.asaf).toBe(true);
+        expect(result.asafPlayers).toHaveLength(1);
+        expect(result.asafPlayers[0].id).toBe('p1');
+    });
+
+    test('multiple counters — all players with sum <= caller are included', () => {
+        const game = makeGame(
+            { 0: { id: 'p0', name: 'Alice', sum: 7, score: 0 },
+              1: { id: 'p1', name: 'Bob',   sum: 3, score: 0 },
+              2: { id: 'p2', name: 'Carol', sum: 6, score: 0 },
+              3: { id: 'p3', name: 'Dave',  sum: 9, score: 0 } },
+            0
+        );
+        const result = yanivCall(game);
+        expect(result.asaf).toBe(true);
+        expect(result.asafPlayers).toHaveLength(2);
+        const ids = result.asafPlayers.map(p => p.id);
+        expect(ids).toContain('p1');
+        expect(ids).toContain('p2');
+        expect(ids).not.toContain('p3');
+    });
+
+    test('asafPlayers objects contain exactly id and name — no extra player fields', () => {
+        const game = makeGame(
+            { 0: { id: 'p0', name: 'Alice', sum: 7, score: 10 },
+              1: { id: 'p1', name: 'Bob',   sum: 2, score: 30 } },
+            0
+        );
+        const result = yanivCall(game);
+        expect(result.asaf).toBe(true);
+        expect(result.asafPlayers).toHaveLength(1);
+        const player = result.asafPlayers[0];
+        expect(player).toEqual({ id: 'p1', name: 'Bob' });
+    });
+});

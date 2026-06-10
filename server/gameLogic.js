@@ -111,6 +111,7 @@ function yanivCall(game) {
     const caller = getCurrentPlayer(game);
     let winner = caller;
     let asaf = false;
+    const asafPlayers = [];
 
     for (const key in game.players) {
         const p = game.players[key];
@@ -118,6 +119,7 @@ function yanivCall(game) {
         if (p.sum <= caller.sum) {
             asaf = true;
             winner = p;
+            asafPlayers.push({ id: p.id, name: p.name });
         }
     }
 
@@ -138,7 +140,7 @@ function yanivCall(game) {
         else if (p.score === 50) p.score = 0;
     }
 
-    return { winner, asaf, caller };
+    return { winner, asaf, caller, asafPlayers };
 }
 
 function eliminatePlayers(game) {

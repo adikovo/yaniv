@@ -102,7 +102,7 @@ const setupSocket = (server) => {
             }
             if (turn_data.type === "yaniv") {
                 if (validYaniv(player.sum)) {
-                    const { winner, asaf, caller } = yanivCall(games[room]);
+                    const { winner, asaf, caller, asafPlayers } = yanivCall(games[room]);
                     const newlyEliminated = eliminatePlayers(games[room]);
                     const players = {};
                     for (const key in games[room].players) {
@@ -113,6 +113,7 @@ const setupSocket = (server) => {
                         winner: { id: winner.id, name: winner.name },
                         asaf,
                         yanivCaller: { id: caller.id, name: caller.name },
+                        asafPlayers,
                         players,
                         eliminated: newlyEliminated
                     });

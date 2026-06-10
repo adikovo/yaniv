@@ -139,7 +139,7 @@ const setupSocket = (server) => {
                                 e => !newlyEliminated.some(n => n.id === e.id)
                             );
                         }
-                        setTimeout(() => dealNewRound(room, "nextRound", winner.id), 2000);
+                        setTimeout(() => dealNewRound(room, "nextRound", winner.id), 4000);
                     }
                 }
             }

@@ -138,7 +138,7 @@ function yanivCall(game) {
         else if (p.score === 50) p.score = 0;
     }
 
-    return { winner, asaf, asafCaller: asaf ? caller : null };
+    return { winner, asaf, caller };
 }
 
 function eliminatePlayers(game) {

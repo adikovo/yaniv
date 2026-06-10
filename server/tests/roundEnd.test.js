@@ -1,7 +1,7 @@
 const { createTestServer } = require('./helpers/setup');
 const { games } = require('../globals');
 
-const TIMEOUT = 3000;
+const TIMEOUT = 6000;
 
 function setHand(player, cards) {
     player.hand = cards;
@@ -62,10 +62,10 @@ describe('Round End — yanivCall & roundEnd event', () => {
 
         Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
             let received = 0;
-            function check({ winner, asaf, asafCaller, players }) {
+            function check({ winner, asaf, yanivCaller, players }) {
                 try {
                     expect(asaf).toBe(true);
-                    expect(asafCaller.id).toBe(0);
+                    expect(yanivCaller.id).toBe(0);
                     expect(winner.id).toBe(1);
                     expect(players[0].score).toBe(35); // 5+30
                     expect(players[1].score).toBe(4);

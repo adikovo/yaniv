@@ -32,8 +32,8 @@ describe('Multi-Round Auto-Advance', () => {
         await closeServer();
     });
 
-    // T-MR1: yaniv call → roundEnd fires → within ~2 s both clients receive nextRound + fresh hand
-    test('T-MR1: yaniv call → roundEnd then nextRound + hand auto-fires within 2.5 s', done => {
+    // T-MR1: yaniv call → roundEnd fires → within ~3 s both clients receive nextRound + fresh hand
+    test('T-MR1: yaniv call → roundEnd then nextRound + hand auto-fires within 3.5 s', done => {
         Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
             let nextRoundCount = 0;
             let handCount = 0;

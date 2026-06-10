@@ -231,21 +231,29 @@ export const Game = () => {
     if (isSpectator) {
         return (
             <div className='home'>
-                <h1>Spectating</h1>
-                <h3>Players:</h3>
-                <ul>
-                    {players.map((p, index) => (
-                        <li key={index}>{p.name}</li>
-                    ))}
-                </ul>
-                <h3>{`${players[gameState.current_turn]?.name}'s turn`}</h3>
-                <h3>TOP CARD:</h3>
-                <div className='top_card_pile'>
-                    {gameState.top_card?.map((card, index) => (
-                        <Card key={index} card={card} disabled />
-                    ))}
+                <div className={`game-board players-${players.length}`}>
+                    {players
+                        .map(p => (
+                            <OpponentArea
+                                key={p.id}
+                                name={p.name}
+                                handCount={handSizes[p.id] ?? 0}
+                                score={opponentScores[p.id] ?? 0}
+                                isActive={gameState.current_turn === p.id}
+                                position={positionMap[p.id]}
+                            />
+                        ))
+                    }
+                    <div className="center-area">
+                        <h3>TOP CARD:</h3>
+                        <div className='top_card_pile'>
+                            {gameState.top_card?.map((card, index) => (
+                                <Card key={index} card={card} disabled />
+                            ))}
+                        </div>
+                        <button onClick={handleLeave}>Exit</button>
+                    </div>
                 </div>
-                <button onClick={handleLeave}>Exit</button>
                 {yanivResult && (
                     <YanivOverlay
                         winner={yanivResult.winner}

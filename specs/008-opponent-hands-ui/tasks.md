@@ -94,8 +94,8 @@
 
 **Independent Test**: In a 3-player game, have one player disconnect; verify their opponent area vanishes and the remaining two use the 2-player layout (top position only).
 
-- [ ] T025 [US4] Verify that T008's `playerDisconnected` fix causes the `players` array to update, which reactively changes `players.length` and triggers the correct grid class — no additional code needed if T008 is correct; otherwise fix the reactive dependency in `game/index.jsx`
-- [ ] T026 [US4] Verify `getOpponentPositions` handles edge case where `players` array has changed (player removed) — confirm no stale position assignments remain by testing in a 3→2 player scenario
+- [x] T025 [US4] Verify that T008's `playerDisconnected` fix causes the `players` array to update, which reactively changes `players.length` and triggers the correct grid class — no additional code needed if T008 is correct; otherwise fix the reactive dependency in `game/index.jsx`
+- [x] T026 [US4] Verify `getOpponentPositions` handles edge case where `players` array has changed (player removed) — confirm no stale position assignments remain by testing in a 3→2 player scenario
 
 **Checkpoint**: Disconnected player's area disappears and layout re-adjusts automatically to the new player count
 
@@ -103,8 +103,8 @@
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T027 [P] Remove the legacy text player list (`<ul>` and `<h3>` turn indicator text) from `client/src/pages/game/index.jsx` now that OpponentArea replaces it
-- [ ] T028 [P] Remove the legacy text player list from the spectator view in `client/src/pages/game/index.jsx` and apply the same OpponentArea layout for spectators
+- [x] T027 [P] Remove the legacy text player list (`<ul>` and `<h3>` turn indicator text) from `client/src/pages/game/index.jsx` now that OpponentArea replaces it
+- [x] T028 [P] Remove the legacy text player list from the spectator view in `client/src/pages/game/index.jsx` and apply the same OpponentArea layout for spectators
 - [ ] T029 Smoke test full 2-player, 3-player, and 4-player games end-to-end; verify card counts, scores, highlights, layout, and disconnect behavior all work together
 
 ---

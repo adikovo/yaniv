@@ -21,12 +21,9 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow:
-        2px 2px 0 #1a0800,
-        -2px -2px 0 #1a0800,
-        2px -2px 0 #1a0800,
-        -2px 2px 0 #1a0800;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+    -webkit-text-stroke: 3px #fff;
+    paint-order: stroke fill;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.8));
 }
 
 .call-out-asaf .call-out-text {

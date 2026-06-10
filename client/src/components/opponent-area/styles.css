@@ -1,0 +1,51 @@
+.opponent-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: box-shadow 0.3s ease;
+}
+
+.opponent-area.active-turn {
+    box-shadow: 0 0 12px #ffd700;
+}
+
+.opponent-hand {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.opponent-hand .card {
+    width: 40px;
+    height: auto;
+    margin-left: -14px;
+}
+
+.opponent-hand .card:first-child {
+    margin-left: 0;
+}
+
+.opponent-name {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.score-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #333;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+}

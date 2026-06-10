@@ -10,7 +10,7 @@ import { SpectatorPrompt } from '../../components/spectator-prompt';
 
 export const Game = () => {
 
-    const { player, setPlayer, players, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator } = useGameContext();
+    const { player, setPlayer, players, setPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
     const [disconnectNotice, setDisconnectNotice] = useState(null);
@@ -32,9 +32,10 @@ export const Game = () => {
         });
         socket.on('gameOver', (data) => setGameOverData(data));
         socket.on('start', () => setGameOverData(null));
-        socket.on('playerDisconnected', ({ name }) => {
+        socket.on('playerDisconnected', ({ name, id }) => {
             setDisconnectNotice(`${name} has left the game`);
             setTimeout(() => setDisconnectNotice(null), 4000);
+            setPlayers(prev => prev.filter(p => p.id !== id));
         });
         return () => {
             socket.off('roundEnd');

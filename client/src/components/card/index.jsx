@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import './styles.css'
 
-export const Card = ({card, onClick, selected, disabled}) => {
+export const Card = ({card, onClick, selected, disabled, faceDown}) => {
 
     const handleClick = () => {
-        if(disabled){
+        if(disabled || faceDown){
            return;
         }
         onClick(card.index);
@@ -41,10 +41,12 @@ export const Card = ({card, onClick, selected, disabled}) => {
     } 
     
 
+    const src = faceDown ? 'cards/back.png' : getCardImageName(card);
+
     return (
-        <img  
-        className={`card ${selected ? "selected" : ''}`} 
-        src={getCardImageName(card)} 
+        <img
+        className={`card ${selected ? "selected" : ''}`}
+        src={src}
         onClick={handleClick}></img>
     )
 }

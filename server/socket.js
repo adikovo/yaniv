@@ -81,7 +81,8 @@ const setupSocket = (server) => {
                 io.to(room).emit("turn", {
                     top_card: game_state.top_card,
                     current_turn: game_state.current_turn,
-                    deck: game_state.deck
+                    deck: game_state.deck,
+                    hand_sizes: getHandSizes(games[room])
                 });
             }
             if (turn_data.type === "cardFromTop") {
@@ -95,7 +96,8 @@ const setupSocket = (server) => {
                 io.to(room).emit("turn", {
                     top_card: game_state.top_card,
                     current_turn: game_state.current_turn,
-                    deck: game_state.deck
+                    deck: game_state.deck,
+                    hand_sizes: getHandSizes(games[room])
                 });
             }
             if (turn_data.type === "yaniv") {
@@ -253,7 +255,7 @@ function dealNewRound(room, eventName) {
     topCard(games[room]);
 
     const gs = games[room].game_state;
-    io.to(room).emit(eventName, { top_card: gs.top_card, current_turn: gs.current_turn, deck: gs.deck });
+    io.to(room).emit(eventName, { top_card: gs.top_card, current_turn: gs.current_turn, deck: gs.deck, hand_sizes: getHandSizes(games[room]) });
 
     const spectatorIds = new Set((games[room].spectators || []).map(s => s.id));
 
@@ -266,6 +268,12 @@ function dealNewRound(room, eventName) {
             io.to(socket_id).emit("hand", { hand: gamePlayer.hand, hand_sum: gamePlayer.sum });
         }
     }
+}
+
+function getHandSizes(game) {
+    const sizes = {};
+    for (const id in game.players) sizes[id] = game.players[id].hand.length;
+    return sizes;
 }
 
 // Utility function to get a user's room

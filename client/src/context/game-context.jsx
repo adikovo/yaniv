@@ -13,6 +13,8 @@ export const GameProvider = ({ children }) => {
     const [selectedCards, setSelectedCards] = useState([]);
     const [gameOverData, setGameOverData] = useState(null);
     const [isSpectator, setIsSpectator] = useState(false);
+    const [handSizes, setHandSizes] = useState({});
+    const [opponentScores, setOpponentScores] = useState({});
 
     useEffect(() => {
         const handleJoinRoomResult = (data) => {
@@ -39,11 +41,12 @@ export const GameProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        socket.on("start", ({ deck, top_card, current_turn }) => {
+        socket.on("start", ({ deck, top_card, current_turn, hand_sizes }) => {
             //debug
             console.log("🌟 Received start event!", { deck, top_card, current_turn });
             setGameStarted(true);
             setGameState({ deck, top_card, current_turn });
+            if (hand_sizes) setHandSizes(hand_sizes);
         });
 
         socket.on("hand", ({ hand, hand_sum }) => {
@@ -56,16 +59,24 @@ export const GameProvider = ({ children }) => {
             setSelectedCards([]);
         });
 
-        socket.on("turn", ({ top_card, current_turn, deck }) => {
+        socket.on("turn", ({ top_card, current_turn, deck, hand_sizes }) => {
             //debug
             console.log("Turn update received:", { top_card, current_turn, deck });
             setGameState({ deck, top_card, current_turn });
+            if (hand_sizes) setHandSizes(hand_sizes);
+        });
+
+        socket.on("roundEnd", ({ players: roundPlayers }) => {
+            const scores = {};
+            for (const id in roundPlayers) scores[id] = roundPlayers[id].score;
+            setOpponentScores(scores);
         });
 
         return () => {
             socket.off("start");
             socket.off("hand");
             socket.off("turn");
+            socket.off("roundEnd");
         };
     })
 
@@ -79,7 +90,9 @@ export const GameProvider = ({ children }) => {
             selectedCards, setSelectedCards,
             gameStarted,
             gameOverData, setGameOverData,
-            isSpectator, setIsSpectator
+            isSpectator, setIsSpectator,
+            handSizes, setHandSizes,
+            opponentScores, setOpponentScores
         }}>
             {children}
         </GameContext.Provider>

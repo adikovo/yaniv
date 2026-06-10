@@ -17,7 +17,7 @@
 
 **Purpose**: Confirm the card back asset is in place (user confirmed already added).
 
-- [ ] T001 Verify `client/public/cards/back.png` exists and renders correctly in a browser
+- [x] T001 Verify `client/public/cards/back.png` exists and renders correctly in a browser
 
 ---
 
@@ -27,18 +27,18 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T002 Extend `turn` event in `server/socket.js` to include `hand_sizes: { [playerId]: count }` — add computation after both `cardFromDeck` and `cardFromTop` handlers
-- [ ] T003 Extend `dealNewRound()` in `server/socket.js` to include `hand_sizes` in both `start` and `nextRound` event payloads
-- [ ] T004 Add `handSizes` state (`useState({})`) and `opponentScores` state (`useState({})`) to `client/src/context/game-context.jsx`
-- [ ] T005 Update `turn` socket handler in `client/src/context/game-context.jsx` to call `setHandSizes(hand_sizes)` when `hand_sizes` is present in the event
-- [ ] T006 Update `start` socket handler in `client/src/context/game-context.jsx` to call `setHandSizes(hand_sizes)` when `hand_sizes` is present
-- [ ] T007 Add `roundEnd` score extraction in `client/src/context/game-context.jsx`: on `roundEnd`, build `{ [id]: score }` from `players` map and call `setOpponentScores`
-- [ ] T008 Fix `playerDisconnected` handler in `client/src/context/game-context.jsx` to also call `setPlayers(prev => prev.filter(p => p.id !== id))` (currently only shows a notice)
-- [ ] T009 Expose `handSizes`, `setHandSizes`, `opponentScores`, `setOpponentScores` in the GameContext provider value in `client/src/context/game-context.jsx`
-- [ ] T010 Add `faceDown` boolean prop to `client/src/components/card/index.jsx` — when true, render `<img src="cards/back.png" />` and disable click handler
-- [ ] T011 Create pure helper `getOpponentPositions(players, localPlayerId)` in `client/src/utils/opponent-positions.js` — returns `{ [playerId]: 'top' | 'left' | 'right' }` using turn-order logic from data-model.md
-- [ ] T012 Create `client/src/components/opponent-area/index.jsx` — `OpponentArea` component with props `{ name, handCount, score, isActive, position }` rendering name, face-down card fan, and score badge
-- [ ] T013 Create `client/src/components/opponent-area/styles.css` — styles for `.opponent-area`, `.opponent-hand` (overlapping fan via negative margin), `.opponent-name` (truncated with ellipsis), `.score-badge` (circular badge)
+- [x] T002 Extend `turn` event in `server/socket.js` to include `hand_sizes: { [playerId]: count }` — add computation after both `cardFromDeck` and `cardFromTop` handlers
+- [x] T003 Extend `dealNewRound()` in `server/socket.js` to include `hand_sizes` in both `start` and `nextRound` event payloads
+- [x] T004 Add `handSizes` state (`useState({})`) and `opponentScores` state (`useState({})`) to `client/src/context/game-context.jsx`
+- [x] T005 Update `turn` socket handler in `client/src/context/game-context.jsx` to call `setHandSizes(hand_sizes)` when `hand_sizes` is present in the event
+- [x] T006 Update `start` socket handler in `client/src/context/game-context.jsx` to call `setHandSizes(hand_sizes)` when `hand_sizes` is present
+- [x] T007 Add `roundEnd` score extraction in `client/src/context/game-context.jsx`: on `roundEnd`, build `{ [id]: score }` from `players` map and call `setOpponentScores`
+- [x] T008 Fix `playerDisconnected` handler in `client/src/pages/game/index.jsx` to also call `setPlayers(prev => prev.filter(p => p.id !== id))` (currently only shows a notice)
+- [x] T009 Expose `handSizes`, `setHandSizes`, `opponentScores`, `setOpponentScores` in the GameContext provider value in `client/src/context/game-context.jsx`
+- [x] T010 Add `faceDown` boolean prop to `client/src/components/card/index.jsx` — when true, render `<img src="cards/back.png" />` and disable click handler
+- [x] T011 Create pure helper `getOpponentPositions(players, localPlayerId)` in `client/src/utils/opponent-positions.js` — returns `{ [playerId]: 'top' | 'left' | 'right' }` using turn-order logic from data-model.md
+- [x] T012 Create `client/src/components/opponent-area/index.jsx` — `OpponentArea` component with props `{ name, handCount, score, isActive, position }` rendering name, face-down card fan, and score badge
+- [x] T013 Create `client/src/components/opponent-area/styles.css` — styles for `.opponent-area`, `.opponent-hand` (overlapping fan via negative margin), `.opponent-name` (truncated with ellipsis), `.score-badge` (circular badge)
 
 **Checkpoint**: Server sends hand counts; client context tracks handSizes, opponentScores; Card renders face-down; OpponentArea component exists
 

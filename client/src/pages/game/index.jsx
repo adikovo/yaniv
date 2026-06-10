@@ -18,10 +18,9 @@ export const Game = () => {
     const [disconnectNotice, setDisconnectNotice] = useState(null);
 
     useEffect(() => {
-        socket.on('roundEnd', (data) => {
-            setYanivResult(data);
-        });
-        socket.on('nextRound', ({ top_card, current_turn, deck }) => {
+        const handleRoundEnd = (data) => setYanivResult(data);
+
+        const handleNextRound = ({ top_card, current_turn, deck }) => {
             setGameState({ top_card, current_turn, deck });
             setTimeout(() => {
                 setYanivResult(prev => {
@@ -31,20 +30,28 @@ export const Game = () => {
                     return null;
                 });
             }, 1500);
-        });
-        socket.on('gameOver', (data) => setGameOverData(data));
-        socket.on('start', () => setGameOverData(null));
-        socket.on('playerDisconnected', ({ name, id }) => {
+        };
+
+        const handleGameOver = (data) => setGameOverData(data);
+        const handleStart = () => setGameOverData(null);
+        const handlePlayerDisconnected = ({ name, id }) => {
             setDisconnectNotice(`${name} has left the game`);
             setTimeout(() => setDisconnectNotice(null), 4000);
             setPlayers(prev => prev.filter(p => p.id !== id));
-        });
+        };
+
+        socket.on('roundEnd', handleRoundEnd);
+        socket.on('nextRound', handleNextRound);
+        socket.on('gameOver', handleGameOver);
+        socket.on('start', handleStart);
+        socket.on('playerDisconnected', handlePlayerDisconnected);
+
         return () => {
-            socket.off('roundEnd');
-            socket.off('nextRound');
-            socket.off('gameOver');
-            socket.off('start');
-            socket.off('playerDisconnected');
+            socket.off('roundEnd', handleRoundEnd);
+            socket.off('nextRound', handleNextRound);
+            socket.off('gameOver', handleGameOver);
+            socket.off('start', handleStart);
+            socket.off('playerDisconnected', handlePlayerDisconnected);
         };
     }, []);
 
@@ -188,7 +195,10 @@ export const Game = () => {
                 </div>
 
                 <div className={`local-player-area${gameState.current_turn === player.id ? ' active-turn' : ''}`}>
-                    <span className="score-badge">{opponentScores[player.id] ?? 0}</span>
+                    <div className="local-score">
+                        <span className="local-score-label">Score</span>
+                        <span className="score-badge">{opponentScores[player.id] ?? 0}</span>
+                    </div>
                     <h3>Your Hand:</h3>
                     <div className='hand'>
                         {player.hand?.map((card, index) => (

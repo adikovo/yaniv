@@ -65,8 +65,10 @@ export const GameProvider = ({ children }) => {
         };
 
         const handleRoundEnd = ({ players: roundPlayers }) => {
+            console.log("🏆 roundEnd players:", roundPlayers);
             const scores = {};
             for (const id in roundPlayers) scores[id] = roundPlayers[id].score;
+            console.log("🏆 scores map:", scores);
             setOpponentScores(scores);
         };
 

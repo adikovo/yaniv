@@ -40,11 +40,7 @@
 .opponent-left  { justify-self: center; }
 .opponent-right { justify-self: center; }
 
-.opponent-top {
-    align-self: start;
-}
-
-.opponent-top    { grid-area: top; }
+.opponent-top    { grid-area: top; align-self: start; justify-self: center; width: fit-content; margin: 0 auto; padding: 8px; }
 .opponent-left   { grid-area: left; }
 .opponent-right  { grid-area: right; }
 .center-area     { grid-area: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -67,6 +63,17 @@
     font-size: 14px;
     z-index: 1000;
     pointer-events: none;
+}
+
+.local-score {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.local-score-label {
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
 .hand {

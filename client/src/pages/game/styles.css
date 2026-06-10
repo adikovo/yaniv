@@ -1,3 +1,55 @@
+.game-board {
+    display: grid;
+    min-height: 100vh;
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.game-board.players-2 {
+    grid-template-areas:
+        "top"
+        "center"
+        "bottom";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+}
+
+.game-board.players-3 {
+    grid-template-areas:
+        "left center right"
+        "bottom bottom bottom";
+    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-rows: 1fr auto;
+}
+
+.game-board.players-4 {
+    grid-template-areas:
+        ". top ."
+        "left center right"
+        "bottom bottom bottom";
+    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-rows: auto 1fr auto;
+}
+
+.opponent-left,
+.opponent-right {
+    align-self: center;
+}
+
+.opponent-left  { justify-self: center; }
+.opponent-right { justify-self: center; }
+
+.opponent-top {
+    align-self: start;
+}
+
+.opponent-top    { grid-area: top; }
+.opponent-left   { grid-area: left; }
+.opponent-right  { grid-area: right; }
+.center-area     { grid-area: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.local-player-area { grid-area: bottom; display: flex; flex-direction: column; align-items: center; }
+
 .disconnect-notice {
     position: fixed;
     top: 16px;

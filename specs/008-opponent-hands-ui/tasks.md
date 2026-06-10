@@ -50,9 +50,9 @@
 
 **Independent Test**: Start a 2-player game, verify opponent area shows at the top with correct card count and score; draw a card and verify the count updates; call Yaniv and verify score updates.
 
-- [ ] T014 [US1] Import `OpponentArea`, `getOpponentPositions`, `handSizes`, `opponentScores` into `client/src/pages/game/index.jsx`
-- [ ] T015 [US1] In `game/index.jsx` `game()` function, replace the `<ul>` player list with `OpponentArea` components — filter out the local player, pass `handSizes[p.id]`, `opponentScores[p.id]`, `isActive={gameState.current_turn === p.id}`, `position={positionMap[p.id]}`
-- [ ] T016 [US1] Add `useMemo` to derive `positionMap = getOpponentPositions(players, player.id)` in `client/src/pages/game/index.jsx`
+- [x] T014 [US1] Import `OpponentArea`, `getOpponentPositions`, `handSizes`, `opponentScores` into `client/src/pages/game/index.jsx`
+- [x] T015 [US1] In `game/index.jsx` `game()` function, replace the `<ul>` player list with `OpponentArea` components — filter out the local player, pass `handSizes[p.id]`, `opponentScores[p.id]`, `isActive={gameState.current_turn === p.id}`, `position={positionMap[p.id]}`
+- [x] T016 [US1] Add `useMemo` to derive `positionMap = getOpponentPositions(players, player.id)` in `client/src/pages/game/index.jsx`
 
 **Checkpoint**: 2-player game shows opponent area at top with correct card count and score; counts update live during play
 

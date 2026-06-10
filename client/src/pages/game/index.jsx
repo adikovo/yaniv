@@ -12,7 +12,7 @@ import { SpectatorPrompt } from '../../components/spectator-prompt';
 
 export const Game = () => {
 
-    const { player, setPlayer, players, setPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator, handSizes, opponentScores } = useGameContext();
+    const { player, setPlayer, players, setPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator, handSizes, setHandSizes, opponentScores } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
     const [disconnectNotice, setDisconnectNotice] = useState(null);

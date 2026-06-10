@@ -6,7 +6,7 @@ import './styles.css'
 import { Card } from '../../components/card';
 import { OpponentArea } from '../../components/opponent-area';
 import { getOpponentPositions } from '../../utils/opponent-positions';
-import { YanivOverlay } from '../../components/yaniv-overlay';
+import { CallOut } from '../../components/call-out';
 import { RoundResult } from '../../components/round-result';
 import { SpectatorPrompt } from '../../components/spectator-prompt';
 
@@ -167,6 +167,11 @@ export const Game = () => {
         [players, player.id]
     );
 
+    const calloutFor = (id) =>
+        yanivResult && id === yanivResult.yanivCaller?.id
+            ? { variant: 'yaniv', penalty: false }
+            : null;
+
     const game = () => {
         return (
             <div className={`game-board players-${players.length}`}>
@@ -181,6 +186,7 @@ export const Game = () => {
                             score={opponentScores[p.id] ?? 0}
                             isActive={gameState.current_turn === p.id}
                             position={positionMap[p.id]}
+                            callout={calloutFor(p.id)}
                         />
                     ))
                 }
@@ -196,6 +202,7 @@ export const Game = () => {
                 </div>
 
                 <div className={`local-player-area${gameState.current_turn === player.id ? ' active-turn' : ''}`}>
+                    {calloutFor(player.id) && <CallOut variant={calloutFor(player.id).variant} penalty={calloutFor(player.id).penalty} />}
                     <div className="local-score">
                         <span className="local-score-label">Score</span>
                         <span className="score-badge">{opponentScores[player.id] ?? 0}</span>
@@ -252,6 +259,7 @@ export const Game = () => {
                                 score={opponentScores[p.id] ?? 0}
                                 isActive={gameState.current_turn === p.id}
                                 position={positionMap[p.id]}
+                                callout={calloutFor(p.id)}
                             />
                         ))
                     }
@@ -265,13 +273,6 @@ export const Game = () => {
                         <button onClick={handleLeave}>Exit</button>
                     </div>
                 </div>
-                {yanivResult && (
-                    <YanivOverlay
-                        winner={yanivResult.winner}
-                        asaf={yanivResult.asaf}
-                        asafCaller={yanivResult.asafCaller}
-                    />
-                )}
             </div>
         );
     }
@@ -284,15 +285,6 @@ export const Game = () => {
             {game()}
             {showSpectatorPrompt && (
                 <SpectatorPrompt onWatch={handleWatch} onLeave={handleLeave} />
-            )}
-            {yanivResult && !showSpectatorPrompt && (
-                <YanivOverlay
-                    winner={yanivResult.winner}
-                    asaf={yanivResult.asaf}
-                    asafCaller={yanivResult.asafCaller}
-                    players={yanivResult.players}
-                    eliminated={yanivResult.eliminated}
-                />
             )}
         </div>
     )

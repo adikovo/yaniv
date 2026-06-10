@@ -41,6 +41,6 @@ calloutFor(playerId) →
 ```text
 t = 0.0s   roundEnd received        → YANIV! pops over yanivCaller
 t ≈ 1.5s   (asaf only)              → ASAF! pops over winner (the counterer)
-t = 4.0s   nextRound received       → new hands/board state applied
-t = 5.5s   yanivResult cleared      → call-outs unmount; spectator prompt if eliminated
+t = 3.0s   nextRound received       → new hands/board state applied
+t = 4.5s   yanivResult cleared      → call-outs unmount; spectator prompt if eliminated
 ```

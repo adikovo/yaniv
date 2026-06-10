@@ -22,7 +22,7 @@
 
 **Decision**: Client-side timer: show "YANIV!" immediately on `roundEnd`; if `asaf`, show "ASAF!" after ~1500ms. Both remain until the existing dismissal (1.5s after `nextRound`) clears `yanivResult`.
 
-**Rationale**: The server already provides the timing envelope (`nextRound` is dealt 4s after `roundEnd`, extended from 2s for this feature). A local timer keeps the sequence purely presentational and identical on all clients within network jitter; no protocol change needed. Total visible time: YANIV ~5.5s, ASAF ~4s.
+**Rationale**: The server already provides the timing envelope (`nextRound` is dealt 3s after `roundEnd`, extended from 2s for this feature). A local timer keeps the sequence purely presentational and identical on all clients within network jitter; no protocol change needed. Total visible time: YANIV ~4.5s, ASAF ~3s.
 
 **Alternatives considered**: Server-emitted second event for the Asaf beat — adds protocol surface for a purely visual concern. Rejected.
 

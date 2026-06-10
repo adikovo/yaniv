@@ -4,7 +4,7 @@
 
 ## Summary
 
-Replace the centered round-end overlay with comic-style "YANIV!" / "ASAF!" call-outs anchored to the acting player's area on every client. "YANIV!" appears over the caller; in an Asaf round, "ASAF!" follows over the countering player a beat later, conveying the +30 penalty. The server adds an explicit `yanivCaller` field to `roundEnd` (replacing the confusing `asafCaller`), so the client anchors call-outs by simple id comparison. Rounds already auto-advance (now after 4s).
+Replace the centered round-end overlay with comic-style "YANIV!" / "ASAF!" call-outs anchored to the acting player's area on every client. "YANIV!" appears over the caller; in an Asaf round, "ASAF!" follows over the countering player a beat later, conveying the +30 penalty. The server adds an explicit `yanivCaller` field to `roundEnd` (replacing the confusing `asafCaller`), so the client anchors call-outs by simple id comparison. Rounds already auto-advance (now after 3s).
 
 ---
 
@@ -24,7 +24,7 @@ Replace the centered round-end overlay with comic-style "YANIV!" / "ASAF!" call-
 
 **Performance Goals**: Call-out appears on all clients as soon as `roundEnd` is received (within 1s of the Yaniv call)
 
-**Constraints**: Call-out sequence must fit inside the existing round-transition window (server deals next round 4s after `roundEnd`; clients dismiss the result 1.5s after `nextRound` — ~5.5s total); 2–4 players; CSS-only visuals (no image assets)
+**Constraints**: Call-out sequence must fit inside the existing round-transition window (server deals next round 3s after `roundEnd`; clients dismiss the result 1.5s after `nextRound` — ~4.5s total); 2–4 players; CSS-only visuals (no image assets)
 
 **Scale/Scope**: 2–4 concurrent players per room, plus spectators
 
@@ -41,7 +41,7 @@ Constitution template is unfilled — no gates to enforce. Proceeding.
 - `server/socket.js:112` emits `roundEnd` with `{ winner: {id, name}, asaf, asafCaller: {id, name} | null, players, eliminated }`.
   - **Semantics**: `winner` is the round winner. When `asaf` is true, `winner` is the *countering* player and `asafCaller` is the *original Yaniv caller* (who received the +30 penalty). When `asaf` is false, `winner` *is* the Yaniv caller.
   - **This feature makes the caller explicit**: `gameLogic.yanivCall` returns the caller, and `roundEnd` carries `yanivCaller: {id, name}` instead of `asafCaller` (whose only consumer is the overlay being deleted). Client anchoring is then plain id comparison: "YANIV!" on `yanivCaller.id`; "ASAF!" on `winner.id` when `asaf`.
-- `server/socket.js:142` auto-deals the next round 4000ms after `roundEnd` (no user interaction).
+- `server/socket.js:142` auto-deals the next round 3000ms after `roundEnd` (no user interaction).
 - `client/src/pages/game/index.jsx` stores the `roundEnd` payload in `yanivResult`, renders `<YanivOverlay>` (centered, fixed) in both the main and spectator views, and clears `yanivResult` 1500ms after `nextRound` — which also drives the eliminated→spectator prompt. That dismissal logic must be preserved.
 - Opponents render via `OpponentArea` (`client/src/components/opponent-area/index.jsx`) with a `position` prop (`top`/`left`/`right`); the local player renders in `.local-player-area`. The spectator view renders *all* players as `OpponentArea`s. Anchoring call-outs inside these containers covers every seat, player count, and the spectator case with no coordinate math.
 
@@ -178,7 +178,7 @@ Render the same `<CallOut>` inside `.local-player-area` when the local player is
 3. Pass `callout={calloutFor(p.id)}` to every `OpponentArea` (main **and** spectator views) and render `<CallOut>` inside `.local-player-area` when `calloutFor(player.id)` is non-null.
 4. Remove both `<YanivOverlay>` renders and the import.
 
-**Timing fit**: `roundEnd` at t=0 → YANIV! pops; ASAF! at t≈1.5s; server `nextRound` at t=4s; `yanivResult` cleared at t=5.5s → call-outs unmount. The eliminated→spectator-prompt logic inside the existing dismissal callback is untouched, satisfying FR-007/FR-008.
+**Timing fit**: `roundEnd` at t=0 → YANIV! pops; ASAF! at t≈1.5s; server `nextRound` at t=3s; `yanivResult` cleared at t=4.5s → call-outs unmount. The eliminated→spectator-prompt logic inside the existing dismissal callback is untouched, satisfying FR-007/FR-008.
 
 **Disconnect edge case**: if the actor disconnected, their `OpponentArea` no longer renders, so the call-out is simply absent — graceful degradation per spec; the round still advances on the server timer.
 

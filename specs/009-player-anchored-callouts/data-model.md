@@ -6,9 +6,10 @@ No persisted data changes. One server payload change; all other new data is tran
 
 | Field | Type | Status | Meaning |
 |-------|------|--------|---------|
-| `winner` | `{ id, name }` | unchanged | Round winner. **When `asaf` is true, this is the countering player** — i.e. the "ASAF!" anchor. |
+| `winner` | `{ id, name }` | unchanged | Round winner (player with the lowest sum among all counters). |
 | `asaf` | `boolean` | unchanged | Whether the Yaniv call was countered. |
 | `yanivCaller` | `{ id, name }` | **NEW** | The player who called Yaniv — always present; the "YANIV!" anchor. |
+| `asafPlayers` | `[{ id, name }]` | **NEW** | All players with sum ≤ caller's sum — each gets an "ASAF!" call-out. Empty array when `asaf` is false. |
 | `asafCaller` | — | **REMOVED** | Was the Yaniv caller, set only when `asaf` (confusing name); its only consumer was the deleted centered overlay. |
 | `players` | map | unchanged | Updated scores (already consumed by scoreboard logic). |
 | `eliminated` | array | unchanged | Players eliminated this round (drives the spectator prompt). |
@@ -28,7 +29,8 @@ Supporting change: `gameLogic.yanivCall(game)` returns `{ winner, asaf, caller }
 calloutFor(playerId) →
     null                                  no round end, or player not an actor
     { variant: 'yaniv', penalty: false }  playerId === yanivResult.yanivCaller.id
-    { variant: 'asaf',  penalty: true }   yanivResult.asaf && showAsaf && playerId === yanivResult.winner.id
+    { variant: 'asaf',  penalty: true }   yanivResult.asaf && showAsaf &&
+                                          yanivResult.asafPlayers.some(p => p.id === playerId)
 ```
 
 - `variant`: which word renders ("YANIV!" / "ASAF!") and which color scheme applies.

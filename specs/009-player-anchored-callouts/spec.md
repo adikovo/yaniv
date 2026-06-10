@@ -36,7 +36,7 @@ When a Yaniv call is countered (another player holds an equal or lower hand), pl
 
 **Acceptance Scenarios**:
 
-1. **Given** player X calls Yaniv and player Y holds an equal or lower hand, **When** the round ends, **Then** every client first shows "YANIV!" over player X's area, followed by "ASAF!" over player Y's area.
+1. **Given** player X calls Yaniv and one or more other players hold an equal or lower hand, **When** the round ends, **Then** every client first shows "YANIV!" over player X's area, followed by "ASAF!" over *each* countering player's area (simultaneously, after the same ~1.5s beat).
 2. **Given** an Asaf occurred, **When** the "ASAF!" call-out is shown, **Then** it visibly conveys the 30-point penalty applied to the Yaniv caller (e.g., a "+30" indicator) so players understand the consequence.
 3. **Given** the Asaf sequence completes, **When** the next round begins, **Then** both call-outs are dismissed and the scoreboard reflects the penalty.
 
@@ -72,7 +72,7 @@ The call-out renders correctly regardless of where the acting player sits on the
 
 - **FR-001**: When a player successfully calls Yaniv, the system MUST display a "YANIV!" call-out visually anchored to that player's area on every connected client (including spectators).
 - **FR-002**: The call-out MUST anchor to the local player's own hand area when the local player is the actor, and to the corresponding opponent area otherwise.
-- **FR-003**: In an Asaf scenario, the system MUST display "YANIV!" over the caller first, then "ASAF!" over the countering player, in that order, as a visible sequence.
+- **FR-003**: In an Asaf scenario, the system MUST display "YANIV!" over the caller first, then "ASAF!" over *every* countering player (all players with sum ≤ caller's sum), in that order, as a visible sequence.
 - **FR-004**: The "ASAF!" call-out MUST convey the 30-point penalty applied to the Yaniv caller.
 - **FR-005**: The call-outs MUST be rendered as styled text (large comic-style lettering, yellow with dark outline, consistent with the game's visual tone) — no external image assets.
 - **FR-006**: The call-outs MUST replace the existing centered round-end overlay entirely; the centered overlay MUST be removed.

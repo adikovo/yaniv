@@ -172,7 +172,7 @@ Render the same `<CallOut>` inside `.local-player-area` when the local player is
    const calloutFor = (id) =>
        !yanivResult ? null
        : id === yanivResult.yanivCaller.id ? { variant: 'yaniv', penalty: false }
-       : yanivResult.asaf && showAsaf && id === yanivResult.winner.id ? { variant: 'asaf', penalty: true }
+       : yanivResult.asaf && showAsaf && yanivResult.asafPlayers.some(p => p.id === id) ? { variant: 'asaf', penalty: true }
        : null;
    ```
 3. Pass `callout={calloutFor(p.id)}` to every `OpponentArea` (main **and** spectator views) and render `<CallOut>` inside `.local-player-area` when `calloutFor(player.id)` is non-null.

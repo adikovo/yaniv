@@ -81,9 +81,9 @@ Web app: `client/src/` (React, Vitest + Testing Library, colocated `*.test.jsx`,
 
 **Independent Test**: Rounds in 2-, 3-, and 4-player games with each seat as the actor → call-out anchored correctly, fully in viewport, scoreboard unobstructed
 
-- [ ] T016 [US3] Write failing tests in `client/src/components/opponent-area/opponent-area.test.jsx`: the call-out renders inside the positioned container for each `position` value (`left`, `top`, `right`)
-- [ ] T017 [US3] Viewport-safety CSS in `client/src/components/call-out/styles.css`: `max-width: 90vw`, `clamp()`-based font-size that fits the narrow left/right seats; verify in `client/src/pages/game/styles.css` that the call-out never overlaps the scoreboard area
-- [ ] T018 [US3] Manual/visual verification: run 2-, 3-, and 4-player games where each seat triggers Yaniv (and one asaf) — confirm anchoring, viewport fit, and the spectator view on all clients
+- [x] T016 [US3] Write failing tests in `client/src/components/opponent-area/opponent-area.test.jsx`: the call-out renders inside the positioned container for each `position` value (`left`, `top`, `right`)
+- [x] T017 [US3] Viewport-safety CSS in `client/src/components/call-out/styles.css`: `max-width: 90vw`, `clamp()`-based font-size that fits the narrow left/right seats; verify in `client/src/pages/game/styles.css` that the call-out never overlaps the scoreboard area
+- [x] T018 [US3] Manual/visual verification: run 2-, 3-, and 4-player games where each seat triggers Yaniv (and one asaf) — confirm anchoring, viewport fit, and the spectator view on all clients
 
 **Checkpoint**: All user stories complete
 
@@ -93,8 +93,8 @@ Web app: `client/src/` (React, Vitest + Testing Library, colocated `*.test.jsx`,
 
 **Purpose**: Cross-cutting validation — the feature closes with the full e2e run
 
-- [ ] T019 Update `e2e/four-player-game.spec.ts`: replace `.yaniv-overlay` waits with `.call-out-yaniv` asserted *inside* the acting player's container (`.opponent-area` on non-caller clients, `.local-player-area` on the caller's client); keep the round-advance flow assertions
-- [ ] T020 Final validation: run the client unit suite (`cd client && npm run test`), server tests (`cd server && npm test`), and the Playwright e2e smoke test (`npx playwright test`) — all green (SC-001, SC-004, SC-005)
+- [x] T019 Update `e2e/four-player-game.spec.ts`: replace `.yaniv-overlay` waits with `.call-out-yaniv` asserted *inside* the acting player's container (`.opponent-area` on non-caller clients, `.local-player-area` on the caller's client); keep the round-advance flow assertions
+- [x] T020 Final validation: run the client unit suite (`cd client && npm run test`), server tests (`cd server && npm test`), and the Playwright e2e smoke test (`npx playwright test`) — all green (SC-001, SC-004, SC-005)
 
 ---
 

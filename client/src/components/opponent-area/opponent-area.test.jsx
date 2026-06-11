@@ -77,3 +77,28 @@ describe('OpponentArea callout prop', () => {
         expect(screen.queryByText('ASAF!')).not.toBeInTheDocument();
     });
 });
+
+describe('OpponentArea callout anchoring by position', () => {
+    const baseProps = { name: 'Alice', handCount: 3, score: 10, isActive: false };
+
+    test('callout is rendered inside the positioned container for position="left"', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} position="left" callout={{ variant: 'yaniv', penalty: false }} />
+        );
+        expect(container.querySelector('.opponent-left .call-out')).not.toBeNull();
+    });
+
+    test('callout is rendered inside the positioned container for position="top"', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} position="top" callout={{ variant: 'yaniv', penalty: false }} />
+        );
+        expect(container.querySelector('.opponent-top .call-out')).not.toBeNull();
+    });
+
+    test('callout is rendered inside the positioned container for position="right"', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} position="right" callout={{ variant: 'yaniv', penalty: false }} />
+        );
+        expect(container.querySelector('.opponent-right .call-out')).not.toBeNull();
+    });
+});

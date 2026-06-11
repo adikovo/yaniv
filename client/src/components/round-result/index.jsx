@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import socket from '../../api/socket';
+import { useGameContext } from '../../context/game-context';
 import './styles.css';
 
 export const RoundResult = ({ winner, canRematch = true }) => {
     const navigate = useNavigate();
+    const { resetGame } = useGameContext();
     const [timeLeft, setTimeLeft] = useState(10);
     const [clicked, setClicked] = useState(false);
 
     useEffect(() => {
         if (!canRematch) return;
         if (timeLeft <= 0) {
-            if (!clicked) socket.emit('rematchReady');
+            if (!clicked) {
+                socket.emit('leaveRoom');
+                navigate('/');
+            }
             return;
         }
         const timer = setInterval(() => setTimeLeft(t => t - 1), 1000);
@@ -22,6 +27,12 @@ export const RoundResult = ({ winner, canRematch = true }) => {
         if (clicked) return;
         setClicked(true);
         socket.emit('rematchReady');
+    };
+
+    const handleGoHome = () => {
+        socket.emit('leaveRoom');
+        resetGame();
+        navigate('/');
     };
 
     return (
@@ -39,7 +50,7 @@ export const RoundResult = ({ winner, canRematch = true }) => {
                 ) : (
                     <p>All other players have left the game.</p>
                 )}
-                <button className="round-result-home-btn" onClick={() => navigate('/')}>
+                <button className="round-result-home-btn" onClick={handleGoHome}>
                     Go Home
                 </button>
             </div>

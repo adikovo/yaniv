@@ -83,6 +83,19 @@ export const GameProvider = ({ children }) => {
         };
     }, [])
 
+    const resetGame = () => {
+        setPlayer({});
+        setPlayers([]);
+        setGameID('');
+        setGameState({});
+        setSum(0);
+        setSelectedCards([]);
+        setGameOverData(null);
+        setIsSpectator(false);
+        setHandSizes({});
+        setOpponentScores({});
+    };
+
     return (
         <GameContext.Provider value={{
             players, setPlayers,
@@ -95,7 +108,8 @@ export const GameProvider = ({ children }) => {
             gameOverData, setGameOverData,
             isSpectator, setIsSpectator,
             handSizes, setHandSizes,
-            opponentScores, setOpponentScores
+            opponentScores, setOpponentScores,
+            resetGame,
         }}>
             {children}
         </GameContext.Provider>

@@ -70,14 +70,14 @@ phase with a short summary + suggested commit message.
 
 ## Phase 2 — Client: navigate home at expiry, leave the room
 
-- [ ] **T004 [test]** Component tests for `RoundResult`
+- [x] **T004 [test]** Component tests for `RoundResult`
   (`client/src/components/round-result/`): when the countdown hits 0 without a
   click it emits `leaveRoom` and navigates to `/` (and does **not** emit
   `rematchReady`); clicking Rematch still emits `rematchReady` and shows
   "Waiting…"; the "Go Home" button emits `leaveRoom` + resets game state +
   navigates home.
 
-- [ ] **T005** In
+- [x] **T005** In
   [round-result/index.jsx:13-15](../../client/src/components/round-result/index.jsx#L13-L15),
   replace the `timeLeft <= 0 → socket.emit('rematchReady')` branch with
   `socket.emit('leaveRoom')` + `navigate('/')`. Make the "Go Home" button
@@ -87,7 +87,7 @@ phase with a short summary + suggested commit message.
   ([line 8](../../client/src/components/round-result/index.jsx#L8), currently
   `10`) with the server's `REMATCH_TIMEOUT_MS`.
 
-- [ ] **T006** Add a `rematchCancelled` listener (in the Game page or context)
+- [x] **T006** Add a `rematchCancelled` listener (in the Game page or context)
   that clears game-over state and navigates the player home, so the cancel path
   from T003 lands them on the home page.
 

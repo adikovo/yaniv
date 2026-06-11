@@ -67,4 +67,24 @@ router.get('/join', function(req, res, next) {
     res.send({player: player, gameID: gameID});
 });
 
+// Test-only: seed every player's score in a game so a single round ends it.
+// Used by e2e tests to reach the game-over overlay without playing many rounds.
+router.get('/seedScores', function(req, res, next) {
+    const gameID = req.query.gameID;
+    const score = Number(req.query.score);
+
+    if (!gameID || Number.isNaN(score)) {
+        return res.status(400).json({error: 'gameID and numeric score are required!'});
+    }
+    if (!(gameID in games)) {
+        return res.status(400).json({error: 'No such game id'});
+    }
+
+    for (const id in games[gameID].players) {
+        games[gameID].players[id].score = score;
+    }
+
+    res.send({gameID: gameID, score: score});
+});
+
 module.exports = router;

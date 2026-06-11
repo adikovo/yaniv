@@ -1,5 +1,6 @@
 const { createTestServer } = require('./helpers/setup');
 const { games } = require('../globals');
+const { ROUND_DELAY_MS } = require('../config');
 
 const TIMEOUT = 5000;
 
@@ -32,8 +33,8 @@ describe('Multi-Round Auto-Advance', () => {
         await closeServer();
     });
 
-    // T-MR1: yaniv call → roundEnd fires → within ~2 s both clients receive nextRound + fresh hand
-    test('T-MR1: yaniv call → roundEnd then nextRound + hand auto-fires within 2.5 s', done => {
+    // T-MR1: yaniv call → roundEnd fires → after the round delay both clients receive nextRound + fresh hand
+    test('T-MR1: yaniv call → roundEnd then nextRound + hand auto-fires after the round delay', done => {
         Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
             let nextRoundCount = 0;
             let handCount = 0;
@@ -113,6 +114,30 @@ describe('Game Over & Rematch', () => {
         });
     }, TIMEOUT);
 
+    // T-MR3c: gameOver must arrive ROUND_DELAY_MS after roundEnd (same delay as nextRound path), not immediately
+    test('T-MR3c: gameOver is emitted after the round delay, not immediately', done => {
+        games[gameID].players[1].score = 96; // +5 = 101 → eliminated, player0 sole survivor
+
+        Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+            let roundEndAt = null;
+
+            c0.once('roundEnd', () => { roundEndAt = Date.now(); });
+
+            c0.once('gameOver', ({ winner }) => {
+                try {
+                    const gameOverAt = Date.now();
+                    expect(roundEndAt).not.toBeNull();
+                    const delta = gameOverAt - roundEndAt;
+                    expect(delta).toBeGreaterThanOrEqual(ROUND_DELAY_MS - 50); // scheduling slack
+                    expect(winner.name).toBe(player0.name); // sanity
+                    c0.disconnect(); c1.disconnect(); done();
+                } catch (e) { done(e); }
+            });
+
+            c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+        });
+    }, TIMEOUT);
+
     // T-MR3b: simultaneous last-two elimination (both hit ≥101 same round) → nextRound, not gameOver
     test('T-MR3b: both players eliminated same round → nextRound fires, not gameOver', done => {
         // Use Asaf: caller sum=5, opponent sum=1 → asaf on caller (+30)
@@ -181,7 +206,7 @@ describe('Game Over & Rematch', () => {
         });
     }, TIMEOUT);
 
-    // T-MR4c: only one player sends rematchReady → start fires after 10 s timeout
+    // T-MR4c: only one player sends rematchReady → start fires after the rematch timeout
     test('T-MR4c: partial rematchReady → start fires after timeout', done => {
         games[gameID].players[1].score = 96;
 
@@ -198,7 +223,7 @@ describe('Game Over & Rematch', () => {
 
             c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
         });
-    }, 12000); // needs to outlast the 10 s rematch timeout
+    }, TIMEOUT); // needs to outlast the round delay + rematch timeout (shrunk in tests via fast-timers.js)
 });
 
 describe('Spectator Mode', () => {

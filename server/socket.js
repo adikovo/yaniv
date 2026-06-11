@@ -1,6 +1,7 @@
 const { Server } = require("socket.io");
 const { createDeck, shuffleDeck, dealCards, getCurrentPlayer, whosTurn, nextTurn, drawFromDeck, handValue, topCard, validYaniv, yanivCall, eliminatePlayers, drawTopCard, updateTopCard, makeTurnCardFromHand, selectCards, removeCardFromHand, rebuildDeck, makeTurnCardFromDeck, makeTurnCardFromTop } = require("./gameLogic");
 const { games } = require("./globals");
+const { ROUND_DELAY_MS, REMATCH_TIMEOUT_MS } = require("./config");
 
 let io;
 const rooms = {}; // Store users per room { roomId: { socketId: username, ... }, ... }
@@ -102,17 +103,19 @@ const setupSocket = (server) => {
             }
             if (turn_data.type === "yaniv") {
                 if (validYaniv(player.sum)) {
-                    const { winner, asaf, asafCaller } = yanivCall(games[room]);
-                    const newlyEliminated = eliminatePlayers(games[room]);
+                    const { winner, asaf, caller, asafPlayers } = yanivCall(games[room]);
+                    // Snapshot scores before eliminatePlayers deletes over-100 players from the map
                     const players = {};
                     for (const key in games[room].players) {
                         const p = games[room].players[key];
                         players[key] = { id: p.id, name: p.name, hand: p.hand, sum: p.sum, score: p.score };
                     }
+                    const newlyEliminated = eliminatePlayers(games[room]);
                     io.to(room).emit("roundEnd", {
                         winner: { id: winner.id, name: winner.name },
                         asaf,
-                        asafCaller: asafCaller ? { id: asafCaller.id, name: asafCaller.name } : null,
+                        yanivCaller: { id: caller.id, name: caller.name },
+                        asafPlayers,
                         players,
                         eliminated: newlyEliminated
                     });
@@ -128,7 +131,8 @@ const setupSocket = (server) => {
                         for (const p of (games[room].eliminated || [])) {
                             allPlayers[p.id] = { id: p.id, name: p.name, score: p.score };
                         }
-                        io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, players: allPlayers });
+                        // Same delay as the nextRound path, so clients can play the round-end call-out first
+                        setTimeout(() => io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, players: allPlayers }), ROUND_DELAY_MS);
                     } else {
                         // remaining >= 2: game continues; remaining === 0: draw, restore both players
                         if (remaining === 0) {
@@ -139,7 +143,7 @@ const setupSocket = (server) => {
                                 e => !newlyEliminated.some(n => n.id === e.id)
                             );
                         }
-                        setTimeout(() => dealNewRound(room, "nextRound", winner.id), 2000);
+                        setTimeout(() => dealNewRound(room, "nextRound", winner.id), ROUND_DELAY_MS);
                     }
                 }
             }
@@ -177,6 +181,7 @@ const setupSocket = (server) => {
             const totalInRoom = Object.keys(rooms[room]).length;
 
             function startRematch() {
+                if (!games[room]) return; // room emptied while the rematch timer was pending
                 if (games[room].rematchTimer) { clearTimeout(games[room].rematchTimer); delete games[room].rematchTimer; }
                 delete games[room].rematchReady;
 
@@ -198,7 +203,7 @@ const setupSocket = (server) => {
             }
 
             if (!games[room].rematchTimer) {
-                games[room].rematchTimer = setTimeout(startRematch, 10000);
+                games[room].rematchTimer = setTimeout(startRematch, REMATCH_TIMEOUT_MS);
             }
         });
 
@@ -211,6 +216,10 @@ const setupSocket = (server) => {
 
                 if (Object.keys(rooms[room]).length === 0) {
                     delete rooms[room];
+                    if (games[room]) {
+                        if (games[room].rematchTimer) clearTimeout(games[room].rematchTimer);
+                        delete games[room];
+                    }
                 }
 
                 if (games[room] && player && games[room].players[player.id]) {
@@ -248,6 +257,7 @@ const setupSocket = (server) => {
 };
 
 function dealNewRound(room, eventName, winnerId) {
+    if (!games[room]) return; // room emptied while the round delay was pending
     const deck = createDeck();
     shuffleDeck(games[room], deck);
     dealCards(games[room]);

@@ -6,7 +6,8 @@ import './styles.css'
 import { Card } from '../../components/card';
 import { OpponentArea } from '../../components/opponent-area';
 import { getOpponentPositions } from '../../utils/opponent-positions';
-import { YanivOverlay } from '../../components/yaniv-overlay';
+import { CallOut } from '../../components/call-out';
+import { useAsafSequence } from '../../hooks/use-asaf-sequence';
 import { RoundResult } from '../../components/round-result';
 import { SpectatorPrompt } from '../../components/spectator-prompt';
 
@@ -14,6 +15,7 @@ export const Game = () => {
 
     const { player, setPlayer, players, setPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator, handSizes, setHandSizes, opponentScores } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
+    const showAsaf = useAsafSequence(yanivResult);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
     const [disconnectNotice, setDisconnectNotice] = useState(null);
 
@@ -33,7 +35,12 @@ export const Game = () => {
             }, 1500);
         };
 
-        const handleGameOver = (data) => setGameOverData(data);
+        const handleGameOver = (data) => {
+            setGameOverData(data);
+            // No nextRound follows a gameOver, so clear the round-end state here
+            // to avoid a stale call-out appearing after a rematch
+            setYanivResult(null);
+        };
         const handleStart = () => setGameOverData(null);
         const handlePlayerDisconnected = ({ name, id }) => {
             setDisconnectNotice(`${name} has left the game`);
@@ -167,6 +174,13 @@ export const Game = () => {
         [players, player.id]
     );
 
+    // Returns the callout props for a player: "YANIV!" immediately, "ASAF!" after 1.5s delay
+    const calloutFor = (id) =>
+        !yanivResult ? null
+        : id === yanivResult.yanivCaller?.id ? { variant: 'yaniv', penalty: false }
+        : yanivResult.asaf && showAsaf && yanivResult.asafPlayers?.some(p => p.id === id) ? { variant: 'asaf', penalty: true }
+        : null;
+
     const game = () => {
         return (
             <div className={`game-board players-${players.length}`}>
@@ -181,6 +195,7 @@ export const Game = () => {
                             score={opponentScores[p.id] ?? 0}
                             isActive={gameState.current_turn === p.id}
                             position={positionMap[p.id]}
+                            callout={calloutFor(p.id)}
                         />
                     ))
                 }
@@ -196,6 +211,7 @@ export const Game = () => {
                 </div>
 
                 <div className={`local-player-area${gameState.current_turn === player.id ? ' active-turn' : ''}`}>
+                    {calloutFor(player.id) && <CallOut variant={calloutFor(player.id).variant} penalty={calloutFor(player.id).penalty} />}
                     <div className="local-score">
                         <span className="local-score-label">Score</span>
                         <span className="score-badge">{opponentScores[player.id] ?? 0}</span>
@@ -252,6 +268,7 @@ export const Game = () => {
                                 score={opponentScores[p.id] ?? 0}
                                 isActive={gameState.current_turn === p.id}
                                 position={positionMap[p.id]}
+                                callout={calloutFor(p.id)}
                             />
                         ))
                     }
@@ -265,13 +282,6 @@ export const Game = () => {
                         <button onClick={handleLeave}>Exit</button>
                     </div>
                 </div>
-                {yanivResult && (
-                    <YanivOverlay
-                        winner={yanivResult.winner}
-                        asaf={yanivResult.asaf}
-                        asafCaller={yanivResult.asafCaller}
-                    />
-                )}
             </div>
         );
     }
@@ -284,15 +294,6 @@ export const Game = () => {
             {game()}
             {showSpectatorPrompt && (
                 <SpectatorPrompt onWatch={handleWatch} onLeave={handleLeave} />
-            )}
-            {yanivResult && !showSpectatorPrompt && (
-                <YanivOverlay
-                    winner={yanivResult.winner}
-                    asaf={yanivResult.asaf}
-                    asafCaller={yanivResult.asafCaller}
-                    players={yanivResult.players}
-                    eliminated={yanivResult.eliminated}
-                />
             )}
         </div>
     )

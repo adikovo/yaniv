@@ -50,3 +50,55 @@ describe('OpponentArea component', () => {
         expect(screen.getByText('0')).toBeInTheDocument();
     });
 });
+
+describe('OpponentArea callout prop', () => {
+    const baseProps = { name: 'Alice', handCount: 3, score: 10, isActive: false, position: 'top' };
+
+    test('renders CallOut when callout prop is set with yaniv variant', () => {
+        render(<OpponentArea {...baseProps} callout={{ variant: 'yaniv', penalty: false }} />);
+        expect(screen.getByText('YANIV!')).toBeInTheDocument();
+    });
+
+    test('renders CallOut with asaf variant and penalty', () => {
+        render(<OpponentArea {...baseProps} callout={{ variant: 'asaf', penalty: true }} />);
+        expect(screen.getByText('ASAF!')).toBeInTheDocument();
+        expect(screen.getByText('+30')).toBeInTheDocument();
+    });
+
+    test('renders no CallOut when callout is null', () => {
+        render(<OpponentArea {...baseProps} callout={null} />);
+        expect(screen.queryByText('YANIV!')).not.toBeInTheDocument();
+        expect(screen.queryByText('ASAF!')).not.toBeInTheDocument();
+    });
+
+    test('renders no CallOut when callout is undefined (prop omitted)', () => {
+        render(<OpponentArea {...baseProps} />);
+        expect(screen.queryByText('YANIV!')).not.toBeInTheDocument();
+        expect(screen.queryByText('ASAF!')).not.toBeInTheDocument();
+    });
+});
+
+describe('OpponentArea callout anchoring by position', () => {
+    const baseProps = { name: 'Alice', handCount: 3, score: 10, isActive: false };
+
+    test('callout is rendered inside the positioned container for position="left"', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} position="left" callout={{ variant: 'yaniv', penalty: false }} />
+        );
+        expect(container.querySelector('.opponent-left .call-out')).not.toBeNull();
+    });
+
+    test('callout is rendered inside the positioned container for position="top"', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} position="top" callout={{ variant: 'yaniv', penalty: false }} />
+        );
+        expect(container.querySelector('.opponent-top .call-out')).not.toBeNull();
+    });
+
+    test('callout is rendered inside the positioned container for position="right"', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} position="right" callout={{ variant: 'yaniv', penalty: false }} />
+        );
+        expect(container.querySelector('.opponent-right .call-out')).not.toBeNull();
+    });
+});

@@ -16,18 +16,21 @@ describe('Disconnect — 3-player game continues (US1)', () => {
         await server.closeServer();
     });
 
-    // T004
+    // T004 — player0 stays connected so the room isn't emptied (an empty room deletes the game)
     test('T004 — disconnected player is removed from game.players', done => {
-        const { gameID, player1, connectClient } = server;
+        const { gameID, player0, player1, connectClient } = server;
 
-        connectClient(player1).then(client => {
-            client.on('disconnect', () => {
+        Promise.all([connectClient(player0), connectClient(player1)]).then(([client0, client1]) => {
+            client1.on('disconnect', () => {
                 setTimeout(() => {
-                    expect(games[gameID].players[1]).toBeUndefined();
-                    done();
+                    try {
+                        expect(games[gameID].players[1]).toBeUndefined();
+                        client0.disconnect();
+                        done();
+                    } catch (e) { done(e); }
                 }, 100);
             });
-            client.disconnect();
+            client1.disconnect();
         });
     }, TIMEOUT);
 
@@ -156,6 +159,29 @@ describe('Disconnect — game over when 1 player remains (US2)', () => {
                 client0.disconnect();
                 client1.disconnect();
                 setTimeout(done, 400);
+            });
+        });
+    }, TIMEOUT);
+
+    // Memory leak: games[room] must be deleted when the last socket leaves
+    test('game is removed from games global when the last player disconnects', done => {
+        createTestServer({ playerCount: 2 }).then(s => {
+            server = s;
+            const { gameID, player0, player1, connectClient } = s;
+
+            Promise.all([connectClient(player0), connectClient(player1)]).then(([client0, client1]) => {
+                client0.disconnect();
+                client1.disconnect();
+
+                // Wait for the server to process both disconnects
+                setTimeout(() => {
+                    try {
+                        expect(games[gameID]).toBeUndefined();
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                }, 300);
             });
         });
     }, TIMEOUT);

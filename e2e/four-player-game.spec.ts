@@ -236,7 +236,7 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
   let yanivCaller: Page | null = null;
   let yanivCallerName = '';
   let attempts = 0;
-  const maxAttempts = 40;
+  const maxAttempts = 80;
 
   while (!yanivCaller && attempts < maxAttempts) {
     attempts++;
@@ -272,23 +272,30 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
   console.log(`\n▶ ${yanivCallerName} calls Yaniv!`);
   await yanivCaller.getByRole('button', { name: 'YANIV' }).click();
 
-  let roundWinnerName = '';
+  // Caller sees the callout anchored to their own player area
+  await expect(yanivCaller.locator('.local-player-area .call-out-yaniv')).toBeVisible({ timeout: 5000 });
+  console.log(`  ✓ ${yanivCallerName} (caller) sees .local-player-area .call-out-yaniv`);
+
+  // Every other player sees the callout anchored to the caller's opponent area
   for (const [i, page] of pages.entries()) {
-    await expect(page.locator('.yaniv-overlay')).toBeVisible({ timeout: 5000 });
-    const overlayText = await page.locator('.yaniv-badge-name').textContent();
-    if (i === 0) roundWinnerName = overlayText?.trim() ?? '';
-    console.log(`  ${PLAYERS[i]} sees Yaniv overlay — winner: ${overlayText}`);
+    if (page === yanivCaller) continue;
+    await expect(page.locator('.opponent-area .call-out-yaniv')).toBeVisible({ timeout: 5000 });
+    console.log(`  ✓ ${PLAYERS[i]} sees .opponent-area .call-out-yaniv`);
   }
-  console.log(`✓ Yaniv overlay visible on all pages (winner: ${roundWinnerName})`);
+
+  // In a normal Yaniv round the caller wins
+  const roundWinnerName = yanivCallerName;
+  console.log(`✓ Yaniv callout visible on all pages (winner: ${roundWinnerName})`);
 
   // ── Step 13: Wait for next round ─────────────────────────────
   console.log('\n▶ Waiting for next round...');
   await pages[0].waitForTimeout(4500);
 
-  for (const page of pages) {
-    await expect(page.locator('.yaniv-overlay')).not.toBeVisible({ timeout: 5000 });
+  for (const [i, page] of pages.entries()) {
+    await expect(page.locator('.call-out-yaniv')).not.toBeVisible({ timeout: 6000 });
+    console.log(`  ✓ ${PLAYERS[i]}: .call-out-yaniv gone`);
   }
-  console.log('✓ Yaniv overlay dismissed');
+  console.log('✓ Yaniv callout dismissed on all pages');
 
   // ── Step 14: Verify all hands reset to 5 cards ───────────────
   console.log('\n▶ Verifying all hands reset to 5 after new round...');

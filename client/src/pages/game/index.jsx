@@ -7,6 +7,7 @@ import { Card } from '../../components/card';
 import { OpponentArea } from '../../components/opponent-area';
 import { getOpponentPositions } from '../../utils/opponent-positions';
 import { CallOut } from '../../components/call-out';
+import { useAsafSequence } from '../../hooks/use-asaf-sequence';
 import { RoundResult } from '../../components/round-result';
 import { SpectatorPrompt } from '../../components/spectator-prompt';
 
@@ -14,6 +15,7 @@ export const Game = () => {
 
     const { player, setPlayer, players, setPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator, handSizes, setHandSizes, opponentScores } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
+    const showAsaf = useAsafSequence(yanivResult);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
     const [disconnectNotice, setDisconnectNotice] = useState(null);
 
@@ -172,10 +174,12 @@ export const Game = () => {
         [players, player.id]
     );
 
+    // Returns the callout props for a player: "YANIV!" immediately, "ASAF!" after 1.5s delay
     const calloutFor = (id) =>
-        yanivResult && id === yanivResult.yanivCaller?.id
-            ? { variant: 'yaniv', penalty: false }
-            : null;
+        !yanivResult ? null
+        : id === yanivResult.yanivCaller?.id ? { variant: 'yaniv', penalty: false }
+        : yanivResult.asaf && showAsaf && yanivResult.asafPlayers?.some(p => p.id === id) ? { variant: 'asaf', penalty: true }
+        : null;
 
     const game = () => {
         return (

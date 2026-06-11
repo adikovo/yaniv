@@ -119,7 +119,7 @@ phase with a short summary + suggested commit message.
 
 ## Phase 4 — e2e smoke
 
-- [ ] **T010 [test]** Playwright spec under [e2e/](../../e2e/): (a) 2-player game
+- [x] **T010 [test]** Playwright spec under [e2e/](../../e2e/): (a) 2-player game
   ends, one clicks Rematch and the other lets the timer expire → the idle player
   lands on the home page and the ready player is sent home (cancelled, since <2
   remain); a 3-player variant where 2 click Rematch → a new 2-player game starts.

@@ -91,6 +91,107 @@ test('2-player: idle player goes home when timer expires, ready player also goes
   }
 });
 
+// ── Test C ────────────────────────────────────────────────────────────────────
+//
+// Verifies that when 2 of 3 players click Rematch and the timer fires,
+// a new 2-player game starts for the ready players while the idle player
+// receives rematchCancelled and goes home.
+//
+// Setup  : 3 players (p0=host, p1=joiner1, p2=joiner2). Play a full game.
+// Action : p0 and p1 click Rematch; p2 idles through the countdown.
+// Assert : p0 and p1 land on /game (new game started with just the 2 ready players).
+//          p2 lands on / (sent home via rematchCancelled).
+
+test('3-player game: 2 of 3 click Rematch → new 2-player game starts for them; idle player goes home', async () => {
+  test.setTimeout(180000);
+
+  const browser = await chromium.launch({ headless: false, slowMo: 400 });
+
+  const [p0Ctx, p1Ctx, p2Ctx] = await Promise.all([
+    browser.newContext({ viewport: { width: 900, height: 700 } }),
+    browser.newContext({ viewport: { width: 900, height: 700 } }),
+    browser.newContext({ viewport: { width: 900, height: 700 } }),
+  ]);
+  const p0 = await p0Ctx.newPage(); // host — will click Rematch
+  const p1 = await p1Ctx.newPage(); // joiner1 — will click Rematch
+  const p2 = await p2Ctx.newPage(); // joiner2 — will idle (no Rematch click)
+  const pages = [p0, p1, p2];
+  const names = ['Alice', 'Bob', 'Carol'];
+
+  try {
+    // ── Step 1: Host + join ─────────────────────────────────────
+    console.log('\n▶ Alice hosting game...');
+    const gameID = await hostGame(p0, 'Alice');
+    console.log(`  Game ID: ${gameID}`);
+    expect(gameID).toBeTruthy();
+
+    console.log('▶ Bob joining...');
+    await joinGame(p1, 'Bob', gameID);
+    await expect(p0.locator('li')).toHaveCount(1, { timeout: 10000 });
+
+    console.log('▶ Carol joining...');
+    await joinGame(p2, 'Carol', gameID);
+    await expect(p0.locator('li')).toHaveCount(2, { timeout: 10000 });
+    console.log('✓ All 3 players in lobby');
+
+    // ── Step 2: Start game ──────────────────────────────────────
+    console.log('\n▶ Starting game...');
+    await p0.getByRole('button', { name: /Start Game/i }).click();
+    await Promise.all(pages.map(p => p.waitForURL('**/game', { timeout: 15000 })));
+    console.log('✓ All 3 players on /game');
+
+    await pages[0].waitForTimeout(1500);
+
+    // ── Step 3: Play until someone can call Yaniv ───────────────
+    console.log('\n▶ Playing turns until a player can call Yaniv (sum ≤ 7)...');
+    const { yanivCaller, yanivCallerName } = await playUntilYanivReady(pages, names);
+
+    // Seed all players to 99 so this single Yaniv call ends the game.
+    console.log('\n▶ Seeding all players to score 99 so this round ends the game...');
+    await seedScores(yanivCaller, gameID, 99);
+
+    // ── Step 4: Call Yaniv ──────────────────────────────────────
+    console.log(`\n▶ ${yanivCallerName} calls Yaniv!`);
+    await yanivCaller.getByRole('button', { name: 'YANIV' }).click();
+
+    // Wait for the round-result overlay on all pages
+    console.log('▶ Waiting for round-result overlay on all pages...');
+    await Promise.all(pages.map(p =>
+      expect(p.locator('.round-result-overlay')).toBeVisible({ timeout: 30000 })
+    ));
+    console.log('✓ round-result-overlay visible on all pages');
+
+    // ── Step 5: p0 and p1 click Rematch; p2 idles ──────────────
+    console.log('\n▶ p0 (Alice) clicking Rematch...');
+    await p0.getByRole('button', { name: /Rematch/i }).click();
+    console.log('▶ p1 (Bob) clicking Rematch...');
+    await p1.getByRole('button', { name: /Rematch/i }).click();
+    // p2 (Carol) does nothing — idles through the countdown.
+
+    // REMATCH_TIMEOUT_MS is 10000ms. Allow 10s + 5s buffer for the timer to fire.
+    // After the timer fires:
+    //   - p2 gets rematchCancelled → navigates to '/'
+    //   - p0 and p1 get 'start' → navigate to /game
+    console.log('▶ Waiting for p2 (Carol) to be sent home via rematchCancelled...');
+    await p2.waitForURL('**/', { timeout: 20000 });
+    expect(new URL(p2.url()).pathname).toBe('/');
+    console.log('✓ p2 (Carol) landed on home page after rematchCancelled');
+
+    console.log('▶ Waiting for p0 (Alice) and p1 (Bob) to land on /game (new game)...');
+    await Promise.all([p0, p1].map(p => p.waitForURL('**/game', { timeout: 20000 })));
+    expect(new URL(p0.url()).pathname).toBe('/game');
+    expect(new URL(p1.url()).pathname).toBe('/game');
+    console.log('✓ p0 (Alice) and p1 (Bob) landed on /game (new 2-player game started)');
+
+    console.log('\n✅ Test C passed: 2 ready players entered new game; idle player went home');
+
+    // Keep windows open so the outcome is visible before teardown
+    await pages[0].waitForTimeout(10000);
+  } finally {
+    await browser.close();
+  }
+});
+
 // ── Test B ────────────────────────────────────────────────────────────────────
 //
 // Verifies Bug 2 fix: hosting/joining a new game after a completed game does

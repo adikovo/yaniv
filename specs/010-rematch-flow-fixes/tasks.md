@@ -95,12 +95,12 @@ phase with a short summary + suggested commit message.
 
 ## Phase 3 — Client: reset state between games (fixes Bug 2)
 
-- [ ] **T007 [test]** Context/integration test: after `gameOverData` is set,
+- [x] **T007 [test]** Context/integration test: after `gameOverData` is set,
   calling `resetGame()` returns all per-game fields to their initial values; and
   a `start` event clears `gameOverData` even when the Game page was not
   previously mounted.
 
-- [ ] **T008** Add `resetGame()` to
+- [x] **T008** Add `resetGame()` to
   [game-context.jsx](../../client/src/context/game-context.jsx) that resets
   `player`, `players`, `gameState`, `gameStarted`, `sum`, `selectedCards`,
   `gameOverData`, `isSpectator`, `handSizes`, `opponentScores` to their initial
@@ -110,7 +110,7 @@ phase with a short summary + suggested commit message.
   so the always-mounted listener authoritatively dismisses the overlay on any new
   game.
 
-- [ ] **T009** Call `resetGame()` at the top of `hostGameClicked` and
+- [x] **T009** Call `resetGame()` at the top of `hostGameClicked` and
   `joinGameClicked` in [home/index.jsx](../../client/src/pages/home/index.jsx) so
   a fresh session never inherits the previous game's `gameOverData`/`gameStarted`
   (the latter also prevents Lobby from instantly bouncing to `/game`).

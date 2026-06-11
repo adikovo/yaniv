@@ -293,7 +293,13 @@ function startRematch(room) {
         const sock = io.sockets.sockets.get(sid);
         if (sock) sock.leave(room);
         delete rooms[room][sid];
+        // Remove from games.players now so their subsequent leaveRoom/disconnect
+        // doesn't trigger a playerDisconnected broadcast to the remaining players.
+        if (games[room]?.players?.[p.id]) delete games[room].players[p.id];
     }
+
+    // Tell remaining players who was dropped so their UI removes the opponent area.
+    io.to(room).emit("playersUpdate", { players: Object.values(rooms[room]) });
 
     // Rebuild the player map from the ready set only (restoring ready-but-eliminated players),
     // with scores reset to 0.

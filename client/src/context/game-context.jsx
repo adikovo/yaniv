@@ -48,6 +48,7 @@ export const GameProvider = ({ children }) => {
             setGameState({ deck, top_card, current_turn });
             if (hand_sizes) setHandSizes(hand_sizes);
             setGameOverData(null);
+            setOpponentScores({});
         };
 
         const handleHand = ({ hand, hand_sum }) => {

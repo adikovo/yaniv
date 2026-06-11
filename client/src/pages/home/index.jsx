@@ -29,6 +29,7 @@ export const Home = () => {
         const result = await sendJoin(joinName, gameID);
         if (result.status === 200) {
             socket.emit("joinRoom", {player: result.data.player, room: gameID});
+            setGameID(gameID); // resetGame() cleared it; restore so makeTurn targets the room
             setPlayer(result.data.player);
             navigate('/lobby');
 

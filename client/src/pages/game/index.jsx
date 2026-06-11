@@ -13,7 +13,7 @@ import { SpectatorPrompt } from '../../components/spectator-prompt';
 
 export const Game = () => {
 
-    const { player, setPlayer, players, setPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator, handSizes, setHandSizes, opponentScores } = useGameContext();
+    const { player, setPlayer, players, setPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator, handSizes, setHandSizes, opponentScores, resetGame } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
     const showAsaf = useAsafSequence(yanivResult);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
@@ -42,6 +42,7 @@ export const Game = () => {
             setYanivResult(null);
         };
         const handleStart = () => setGameOverData(null);
+        const handleRematchCancelled = () => { resetGame(); navigate('/'); };
         const handlePlayerDisconnected = ({ name, id }) => {
             setDisconnectNotice(`${name} has left the game`);
             setTimeout(() => setDisconnectNotice(null), 4000);
@@ -53,6 +54,7 @@ export const Game = () => {
         socket.on('gameOver', handleGameOver);
         socket.on('start', handleStart);
         socket.on('playerDisconnected', handlePlayerDisconnected);
+        socket.on('rematchCancelled', handleRematchCancelled);
 
         return () => {
             socket.off('roundEnd', handleRoundEnd);
@@ -60,6 +62,7 @@ export const Game = () => {
             socket.off('gameOver', handleGameOver);
             socket.off('start', handleStart);
             socket.off('playerDisconnected', handlePlayerDisconnected);
+            socket.off('rematchCancelled', handleRematchCancelled);
         };
     }, []);
 

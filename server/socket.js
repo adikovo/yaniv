@@ -178,83 +178,145 @@ const setupSocket = (server) => {
 
             games[room].rematchReady.add(socketPlayer.id);
 
+            // Everyone still in the room is ready → start immediately, no need to wait out the timer.
             const totalInRoom = Object.keys(rooms[room]).length;
-
-            function startRematch() {
-                if (!games[room]) return; // room emptied while the rematch timer was pending
-                if (games[room].rematchTimer) { clearTimeout(games[room].rematchTimer); delete games[room].rematchTimer; }
-                delete games[room].rematchReady;
-
-                for (const p of (games[room].eliminated || [])) {
-                    games[room].players[p.id] = { id: p.id, name: p.name, score: 0 };
-                }
-                games[room].eliminated = [];
-
-                for (const key in games[room].players) {
-                    games[room].players[key].score = 0;
-                }
-
-                dealNewRound(room, "start");
-            }
-
             if (games[room].rematchReady.size >= totalInRoom) {
-                startRematch();
+                startRematch(room);
                 return;
             }
 
             if (!games[room].rematchTimer) {
-                games[room].rematchTimer = setTimeout(startRematch, REMATCH_TIMEOUT_MS);
+                games[room].rematchTimer = setTimeout(() => startRematch(room), REMATCH_TIMEOUT_MS);
             }
+        });
+
+        socket.on("leaveRoom", () => {
+            const room = getUserRoom(socket.id);
+            if (!room) return;
+            socket.leave(room);
+            removePlayer(room, socket.id);
         });
 
         // When a user disconnects
         socket.on("disconnect", () => {
-            let room = getUserRoom(socket.id);
-            if (room) {
-                const player = rooms[room][socket.id];
-                delete rooms[room][socket.id];
-
-                if (Object.keys(rooms[room]).length === 0) {
-                    delete rooms[room];
-                    if (games[room]) {
-                        if (games[room].rematchTimer) clearTimeout(games[room].rematchTimer);
-                        delete games[room];
-                    }
-                }
-
-                if (games[room] && player && games[room].players[player.id]) {
-                    delete games[room].players[player.id];
-
-                    io.to(room).emit("playerDisconnected", { name: player.name, id: player.id });
-
-                    const remaining = Object.keys(games[room].players).length;
-
-                    if (remaining === 1) {
-                        const winner = Object.values(games[room].players)[0];
-                        io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, reason: 'disconnect' });
-                    } else if (remaining >= 2) {
-                        const gs = games[room].game_state;
-                        if (gs && gs.current_turn === player.id) {
-                            nextTurn(games[room]);
-                            io.to(room).emit("turn", {
-                                top_card: gs.top_card,
-                                current_turn: gs.current_turn,
-                                deck: gs.deck
-                            });
-                        }
-                    }
-                }
-
-                if (player) {
-                    io.to(room).emit("message", { user: "Server", text: `${player.name} has left the chat.` });
-                    console.log(`User disconnected: ${socket.id}`);
-                }
+            const room = getUserRoom(socket.id);
+            if (!room) return;
+            const player = removePlayer(room, socket.id);
+            if (player) {
+                io.to(room).emit("message", { user: "Server", text: `${player.name} has left the chat.` });
+                console.log(`User disconnected: ${socket.id}`);
             }
         });
     });
 
     return io;
 };
+
+// Tears down an empty room and its game (clearing any pending rematch timer).
+// Returns true if the room was removed.
+function cleanupRoomIfEmpty(room) {
+    if (!rooms[room] || Object.keys(rooms[room]).length > 0) return false;
+    delete rooms[room];
+    if (games[room]) {
+        if (games[room].rematchTimer) clearTimeout(games[room].rematchTimer);
+        delete games[room];
+    }
+    return true;
+}
+
+// Removes a player (by socket id) from a room, whether they disconnected or chose to
+// leave. Shared by the `disconnect` and `leaveRoom` handlers. Returns the player object
+// that was removed, or null.
+function removePlayer(room, socketId) {
+    if (!room || !rooms[room]) return null;
+    const player = rooms[room][socketId];
+    delete rooms[room][socketId];
+
+    if (games[room]) {
+        // Drop the leaver from any post-game collections so a pending rematch can't restore them.
+        if (games[room].rematchReady && player) games[room].rematchReady.delete(player.id);
+        if (games[room].eliminated && player) {
+            games[room].eliminated = games[room].eliminated.filter(e => e.id !== player.id);
+        }
+        if (games[room].spectators) {
+            games[room].spectators = games[room].spectators.filter(s => s.socketId !== socketId);
+        }
+    }
+
+    if (cleanupRoomIfEmpty(room)) return player;
+
+    if (games[room] && player && games[room].players[player.id]) {
+        delete games[room].players[player.id];
+        io.to(room).emit("playerDisconnected", { name: player.name, id: player.id });
+
+        const remaining = Object.keys(games[room].players).length;
+        if (remaining === 1) {
+            const winner = Object.values(games[room].players)[0];
+            io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, reason: 'disconnect' });
+        } else if (remaining >= 2) {
+            const gs = games[room].game_state;
+            if (gs && gs.current_turn === player.id) {
+                nextTurn(games[room]);
+                io.to(room).emit("turn", { top_card: gs.top_card, current_turn: gs.current_turn, deck: gs.deck });
+            }
+        }
+    }
+    return player;
+}
+
+// Ready-authoritative rematch: when the timer expires (or everyone is ready), start a new
+// game with ONLY the players who clicked Rematch — and only if at least 2 are ready.
+// Non-ready players are dropped and told to go home; fewer than 2 ready cancels the rematch.
+function startRematch(room) {
+    if (!games[room]) return; // room emptied while the rematch timer was pending
+    if (games[room].rematchTimer) { clearTimeout(games[room].rematchTimer); delete games[room].rematchTimer; }
+
+    const readyIds = new Set(games[room].rematchReady || []);
+
+    if (readyIds.size < 2) {
+        // Not enough players to play: cancel, send everyone home, tear the room down.
+        io.to(room).emit("rematchCancelled");
+        for (const sid in (rooms[room] || {})) {
+            const sock = io.sockets.sockets.get(sid);
+            if (sock) sock.leave(room);
+        }
+        delete rooms[room];
+        delete games[room];
+        return;
+    }
+
+    // Drop players who never clicked Rematch from the room, and send them home.
+    for (const sid of Object.keys(rooms[room] || {})) {
+        const p = rooms[room][sid];
+        if (readyIds.has(p.id)) continue;
+        io.to(sid).emit("rematchCancelled");
+        const sock = io.sockets.sockets.get(sid);
+        if (sock) sock.leave(room);
+        delete rooms[room][sid];
+        // Remove from games.players now so their subsequent leaveRoom/disconnect
+        // doesn't trigger a playerDisconnected broadcast to the remaining players.
+        if (games[room]?.players?.[p.id]) delete games[room].players[p.id];
+    }
+
+    // Tell remaining players who was dropped so their UI removes the opponent area.
+    io.to(room).emit("playersUpdate", { players: Object.values(rooms[room]) });
+
+    // Rebuild the player map from the ready set only (restoring ready-but-eliminated players),
+    // with scores reset to 0.
+    const players = {};
+    for (const id in games[room].players) {
+        if (readyIds.has(games[room].players[id].id)) players[id] = games[room].players[id];
+    }
+    for (const p of (games[room].eliminated || [])) {
+        if (readyIds.has(p.id)) players[p.id] = { id: p.id, name: p.name, score: 0 };
+    }
+    games[room].players = players;
+    games[room].eliminated = [];
+    for (const id in games[room].players) games[room].players[id].score = 0;
+
+    delete games[room].rematchReady;
+    dealNewRound(room, "start");
+}
 
 function dealNewRound(room, eventName, winnerId) {
     if (!games[room]) return; // room emptied while the round delay was pending

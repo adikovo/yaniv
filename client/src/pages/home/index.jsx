@@ -13,9 +13,10 @@ export const Home = () => {
     const [gameMode, setGameMode] = useState('welcome');
     const [joinError, setJoinError] = useState('');
 
-    const { players, setPlayers, setGameID, gameID, setPlayer } = useGameContext();
+    const { players, setPlayers, setGameID, gameID, setPlayer, resetGame } = useGameContext();
 
     const hostGameClicked = async () => {
+        resetGame();
         const result = await sendHost(hostName);
         socket.emit("joinRoom", {player: result.data.player, room: result.data.gameID});
         setGameID(result.data.gameID);
@@ -24,9 +25,11 @@ export const Home = () => {
     }
 
     const joinGameClicked = async () => {
+        resetGame();
         const result = await sendJoin(joinName, gameID);
         if (result.status === 200) {
             socket.emit("joinRoom", {player: result.data.player, room: gameID});
+            setGameID(gameID); // resetGame() cleared it; restore so makeTurn targets the room
             setPlayer(result.data.player);
             navigate('/lobby');
 

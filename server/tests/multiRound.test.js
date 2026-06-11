@@ -206,17 +206,23 @@ describe('Game Over & Rematch', () => {
         });
     }, TIMEOUT);
 
-    // T-MR4c: only one player sends rematchReady → start fires after the rematch timeout
-    test('T-MR4c: partial rematchReady → start fires after timeout', done => {
+    // T-MR4c: only one player (of two) sends rematchReady → under the ≥2-ready rule the
+    // timeout cancels the rematch instead of starting it: no start, rematchCancelled fires.
+    test('T-MR4c: 1-of-2 rematchReady → no start, rematchCancelled fires after timeout', done => {
         games[gameID].players[1].score = 96;
 
         Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+            let startFired = false;
+            c0.on('start', () => { startFired = true; });
+            c1.on('start', () => { startFired = true; });
+
             c0.once('gameOver', () => {
-                c0.emit('rematchReady'); // only player 0 clicks
+                c0.emit('rematchReady'); // only player 0 clicks; player1 stays idle
             });
 
-            c0.once('start', () => {
+            c0.once('rematchCancelled', () => {
                 try {
+                    expect(startFired).toBe(false);
                     c0.disconnect(); c1.disconnect(); done();
                 } catch (e) { done(e); }
             });
@@ -224,6 +230,137 @@ describe('Game Over & Rematch', () => {
             c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
         });
     }, TIMEOUT); // needs to outlast the round delay + rematch timeout (shrunk in tests via fast-timers.js)
+});
+
+describe('Leave Room & Ready-Only Rematch', () => {
+    let gameID, player0, player1, player2, players, connectClient, closeServer;
+
+    afterEach(async () => {
+        if (closeServer) await closeServer();
+    });
+
+    // T001a — leaveRoom removes the emitting player; survivor stays; survivor is notified
+    test('T001a: leaveRoom removes the emitting player and notifies survivor', done => {
+        createTestServer().then(server => {
+            ({ gameID, player0, player1, connectClient, closeServer } = server);
+            games[gameID].players[0].score = 0;
+            games[gameID].players[1].score = 0;
+
+            Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+                c0.once('playerDisconnected', ({ id }) => {
+                    try {
+                        expect(id).toBe(player1.id);
+                        // give the server a beat to mutate the players map
+                        setTimeout(() => {
+                            try {
+                                expect(games[gameID].players[player1.id]).toBeUndefined();
+                                expect(games[gameID].players[player0.id]).toBeDefined();
+                                c0.disconnect(); c1.disconnect(); done();
+                            } catch (e) { done(e); }
+                        }, 100);
+                    } catch (e) { done(e); }
+                });
+
+                c1.emit('leaveRoom');
+            });
+        });
+    }, TIMEOUT);
+
+    // T001b — when the last player leaves, the room is cleaned up (game deleted)
+    test('T001b: room empties on last leave → game deleted', done => {
+        createTestServer().then(server => {
+            ({ gameID, player0, player1, connectClient, closeServer } = server);
+            games[gameID].players[0].score = 0;
+            games[gameID].players[1].score = 0;
+
+            Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
+                c0.emit('leaveRoom');
+                c1.emit('leaveRoom');
+
+                setTimeout(() => {
+                    try {
+                        expect(games[gameID]).toBeUndefined();
+                        c0.disconnect(); c1.disconnect(); done();
+                    } catch (e) { done(e); }
+                }, 200);
+            });
+        });
+    }, TIMEOUT);
+
+    // T001c — rematch timeout with 2-of-3 ready → start fires with ONLY the 2 ready players;
+    // the non-ready player is dropped from games[gameID].players.
+    test('T001c: rematch timeout, 2-of-3 ready → start with only the 2 ready players', done => {
+        createTestServer({ playerCount: 3 }).then(server => {
+            ({ gameID, player0, player1, player2, connectClient, closeServer } = server);
+            games[gameID].eliminated = [];
+            games[gameID].players[0].score = 0;
+            games[gameID].players[1].score = 96;
+            games[gameID].players[2].score = 96;
+            games[gameID].game_state.current_turn = 0;
+            setHand(games[gameID].players[0], [makeCard('1', 'H', 1)]); // caller, sum=1
+            setHand(games[gameID].players[1], [makeCard('5', 'H', 5)]); // +5 = 101 → eliminated
+            setHand(games[gameID].players[2], [makeCard('5', 'H', 5)]); // +5 = 101 → eliminated
+
+            Promise.all([
+                connectClient(player0), connectClient(player1), connectClient(player2)
+            ]).then(([c0, c1, c2]) => {
+                c0.once('gameOver', () => {
+                    c0.emit('rematchReady');
+                    c1.emit('rematchReady');
+                    // c2 stays idle
+                });
+
+                c0.once('start', () => {
+                    try {
+                        expect(Object.keys(games[gameID].players).sort()).toEqual(['0', '1']);
+                        c0.disconnect(); c1.disconnect(); c2.disconnect(); done();
+                    } catch (e) { done(e); }
+                });
+
+                c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+            });
+        });
+    }, TIMEOUT);
+
+    // T001d — rematch timeout with only 1-of-3 ready → NO start, rematchCancelled fires,
+    // and the game is cleaned up (games[gameID] undefined).
+    test('T001d: rematch timeout, 1-of-3 ready → no start, rematchCancelled, cleanup', done => {
+        createTestServer({ playerCount: 3 }).then(server => {
+            ({ gameID, player0, player1, player2, connectClient, closeServer } = server);
+            games[gameID].eliminated = [];
+            games[gameID].players[0].score = 0;
+            games[gameID].players[1].score = 96;
+            games[gameID].players[2].score = 96;
+            games[gameID].game_state.current_turn = 0;
+            setHand(games[gameID].players[0], [makeCard('1', 'H', 1)]); // caller, sum=1
+            setHand(games[gameID].players[1], [makeCard('5', 'H', 5)]); // +5 = 101 → eliminated
+            setHand(games[gameID].players[2], [makeCard('5', 'H', 5)]); // +5 = 101 → eliminated
+
+            Promise.all([
+                connectClient(player0), connectClient(player1), connectClient(player2)
+            ]).then(([c0, c1, c2]) => {
+                let startFired = false;
+                c0.on('start', () => { startFired = true; });
+                c1.on('start', () => { startFired = true; });
+                c2.on('start', () => { startFired = true; });
+
+                c0.once('gameOver', () => {
+                    c0.emit('rematchReady'); // only player 0; others stay idle
+                });
+
+                // rematchCancelled is the completion signal
+                c0.once('rematchCancelled', () => {
+                    try {
+                        expect(startFired).toBe(false);
+                        expect(games[gameID]).toBeUndefined();
+                        c0.disconnect(); c1.disconnect(); c2.disconnect(); done();
+                    } catch (e) { done(e); }
+                });
+
+                c0.emit('makeTurn', gameID, { type: 'yaniv', selected_cards: [] });
+            });
+        });
+    }, TIMEOUT);
 });
 
 describe('Spectator Mode', () => {

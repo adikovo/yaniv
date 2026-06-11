@@ -47,6 +47,8 @@ export const GameProvider = ({ children }) => {
             setGameStarted(true);
             setGameState({ deck, top_card, current_turn });
             if (hand_sizes) setHandSizes(hand_sizes);
+            setGameOverData(null);
+            setOpponentScores({});
         };
 
         const handleHand = ({ hand, hand_sum }) => {
@@ -83,6 +85,19 @@ export const GameProvider = ({ children }) => {
         };
     }, [])
 
+    const resetGame = () => {
+        setPlayer({});
+        setPlayers([]);
+        setGameID('');
+        setGameState({});
+        setSum(0);
+        setSelectedCards([]);
+        setGameOverData(null);
+        setIsSpectator(false);
+        setHandSizes({});
+        setOpponentScores({});
+    };
+
     return (
         <GameContext.Provider value={{
             players, setPlayers,
@@ -95,7 +110,8 @@ export const GameProvider = ({ children }) => {
             gameOverData, setGameOverData,
             isSpectator, setIsSpectator,
             handSizes, setHandSizes,
-            opponentScores, setOpponentScores
+            opponentScores, setOpponentScores,
+            resetGame,
         }}>
             {children}
         </GameContext.Provider>

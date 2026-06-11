@@ -66,10 +66,10 @@ Web app: `client/src/` (React, Vitest + Testing Library, colocated `*.test.jsx`,
 
 **Independent Test**: Round engineered so the caller is countered → both call-outs appear in order over the correct players
 
-- [ ] T012 [US2] Write failing tests for the sequencing hook in `client/src/hooks/use-asaf-sequence.test.js` (renderHook + vitest fake timers): returns false when result is null or `asaf` is false; flips to true ~1500ms after an asaf result arrives; resets to false when the result clears; clears the timer on unmount
-- [ ] T013 [US2] Make T012 pass: implement `useAsafSequence(yanivResult)` in `client/src/hooks/use-asaf-sequence.js` (timer in a ref, cleanup on change/unmount — per plan.md Phase 5)
-- [ ] T014 [US2] Wire sequencing into `client/src/pages/game/index.jsx`: `const showAsaf = useAsafSequence(yanivResult)` and extend `calloutFor` with the asaf branch — `{ variant: 'asaf', penalty: true }` when `yanivResult.asaf && showAsaf && id === yanivResult.winner.id`
-- [ ] T015 [US2] Run the client suite — all green; manual check of an asaf round (sequence order and "+30" visible)
+- [x] T012 [US2] Write failing tests for the sequencing hook in `client/src/hooks/use-asaf-sequence.test.js` (renderHook + vitest fake timers): returns false when result is null or `asaf` is false; flips to true ~1500ms after an asaf result arrives; resets to false when the result clears; clears the timer on unmount
+- [x] T013 [US2] Make T012 pass: implement `useAsafSequence(yanivResult)` in `client/src/hooks/use-asaf-sequence.js` (timer in a ref, cleanup on change/unmount — per plan.md Phase 5)
+- [x] T014 [US2] Wire sequencing into `client/src/pages/game/index.jsx`: `const showAsaf = useAsafSequence(yanivResult)` and extend `calloutFor` with the asaf branch — `{ variant: 'asaf', penalty: true }` when `yanivResult.asaf && showAsaf && id === yanivResult.winner.id`
+- [x] T015 [US2] Run the client suite — all green; manual check of an asaf round (sequence order and "+30" visible)
 
 **Checkpoint**: Full Yaniv→Asaf drama works end to end
 

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getIo } = require("../socket");
-const { games } = require("../globals");
+const { games, gameIds } = require("../globals");
 
 function gameId(length) {
     let result = '';
@@ -25,7 +25,12 @@ router.get('/host', function(req, res, next) {
         return res.status(400).json({error: 'Player\'s name required!'});
     }
 
-    const gameID = gameId(GAME_ID_LEN);
+    // Generate a unique gameID: re-roll until we find one not already in use.
+    let gameID = gameId(GAME_ID_LEN);
+    while (gameIds.has(gameID)) {
+        gameID = gameId(GAME_ID_LEN);
+    }
+    gameIds.add(gameID);
     games[gameID] = {"players": {}};
 
     const id = 0;

@@ -1,6 +1,6 @@
 const { Server } = require("socket.io");
 const { createDeck, shuffleDeck, dealCards, getCurrentPlayer, whosTurn, nextTurn, drawFromDeck, handValue, topCard, validYaniv, yanivCall, eliminatePlayers, drawTopCard, updateTopCard, makeTurnCardFromHand, selectCards, removeCardFromHand, rebuildDeck, makeTurnCardFromDeck, makeTurnCardFromTop } = require("./gameLogic");
-const { games } = require("./globals");
+const { games, gameIds } = require("./globals");
 const { ROUND_DELAY_MS, REMATCH_TIMEOUT_MS } = require("./config");
 
 let io;
@@ -221,6 +221,7 @@ function cleanupRoomIfEmpty(room) {
         if (games[room].rematchTimer) clearTimeout(games[room].rematchTimer);
         delete games[room];
     }
+    gameIds.delete(room); // `room` is the gameID; release it for reuse
     return true;
 }
 
@@ -282,6 +283,7 @@ function startRematch(room) {
         }
         delete rooms[room];
         delete games[room];
+        gameIds.delete(room); // game fully over (rematch cancelled); release the gameID
         return;
     }
 

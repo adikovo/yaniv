@@ -27,4 +27,12 @@
 // }
 
 const games = {};
-module.exports = { games };
+
+// Set of gameIDs currently in use. Guarantees uniqueness at creation time so a
+// freshly generated random ID can never silently overwrite a live game.
+// Kept in sync with `games`: an ID is added when a game is created
+// (routes/game.js `/host`) and removed when the room is fully torn down
+// (socket.js `cleanupRoomIfEmpty` and the `startRematch` cancel branch).
+const gameIds = new Set();
+
+module.exports = { games, gameIds };

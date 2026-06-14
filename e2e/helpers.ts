@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 
 export const BASE = 'http://localhost:5173';
 export const SERVER_BASE = 'http://localhost:3000';
@@ -42,6 +42,27 @@ export async function findActiveIndex(pages: Page[]): Promise<number> {
     if (activeOpponents === 0) return i;
   }
   return -1;
+}
+
+// Waits until the turn state has settled — i.e. on exactly one page no opponent
+// area is highlighted active (that page's local player holds the turn). Returns
+// that page's index. Polls the DOM (web-first) instead of relying on a fixed
+// delay, so it is robust to the socket round-trip latency that varies between
+// local (slowMo) and CI (fast) runs. Throws if the turn never settles in time.
+export async function waitForActiveIndex(pages: Page[], timeout = 15000): Promise<number> {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    const counts = await Promise.all(
+      pages.map(p => p.locator('.opponent-area.active-turn').count())
+    );
+    const activeIndices = counts
+      .map((c, i) => (c === 0 ? i : -1))
+      .filter(i => i !== -1);
+    // Settled iff exactly one page reports it is the local player's turn.
+    if (activeIndices.length === 1) return activeIndices[0];
+    await pages[0].waitForTimeout(100);
+  }
+  throw new Error(`Turn state did not settle to a single active player within ${timeout}ms`);
 }
 
 export interface CardInfo { idx: number; value: number; suit: string; }
@@ -122,9 +143,11 @@ export async function discardHighestAndDraw(page: Page) {
 
   // Click the cards to discard first (before reading top-card pile, since
   // clicking a card changes selection state but doesn't mutate the pile).
-  for (const idx of toDiscard) {
-    await cardEls.nth(idx).click();
-    await page.waitForTimeout(150);
+  // Selection toggles the .selected class synchronously (client-side, no
+  // socket), so wait on that class rather than a fixed 150ms delay.
+  for (let n = 0; n < toDiscard.length; n++) {
+    await cardEls.nth(toDiscard[n]).click();
+    await expect(page.locator('.hand .card.selected')).toHaveCount(n + 1, { timeout: 5000 });
   }
 
   // Compute average value of cards we are keeping.
@@ -155,7 +178,14 @@ export async function discardHighestAndDraw(page: Page) {
     await page.getByRole('button', { name: 'DECK' }).click();
   }
 
-  await page.waitForTimeout(800);
+  // Discarding `toDiscard.length` cards and drawing exactly one leaves the hand
+  // at `count - toDiscard.length + 1` (it only stays at 5 when a single card is
+  // discarded; a pair/run shrinks it). Wait for the discard+draw socket
+  // round-trip to settle the hand at that size, instead of guessing with a
+  // fixed delay — this is the signal that the turn fully processed.
+  const expectedAfter = count - toDiscard.length + 1;
+  await expect(page.locator('.hand .card')).toHaveCount(expectedAfter, { timeout: 10000 });
+  return expectedAfter;
 }
 
 // Plays turns until one player's hand sum is ≤ 7 and they can call Yaniv.
@@ -172,12 +202,14 @@ export async function playUntilYanivReady(
 
   while (!yanivCaller && attempts < maxAttempts) {
     attempts++;
-    await pages[0].waitForTimeout(300);
 
-    const idx = await findActiveIndex(pages);
-    if (idx === -1) {
+    // Settle the turn state before reading it: wait until exactly one page
+    // holds the turn. Replaces a fixed 300ms guess + one-shot findActiveIndex.
+    let idx: number;
+    try {
+      idx = await waitForActiveIndex(pages);
+    } catch {
       console.log(`  Attempt ${attempts}: active player not found, retrying...`);
-      await pages[0].waitForTimeout(500);
       continue;
     }
 

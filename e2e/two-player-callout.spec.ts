@@ -2,12 +2,16 @@ import { test, expect, chromium, Page } from '@playwright/test';
 import {
   hostGame,
   joinGame,
-  findActiveIndex,
+  waitForActiveIndex,
   discardHighestAndDraw,
 } from './helpers';
 
 test('2-player callout: Yaniv callout anchored to correct player area', async () => {
-  const browser = await chromium.launch({ headless: false, slowMo: 300 });
+  // Honor the CI environment: headless + slowMo 0 under CI, headed + slow locally.
+  const browser = await chromium.launch({
+    headless: !!process.env.CI,
+    slowMo: process.env.CI ? 0 : 300,
+  });
 
   const [aliceCtx, bobCtx] = await Promise.all([
     browser.newContext({ viewport: { width: 900, height: 700 } }),
@@ -36,16 +40,14 @@ test('2-player callout: Yaniv callout anchored to correct player area', async ()
   await Promise.all(pages.map(p => p.waitForURL('**/game', { timeout: 15000 })));
   console.log('✓ Both players on /game');
 
-  await pages[0].waitForTimeout(1500);
+  // No fixed settle wait needed — Step 4 below uses toHaveCount(5) which
+  // auto-retries until each hand has been dealt.
 
   // ── Step 4: Verify initial hand sizes ────────────────────────
   console.log('\n▶ Checking initial hand sizes (expect 5 cards each)...');
   for (const [i, page] of pages.entries()) {
-    const handCards = page.locator('.hand .card');
-    await expect(handCards.first()).toBeVisible({ timeout: 10000 });
-    const count = await handCards.count();
-    console.log(`  ${names[i]}: ${count} cards in hand`);
-    expect(count).toBe(5);
+    await expect(page.locator('.hand .card')).toHaveCount(5, { timeout: 10000 });
+    console.log(`  ${names[i]}: 5 cards in hand`);
   }
 
   // ── Step 5: Play turns until someone can call Yaniv (sum ≤ 7) ─
@@ -57,12 +59,14 @@ test('2-player callout: Yaniv callout anchored to correct player area', async ()
 
   while (!yanivCaller && attempts < maxAttempts) {
     attempts++;
-    await pages[0].waitForTimeout(300);
 
-    const idx = await findActiveIndex(pages);
-    if (idx === -1) {
+    // Settle the turn state before reading it (web-first), rather than a fixed
+    // 300ms guess followed by a one-shot findActiveIndex.
+    let idx: number;
+    try {
+      idx = await waitForActiveIndex(pages);
+    } catch {
       console.log(`  Attempt ${attempts}: active player not found, retrying...`);
-      await pages[0].waitForTimeout(500);
       continue;
     }
 
@@ -101,24 +105,23 @@ test('2-player callout: Yaniv callout anchored to correct player area', async ()
   console.log(`  ✓ ${otherName} sees .opponent-area .call-out-yaniv`);
 
   // Assertion 3: callout does NOT appear outside its anchor — exactly 1 callout per page
-  const callerCalloutCount = await yanivCaller.locator('.call-out-yaniv').count();
-  expect(callerCalloutCount).toBe(1);
-  console.log(`  ✓ ${yanivCallerName}: exactly 1 .call-out-yaniv in DOM (count: ${callerCalloutCount})`);
+  await expect(yanivCaller.locator('.call-out-yaniv')).toHaveCount(1);
+  console.log(`  ✓ ${yanivCallerName}: exactly 1 .call-out-yaniv in DOM`);
 
-  const otherCalloutCount = await otherPage.locator('.call-out-yaniv').count();
-  expect(otherCalloutCount).toBe(1);
-  console.log(`  ✓ ${otherName}: exactly 1 .call-out-yaniv in DOM (count: ${otherCalloutCount})`);
+  await expect(otherPage.locator('.call-out-yaniv')).toHaveCount(1);
+  console.log(`  ✓ ${otherName}: exactly 1 .call-out-yaniv in DOM`);
 
   console.log(`✓ Yaniv callout correctly anchored on both pages`);
 
   // ── Step 7: Wait for next round and verify callout is gone ────
-  console.log('\n▶ Waiting for next round (~4500ms)...');
-  await pages[0].waitForTimeout(4500);
+  // The callout auto-dismisses after the round-result delay (~4.5s). The
+  // not.toBeVisible assertions below auto-retry up to 10s, so no fixed wait.
+  console.log('\n▶ Waiting for next round...');
 
-  await expect(yanivCaller.locator('.call-out-yaniv')).not.toBeVisible({ timeout: 6000 });
+  await expect(yanivCaller.locator('.call-out-yaniv')).not.toBeVisible({ timeout: 10000 });
   console.log(`  ✓ ${yanivCallerName}: .call-out-yaniv gone`);
 
-  await expect(otherPage.locator('.call-out-yaniv')).not.toBeVisible({ timeout: 6000 });
+  await expect(otherPage.locator('.call-out-yaniv')).not.toBeVisible({ timeout: 10000 });
   console.log(`  ✓ ${otherName}: .call-out-yaniv gone`);
 
   console.log('✓ Yaniv callout dismissed on both pages');
@@ -126,16 +129,18 @@ test('2-player callout: Yaniv callout anchored to correct player area', async ()
   // ── Step 8: Verify both players have 5 cards in new round ─────
   console.log('\n▶ Verifying both players have 5 cards in new round...');
   for (const [i, page] of pages.entries()) {
-    const handCards = page.locator('.hand .card');
-    await expect(handCards.first()).toBeVisible({ timeout: 8000 });
-    const count = await handCards.count();
-    console.log(`  ${names[i]}: ${count} cards in hand`);
-    expect(count).toBe(5);
+    await expect(page.locator('.hand .card')).toHaveCount(5, { timeout: 8000 });
+    console.log(`  ${names[i]}: 5 cards in hand`);
   }
   console.log('✓ Both players have 5 cards in new round');
 
-  console.log('\n✅ All callout checks passed! Keeping windows open 5s for visual inspection...');
-  await pages[0].waitForTimeout(5000);
+  // Local-only: keep windows open briefly for visual inspection. Skipped in CI.
+  if (!process.env.CI) {
+    console.log('\n✅ All callout checks passed! Keeping windows open 5s for visual inspection...');
+    await pages[0].waitForTimeout(5000);
+  } else {
+    console.log('\n✅ All callout checks passed!');
+  }
 
   await browser.close();
 });

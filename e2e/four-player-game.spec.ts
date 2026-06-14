@@ -2,14 +2,18 @@ import { test, expect, chromium, Page } from '@playwright/test';
 import {
   hostGame,
   joinGame,
-  findActiveIndex,
+  waitForActiveIndex,
   discardHighestAndDraw,
 } from './helpers';
 
 const PLAYERS = ['Alice', 'Bob', 'Carol', 'Dave'];
 
 test('4-player game: join, start, play a turn, verify card counts', async () => {
-  const browser = await chromium.launch({ headless: false, slowMo: 500 });
+  // Honor the CI environment: headless + slowMo 0 under CI, headed + slow locally.
+  const browser = await chromium.launch({
+    headless: !!process.env.CI,
+    slowMo: process.env.CI ? 0 : 500,
+  });
 
   const contexts = await Promise.all(
     PLAYERS.map(() => browser.newContext({ viewport: { width: 900, height: 700 } }))
@@ -38,36 +42,36 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
   await Promise.all(pages.map(p => p.waitForURL('**/game', { timeout: 15000 })));
   console.log('✓ All players on /game');
 
-  await pages[0].waitForTimeout(1500);
+  // No fixed settle wait needed — Step 4 below uses toHaveCount(5) which
+  // auto-retries until each hand has been dealt.
 
   // ── Step 4: Verify each player has 5 cards in hand ───────────
   console.log('\n▶ Checking initial hand sizes (expect 5 cards each)...');
   for (const [i, page] of pages.entries()) {
     const handCards = page.locator('.hand .card');
-    await expect(handCards.first()).toBeVisible({ timeout: 10000 });
-    const count = await handCards.count();
-    console.log(`  ${PLAYERS[i]}: ${count} cards in hand`);
-    expect(count).toBe(5);
+    // Web-first assertion auto-retries until the hand has settled at 5 cards.
+    await expect(handCards).toHaveCount(5, { timeout: 10000 });
+    console.log(`  ${PLAYERS[i]}: 5 cards in hand`);
   }
 
   // ── Step 5: Verify opponent areas show correct hand counts ────
   console.log('\n▶ Checking opponent hand counts in UI...');
   for (const [i, page] of pages.entries()) {
     const opponentAreas = page.locator('.opponent-area');
-    const areaCount = await opponentAreas.count();
-    console.log(`  ${PLAYERS[i]} sees ${areaCount} opponent areas`);
-    expect(areaCount).toBe(3);
+    await expect(opponentAreas).toHaveCount(3, { timeout: 10000 });
+    console.log(`  ${PLAYERS[i]} sees 3 opponent areas`);
 
-    for (let j = 0; j < areaCount; j++) {
-      const cardCount = await opponentAreas.nth(j).locator('.card').count();
-      console.log(`    Opponent area ${j + 1}: ${cardCount} face-down cards`);
-      expect(cardCount).toBe(5);
+    for (let j = 0; j < 3; j++) {
+      await expect(opponentAreas.nth(j).locator('.card')).toHaveCount(5, { timeout: 10000 });
+      console.log(`    Opponent area ${j + 1}: 5 face-down cards`);
     }
   }
 
   // ── Step 6: Find whose turn it is ────────────────────────────
   console.log('\n▶ Finding active player...');
-  const activeIndex = await findActiveIndex(pages);
+  // Wait for the turn state to settle to exactly one active player rather than
+  // reading it once (the dealing → first-turn highlight is a socket round-trip).
+  const activeIndex = await waitForActiveIndex(pages);
   expect(activeIndex).not.toBe(-1);
   const activePage = pages[activeIndex];
   const activeName = PLAYERS[activeIndex];
@@ -77,6 +81,9 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
   console.log(`\n▶ Checking Sum label updates on card select (${activeName})...`);
   const sumLabel = activePage.locator('h4', { hasText: 'Sum:' });
   await expect(sumLabel).toBeVisible();
+  // Wait until the sum has populated with a non-zero numeric total before
+  // reading it (it arrives with the dealt hand via socket).
+  await expect(sumLabel).toHaveText(/Sum:\s*[1-9]/, { timeout: 5000 });
 
   // Sum shows total hand value (sent by server) — should be > 0 with a fresh hand
   const sumTextBefore = await sumLabel.textContent();
@@ -87,13 +94,10 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
 
   // ── Step 8: Active player discards highest card and draws from deck ──
   console.log(`\n▶ ${activeName} discards highest card and draws from deck...`);
-  await discardHighestAndDraw(activePage);
-  await activePage.waitForTimeout(200);
-
-  const handAfterDraw = await activePage.locator('.hand .card').count();
-  console.log(`  Hand after draw: ${handAfterDraw} cards`);
-  expect(handAfterDraw).toBe(5);
-  console.log(`✓ ${activeName} hand size unchanged at 5 after discard+draw`);
+  // The helper already waits for the hand to re-settle (it may shrink if a
+  // multi-card combo was discarded) and returns the resulting hand size.
+  const handAfterDraw = await discardHighestAndDraw(activePage);
+  console.log(`✓ ${activeName} hand re-settled at ${handAfterDraw} cards after discard+draw`);
 
   const sumTextAfter = await sumLabel.textContent();
   const sumAfter = parseInt(sumTextAfter?.replace('Sum:', '').trim() ?? '-1');
@@ -110,17 +114,20 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
     has: observerPage.locator(`.opponent-name:text("${activeName}")`),
   });
   await expect(activePlayerArea).toBeVisible({ timeout: 5000 });
-  const observedCards = await activePlayerArea.locator('.card').count();
-  console.log(`  ${PLAYERS[observerIndex]} sees ${observedCards} cards for ${activeName}`);
-  expect(observedCards).toBe(5);
+  // The observer must see the active player's current hand size, which equals
+  // handAfterDraw (it shrinks if a combo was discarded), not a fixed 5.
+  await expect(activePlayerArea.locator('.card')).toHaveCount(handAfterDraw, { timeout: 5000 });
+  console.log(`  ${PLAYERS[observerIndex]} sees ${handAfterDraw} cards for ${activeName}`);
   console.log('✓ Opponent hand count synced correctly');
 
   // ── Step 10: Active-turn highlight moved ─────────────────────
   console.log('\n▶ Verifying turn highlight moved...');
-  await observerPage.waitForTimeout(500);
-  const activeAreas = await observerPage.locator('.opponent-area.active-turn').count();
-  console.log(`  Observer sees ${activeAreas} active-turn opponent area(s)`);
-  expect(activeAreas).toBeLessThanOrEqual(1);
+  // At most one opponent area may be highlighted active at any time. Web-first
+  // assertion polls the DOM rather than reading the count once after a fixed wait.
+  await expect(async () => {
+    const activeAreas = await observerPage.locator('.opponent-area.active-turn').count();
+    expect(activeAreas).toBeLessThanOrEqual(1);
+  }).toPass({ timeout: 5000 });
   console.log('✓ Active-turn highlight is valid');
 
   // ── Step 11: Play turns until someone can call Yaniv (sum ≤ 7) ─
@@ -132,12 +139,14 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
 
   while (!yanivCaller && attempts < maxAttempts) {
     attempts++;
-    await pages[0].waitForTimeout(300);
 
-    const idx = await findActiveIndex(pages);
-    if (idx === -1) {
+    // Settle the turn state before reading it (web-first), rather than a fixed
+    // 300ms guess followed by a one-shot findActiveIndex.
+    let idx: number;
+    try {
+      idx = await waitForActiveIndex(pages);
+    } catch {
       console.log(`  Attempt ${attempts}: active player not found, retrying...`);
-      await pages[0].waitForTimeout(500);
       continue;
     }
 
@@ -180,11 +189,13 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
   console.log(`✓ Yaniv callout visible on all pages (winner: ${roundWinnerName})`);
 
   // ── Step 13: Wait for next round ─────────────────────────────
+  // The callout auto-dismisses after the round-result delay (~4.5s). The
+  // not.toBeVisible assertion below auto-retries up to 10s, so no fixed wait
+  // is needed here.
   console.log('\n▶ Waiting for next round...');
-  await pages[0].waitForTimeout(4500);
 
   for (const [i, page] of pages.entries()) {
-    await expect(page.locator('.call-out-yaniv')).not.toBeVisible({ timeout: 6000 });
+    await expect(page.locator('.call-out-yaniv')).not.toBeVisible({ timeout: 10000 });
     console.log(`  ✓ ${PLAYERS[i]}: .call-out-yaniv gone`);
   }
   console.log('✓ Yaniv callout dismissed on all pages');
@@ -192,11 +203,8 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
   // ── Step 14: Verify all hands reset to 5 cards ───────────────
   console.log('\n▶ Verifying all hands reset to 5 after new round...');
   for (const [i, page] of pages.entries()) {
-    const handCards = page.locator('.hand .card');
-    await expect(handCards.first()).toBeVisible({ timeout: 8000 });
-    const count = await handCards.count();
-    console.log(`  ${PLAYERS[i]}: ${count} cards in hand`);
-    expect(count).toBe(5);
+    await expect(page.locator('.hand .card')).toHaveCount(5, { timeout: 8000 });
+    console.log(`  ${PLAYERS[i]}: 5 cards in hand`);
   }
   console.log('✓ All players have 5 cards in new round');
 
@@ -205,10 +213,11 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
 
   for (const [i, page] of pages.entries()) {
     const isWinner = PLAYERS[i] === roundWinnerName;
-    const activeOpponents = await page.locator('.opponent-area.active-turn').count();
 
     if (isWinner) {
-      expect(activeOpponents).toBe(0);
+      // On the winner's own page no opponent should be highlighted (it's their
+      // turn). Web-first assertion polls until the turn state propagates.
+      await expect(page.locator('.opponent-area.active-turn')).toHaveCount(0, { timeout: 3000 });
       console.log(`  ✓ ${PLAYERS[i]} (winner): it's their turn`);
     } else {
       const winnerArea = page.locator('.opponent-area').filter({
@@ -220,8 +229,14 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
   }
   console.log(`✓ ${roundWinnerName} correctly starts the next round`);
 
-  console.log('\n✅ All checks passed! Keeping windows open 8s for visual inspection...');
-  await pages[0].waitForTimeout(8000);
+  // Local-only: keep windows open briefly for visual inspection. Skipped in CI
+  // (no display, and it only wastes wall-clock time).
+  if (!process.env.CI) {
+    console.log('\n✅ All checks passed! Keeping windows open 8s for visual inspection...');
+    await pages[0].waitForTimeout(8000);
+  } else {
+    console.log('\n✅ All checks passed!');
+  }
 
   await browser.close();
 });

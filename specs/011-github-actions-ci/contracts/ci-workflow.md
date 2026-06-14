@@ -43,9 +43,13 @@ These names must remain stable so branch protection's "required checks" keep mat
 ## Artifact contract
 
 On e2e failure, the run MUST expose downloadable artifacts:
-- Playwright HTML report
-- `test-results/` (traces, screenshots)
+- `test-results/` (per-test `trace.zip` + error context, screenshots)
 - Retention: ≥ 7 days
+
+Reporter is `list` only (console output in the GitHub log); the HTML report
+was intentionally dropped to avoid a ~40 MB bundle per failed run. The
+retained trace (`trace.zip`, opened with `npx playwright show-trace`) is the
+debugging artifact.
 
 ## Non-goals (explicit)
 

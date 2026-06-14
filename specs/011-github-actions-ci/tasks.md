@@ -72,15 +72,15 @@ description: "Task list for GitHub Actions CI pipeline"
 
 > These three tasks edit the same file (`playwright.config.ts`) and must be done in order. They can run in parallel with the US1 ci.yml tasks (different file) — hence [P].
 
-- [ ] T005 [P] [US2] In `playwright.config.ts`, make headless/slowMo CI-conditional: `use.headless = !!process.env.CI`, `use.launchOptions.slowMo = process.env.CI ? 0 : 400`.
-- [ ] T006 [US2] In `playwright.config.ts`, add a `webServer` array with two entries — server (`command: 'npm start'`, `cwd: 'server'`, `url: 'http://localhost:3000'`) and client (`command: 'npm run dev'`, `cwd: 'client'`, `url: 'http://localhost:5173'`) — each with `reuseExistingServer: !process.env.CI` and a startup `timeout`.
-- [ ] T007 [US2] In `playwright.config.ts`, add `reporter: [['list'], ['html', { open: 'never' }]]` and `use.trace: 'retain-on-failure'` so artifacts exist on failure.
-- [ ] T008 [US2] Verify locally: `CI=true npx playwright test` runs headless, auto-starts server+client, and passes; plain `npx playwright test` still runs headed with slowMo. (Closes the local-equivalence contract.)
+- [x] T005 [P] [US2] In `playwright.config.ts`, make headless/slowMo CI-conditional: `use.headless = !!process.env.CI`, `use.launchOptions.slowMo = process.env.CI ? 0 : 400`.
+- [x] T006 [US2] In `playwright.config.ts`, add a `webServer` array with two entries — server (`command: 'npm start'`, `cwd: 'server'`, `url: 'http://localhost:3000'`) and client (`command: 'npm run dev'`, `cwd: 'client'`, `url: 'http://localhost:5173'`) — each with `reuseExistingServer: !process.env.CI` and a startup `timeout`.
+- [x] T007 [US2] In `playwright.config.ts`, add `reporter: [['list'], ['html', { open: 'never' }]]` and `use.trace: 'retain-on-failure'` so artifacts exist on failure.
+- [x] T008 [US2] Verify locally: `CI=true npx playwright test` runs headless, auto-starts server+client, and passes; plain `npx playwright test` still runs headed with slowMo. (Closes the local-equivalence contract.)
 
 ### E2E job
 
-- [ ] T009 [US2] Add the `e2e` job to `.github/workflows/ci.yml`: guard `if: github.event_name == 'pull_request'`, `runs-on: ubuntu-latest`, checkout + setup-node 22, `npm ci` at root **and** in `client/` and `server/` (webServer needs their deps), `npx playwright install --with-deps chromium`, then `npx playwright test`.
-- [ ] T010 [US2] Add an artifact upload step to the `e2e` job: `actions/upload-artifact@v4` with `if: ${{ failure() }}`, uploading `playwright-report/` and `test-results/`, `retention-days: 7`.
+- [x] T009 [US2] Add the `e2e` job to `.github/workflows/ci.yml`: guard `if: github.event_name == 'pull_request'`, `runs-on: ubuntu-latest`, checkout + setup-node 22, `npm ci` at root **and** in `client/` and `server/` (webServer needs their deps), `npx playwright install --with-deps chromium`, then `npx playwright test`.
+- [x] T010 [US2] Add an artifact upload step to the `e2e` job: `actions/upload-artifact@v4` with `if: ${{ failure() }}`, uploading `playwright-report/` and `test-results/`, `retention-days: 7`.
 
 **Checkpoint**: PRs run all three checks; e2e failures surface downloadable traces/report.
 
@@ -94,8 +94,8 @@ description: "Task list for GitHub Actions CI pipeline"
 
 ### Implementation for User Story 3
 
-- [ ] T011 [US3] Confirm the `e2e` job's `if: github.event_name == 'pull_request'` guard (from T009) correctly excludes plain push events while the unit jobs remain ungated, by reviewing `.github/workflows/ci.yml`.
-- [ ] T012 [US3] Cross-check the realized trigger matrix against `specs/011-github-actions-ci/contracts/ci-workflow.md` (push → 2 unit checks; PR → 3 checks). Fix the workflow if they diverge.
+- [x] T011 [US3] Confirm the `e2e` job's `if: github.event_name == 'pull_request'` guard (from T009) correctly excludes plain push events while the unit jobs remain ungated, by reviewing `.github/workflows/ci.yml`.
+- [x] T012 [US3] Cross-check the realized trigger matrix against `specs/011-github-actions-ci/contracts/ci-workflow.md` (push → 2 unit checks; PR → 3 checks). Fix the workflow if they diverge.
 
 **Checkpoint**: Trigger behavior matches the contract.
 

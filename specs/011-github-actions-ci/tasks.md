@@ -34,7 +34,7 @@ description: "Task list for GitHub Actions CI pipeline"
 
 **Purpose**: Create the workflow file skeleton that all jobs attach to.
 
-- [ ] T001 Create `.github/workflows/ci.yml` with `name: CI`, triggers `on: [push, pull_request]`, and a `concurrency` block (group `${{ github.workflow }}-${{ github.ref }}`, `cancel-in-progress: true`). No jobs yet — just the scaffold.
+- [x] T001 Create `.github/workflows/ci.yml` with `name: CI`, triggers `on: [push, pull_request]`, and a `concurrency` block (group `${{ github.workflow }}-${{ github.ref }}`, `cancel-in-progress: true`). No jobs yet — just the scaffold.
 
 ---
 

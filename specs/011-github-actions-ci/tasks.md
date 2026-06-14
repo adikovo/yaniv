@@ -54,9 +54,9 @@ description: "Task list for GitHub Actions CI pipeline"
 
 ### Implementation for User Story 1
 
-- [ ] T002 [US1] Add the `client-unit` job to `.github/workflows/ci.yml`: `runs-on: ubuntu-latest`, `actions/checkout@v4`, `actions/setup-node@v4` (node-version 22, `cache: npm`, cache path `client/package-lock.json`), `npm ci` in `client/`, then `npm test`.
-- [ ] T003 [US1] Add the `server-unit` job to `.github/workflows/ci.yml`: same runner/node setup pattern as T002 but for `server/` (`npm ci` + `npm test`). Independent job (no `needs`).
-- [ ] T004 [US1] Verify the CI commands locally: `cd client && npm ci && npm test` and `cd server && npm ci && npm test` both pass, confirming the exact commands CI will run.
+- [x] T002 [US1] Add the `client-unit` job to `.github/workflows/ci.yml`: `runs-on: ubuntu-latest`, `actions/checkout@v4`, `actions/setup-node@v4` (node-version 22, `cache: npm`, cache path `client/package-lock.json`), `npm ci` in `client/`, then `npm test`.
+- [x] T003 [US1] Add the `server-unit` job to `.github/workflows/ci.yml`: same runner/node setup pattern as T002 but for `server/` (`npm ci` + `npm test`). Independent job (no `needs`).
+- [x] T004 [US1] Verify the CI commands locally: `cd client && npm ci && npm test` and `cd server && npm ci && npm test` both pass, confirming the exact commands CI will run.
 
 **Checkpoint**: Pushing/opening a PR produces two green unit checks. This is the MVP.
 

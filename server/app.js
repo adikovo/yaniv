@@ -32,7 +32,7 @@ app.use('/game', gameRouter);
 // ENABLE_TEST_ROUTES=1 (set by the e2e webServer), so the surface is never
 // exposed by a default `npm start`.
 if (process.env.ENABLE_TEST_ROUTES === '1') {
-  app.use('/test', require('./routes/test'));
+  app.use('/test', require('./routes/testRoutes'));
 }
 
 // catch 404 and forward to error handler

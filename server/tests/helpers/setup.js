@@ -57,12 +57,10 @@ async function createTestServer({ readyTimeout, playerCount = 2 } = {}) {
 
     function closeServer() {
         return new Promise(resolve => {
+            if (games[gameID]?.roundTimer) clearTimeout(games[gameID].roundTimer);
             delete games[gameID];
             // io.close() disconnects any still-open clients and closes the
-            // underlying httpServer. Plain httpServer.close() would wait
-            // indefinitely for live socket connections (e.g. when a test timed
-            // out before disconnecting its clients), which hangs teardown and
-            // leaks a handle so Jest never exits.
+            // underlying httpServer
             io.close(resolve);
         });
     }

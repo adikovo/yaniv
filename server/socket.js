@@ -132,7 +132,7 @@ const setupSocket = (server) => {
                             allPlayers[p.id] = { id: p.id, name: p.name, score: p.score };
                         }
                         // Same delay as the nextRound path, so clients can play the round-end call-out first
-                        setTimeout(() => io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, players: allPlayers }), ROUND_DELAY_MS);
+                        games[room].roundTimer = setTimeout(() => io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, players: allPlayers }), ROUND_DELAY_MS);
                     } else {
                         // remaining >= 2: game continues; remaining === 0: draw, restore both players
                         if (remaining === 0) {
@@ -143,7 +143,7 @@ const setupSocket = (server) => {
                                 e => !newlyEliminated.some(n => n.id === e.id)
                             );
                         }
-                        setTimeout(() => dealNewRound(room, "nextRound", winner.id), ROUND_DELAY_MS);
+                        games[room].roundTimer = setTimeout(() => dealNewRound(room, "nextRound", winner.id), ROUND_DELAY_MS);
                     }
                 }
             }

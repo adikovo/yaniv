@@ -28,6 +28,13 @@ app.use('/users', usersRouter);
 
 app.use('/game', gameRouter);
 
+// Test-only state-seeding routes — mounted only when explicitly opted in via
+// ENABLE_TEST_ROUTES=1 (set by the e2e webServer), so the surface is never
+// exposed by a default `npm start`.
+if (process.env.ENABLE_TEST_ROUTES === '1') {
+  app.use('/test', require('./routes/test'));
+}
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));

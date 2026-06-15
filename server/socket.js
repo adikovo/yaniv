@@ -365,4 +365,4 @@ const getUserRoom = (socketId) => {
 };
 
 
-module.exports = { setupSocket, getIo: () => io };
+module.exports = { setupSocket, getIo: () => io, rooms };

@@ -1,9 +1,10 @@
-import { test, expect, chromium, Page } from '@playwright/test';
+import { test, expect, chromium } from '@playwright/test';
 import {
   hostGame,
   joinGame,
   waitForActiveIndex,
   discardHighestAndDraw,
+  forceYanivReady,
 } from './helpers';
 
 const PLAYERS = ['Alice', 'Bob', 'Carol', 'Dave'];
@@ -130,44 +131,9 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
   }).toPass({ timeout: 5000 });
   console.log('✓ Active-turn highlight is valid');
 
-  // ── Step 11: Play turns until someone can call Yaniv (sum ≤ 7) ─
-  console.log('\n▶ Playing turns until a player can call Yaniv (sum ≤ 7)...');
-  let yanivCaller: Page | null = null;
-  let yanivCallerName = '';
-  let attempts = 0;
-  const maxAttempts = 80;
-
-  while (!yanivCaller && attempts < maxAttempts) {
-    attempts++;
-
-    // Settle the turn state before reading it (web-first), rather than a fixed
-    // 300ms guess followed by a one-shot findActiveIndex.
-    let idx: number;
-    try {
-      idx = await waitForActiveIndex(pages);
-    } catch {
-      console.log(`  Attempt ${attempts}: active player not found, retrying...`);
-      continue;
-    }
-
-    const currentPage = pages[idx];
-    const currentName = PLAYERS[idx];
-    const sumText = await currentPage.locator('h4', { hasText: 'Sum:' }).textContent();
-    const currentSum = parseInt(sumText?.replace('Sum:', '').trim() ?? '999');
-    console.log(`  Turn ${attempts}: ${currentName} (sum: ${currentSum})`);
-
-    if (currentSum <= 7) {
-      yanivCaller = currentPage;
-      yanivCallerName = currentName;
-      console.log(`  ✓ ${currentName} can call Yaniv with sum ${currentSum}`);
-    } else {
-      await discardHighestAndDraw(currentPage);
-    }
-  }
-
-  if (!yanivCaller) {
-    throw new Error(`No player reached sum ≤ 7 after ${maxAttempts} turns`);
-  }
+  // ── Step 11: Force the active player Yaniv-ready (deterministic seed) ─
+  console.log('\n▶ Forcing the active player Yaniv-ready via seedHand...');
+  const { yanivCaller, yanivCallerName } = await forceYanivReady(pages, PLAYERS, gameID);
 
   // ── Step 12: Call Yaniv ───────────────────────────────────────
   console.log(`\n▶ ${yanivCallerName} calls Yaniv!`);

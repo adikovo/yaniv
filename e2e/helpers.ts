@@ -4,12 +4,21 @@ export const BASE = 'http://localhost:5173';
 export const SERVER_BASE = 'http://localhost:3000';
 
 // Test-only helper: seeds every player's cumulative score in the given game to
-// `score` via the server's /game/seedScores route. Used to force a single Yaniv
+// `score` via the server's /test/seedScores route. Used to force a single Yaniv
 // call to end the game (both players at 99 → loser exceeds 100 → gameOver).
 export async function seedScores(page: Page, gameID: string, score: number): Promise<void> {
-  const res = await page.request.get(`${SERVER_BASE}/game/seedScores?gameID=${gameID}&score=${score}`);
+  const res = await page.request.get(`${SERVER_BASE}/test/seedScores?gameID=${gameID}&score=${score}`);
   if (!res.ok()) {
     throw new Error(`seedScores failed: ${res.status()} ${res.statusText()} for gameID=${gameID} score=${score}`);
+  }
+}
+
+// Test-only helper: sets player `playerId`'s hand to a single card of value
+// `sum` (default 1) via /test/seedHand, so a Yaniv-ready be forced
+export async function seedHand(page: Page, gameID: string, playerId: number, sum = 1): Promise<void> {
+  const res = await page.request.get(`${SERVER_BASE}/test/seedHand?gameID=${gameID}&playerId=${playerId}&sum=${sum}`);
+  if (!res.ok()) {
+    throw new Error(`seedHand failed: ${res.status()} ${res.statusText()} for gameID=${gameID} playerId=${playerId} sum=${sum}`);
   }
 }
 
@@ -188,49 +197,29 @@ export async function discardHighestAndDraw(page: Page) {
   return expectedAfter;
 }
 
-// Plays turns until one player's hand sum is ≤ 7 and they can call Yaniv.
-// Returns the page and player name of the Yaniv caller.
-// Throws if no player reaches sum ≤ 7 within maxAttempts turns.
-export async function playUntilYanivReady(
+// Deterministically forces the current-turn player into a Yaniv-ready hand by
+// seeding their hand server-side (sum=1 by default), instead of playing random
+// turns until someone happens to reach sum ≤ 7. Waits for the turn to settle,
+// seeds that player, then waits until their YANIV button is enabled.
+// Returns the page and player name of the (now Yaniv-ready) caller.
+export async function forceYanivReady(
   pages: Page[],
   names: string[],
-  maxAttempts = 60,
+  gameID: string,
+  sum = 1,
 ): Promise<{ yanivCaller: Page; yanivCallerName: string }> {
-  let yanivCaller: Page | null = null;
-  let yanivCallerName = '';
-  let attempts = 0;
+  const idx = await waitForActiveIndex(pages);
+  const yanivCaller = pages[idx];
+  const yanivCallerName = names[idx];
+  console.log(`  Seeding ${yanivCallerName} (player ${idx}) to sum ${sum} for a deterministic Yaniv...`);
 
-  while (!yanivCaller && attempts < maxAttempts) {
-    attempts++;
+  // playerId equals the page index: host is player 0, joiners are added in order.
+  await seedHand(yanivCaller, gameID, idx, sum);
 
-    // Settle the turn state before reading it: wait until exactly one page
-    // holds the turn. Replaces a fixed 300ms guess + one-shot findActiveIndex.
-    let idx: number;
-    try {
-      idx = await waitForActiveIndex(pages);
-    } catch {
-      console.log(`  Attempt ${attempts}: active player not found, retrying...`);
-      continue;
-    }
-
-    const currentPage = pages[idx];
-    const currentName = names[idx];
-    const sumText = await currentPage.locator('h4', { hasText: 'Sum:' }).textContent();
-    const currentSum = parseInt(sumText?.replace('Sum:', '').trim() ?? '999');
-    console.log(`  Turn ${attempts}: ${currentName} (sum: ${currentSum})`);
-
-    if (currentSum <= 7) {
-      yanivCaller = currentPage;
-      yanivCallerName = currentName;
-      console.log(`  ✓ ${currentName} can call Yaniv with sum ${currentSum}`);
-    } else {
-      await discardHighestAndDraw(currentPage);
-    }
-  }
-
-  if (!yanivCaller) {
-    throw new Error(`No player reached sum ≤ 7 after ${maxAttempts} turns`);
-  }
+  // Wait until the seeded hand has propagated to the client and the YANIV button
+  // (disabled when sum > 7 or not your turn) is clickable — web-first, no fixed delay.
+  await expect(yanivCaller.getByRole('button', { name: 'YANIV' })).toBeEnabled({ timeout: 10000 });
+  console.log(`  ✓ ${yanivCallerName} is Yaniv-ready (sum ${sum})`);
 
   return { yanivCaller, yanivCallerName };
 }

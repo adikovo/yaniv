@@ -20,6 +20,8 @@ export default defineConfig({
       url: 'http://localhost:3000',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
+      // Opt the server into the /test seeding routes the e2e specs rely on.
+      env: { ENABLE_TEST_ROUTES: '1' },
     },
     {
       command: 'npm run dev',

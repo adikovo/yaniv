@@ -2,7 +2,7 @@ import { test, expect, chromium } from '@playwright/test';
 import {
   hostGame,
   joinGame,
-  playUntilYanivReady,
+  forceYanivReady,
   seedScores,
 } from './helpers';
 
@@ -52,12 +52,12 @@ test('2-player: idle player goes home when timer expires, ready player also goes
     await Promise.all(pages.map(p => p.waitForURL('**/game', { timeout: 15000 })));
     console.log('✓ Both players on /game');
 
-    // No fixed settle wait — playUntilYanivReady below starts with a web-first
+    // No fixed settle wait — forceYanivReady below starts with a web-first
     // wait for the turn state to settle.
 
-    // ── Step 3: Play until someone can call Yaniv ───────────────
-    console.log('\n▶ Playing turns until a player can call Yaniv (sum ≤ 7)...');
-    const { yanivCaller, yanivCallerName } = await playUntilYanivReady(pages, names);
+    // ── Step 3: Force a player Yaniv-ready (deterministic seed) ──
+    console.log('\n▶ Forcing the active player Yaniv-ready via seedHand...');
+    const { yanivCaller, yanivCallerName } = await forceYanivReady(pages, names, gameID);
 
     // Seed both players to 99 so this single Yaniv call ends the game.
     console.log('\n▶ Seeding both players to score 99 so this round ends the game...');
@@ -149,12 +149,12 @@ test('3-player game: 2 of 3 click Rematch → new 2-player game starts for them;
     await Promise.all(pages.map(p => p.waitForURL('**/game', { timeout: 15000 })));
     console.log('✓ All 3 players on /game');
 
-    // No fixed settle wait — playUntilYanivReady below starts with a web-first
+    // No fixed settle wait — forceYanivReady below starts with a web-first
     // wait for the turn state to settle.
 
-    // ── Step 3: Play until someone can call Yaniv ───────────────
-    console.log('\n▶ Playing turns until a player can call Yaniv (sum ≤ 7)...');
-    const { yanivCaller, yanivCallerName } = await playUntilYanivReady(pages, names);
+    // ── Step 3: Force a player Yaniv-ready (deterministic seed) ──
+    console.log('\n▶ Forcing the active player Yaniv-ready via seedHand...');
+    const { yanivCaller, yanivCallerName } = await forceYanivReady(pages, names, gameID);
 
     // Seed all players to 99 so this single Yaniv call ends the game.
     console.log('\n▶ Seeding all players to score 99 so this round ends the game...');
@@ -254,12 +254,12 @@ test('hosting a new game after a previous game shows the game board, not the win
     await Promise.all(pages.map(p => p.waitForURL('**/game', { timeout: 15000 })));
     console.log('✓ Both players on /game');
 
-    // No fixed settle wait — playUntilYanivReady below starts with a web-first
+    // No fixed settle wait — forceYanivReady below starts with a web-first
     // wait for the turn state to settle.
 
     // ── Step 2: Play until someone can call Yaniv ───────────────
-    console.log('\n▶ Playing turns until a player can call Yaniv (sum ≤ 7)...');
-    const { yanivCaller, yanivCallerName } = await playUntilYanivReady(pages, names);
+    console.log('\n▶ Forcing the active player Yaniv-ready via seedHand...');
+    const { yanivCaller, yanivCallerName } = await forceYanivReady(pages, names, gameID);
 
     // Seed both players to 99 so this single Yaniv call ends the first game.
     console.log('\n▶ Seeding both players to score 99 so this round ends the first game...');

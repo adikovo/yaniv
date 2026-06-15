@@ -1,9 +1,8 @@
-import { test, expect, chromium, Page } from '@playwright/test';
+import { test, expect, chromium } from '@playwright/test';
 import {
   hostGame,
   joinGame,
-  waitForActiveIndex,
-  discardHighestAndDraw,
+  forceYanivReady,
 } from './helpers';
 
 test('2-player callout: Yaniv callout anchored to correct player area', async () => {
@@ -50,44 +49,9 @@ test('2-player callout: Yaniv callout anchored to correct player area', async ()
     console.log(`  ${names[i]}: 5 cards in hand`);
   }
 
-  // ── Step 5: Play turns until someone can call Yaniv (sum ≤ 7) ─
-  console.log('\n▶ Playing turns until a player can call Yaniv (sum ≤ 7)...');
-  let yanivCaller: Page | null = null;
-  let yanivCallerName = '';
-  let attempts = 0;
-  const maxAttempts = 40;
-
-  while (!yanivCaller && attempts < maxAttempts) {
-    attempts++;
-
-    // Settle the turn state before reading it (web-first), rather than a fixed
-    // 300ms guess followed by a one-shot findActiveIndex.
-    let idx: number;
-    try {
-      idx = await waitForActiveIndex(pages);
-    } catch {
-      console.log(`  Attempt ${attempts}: active player not found, retrying...`);
-      continue;
-    }
-
-    const currentPage = pages[idx];
-    const currentName = names[idx];
-    const sumText = await currentPage.locator('h4', { hasText: 'Sum:' }).textContent();
-    const currentSum = parseInt(sumText?.replace('Sum:', '').trim() ?? '999');
-    console.log(`  Turn ${attempts}: ${currentName} (sum: ${currentSum})`);
-
-    if (currentSum <= 7) {
-      yanivCaller = currentPage;
-      yanivCallerName = currentName;
-      console.log(`  ✓ ${currentName} can call Yaniv with sum ${currentSum}`);
-    } else {
-      await discardHighestAndDraw(currentPage);
-    }
-  }
-
-  if (!yanivCaller) {
-    throw new Error(`No player reached sum ≤ 7 after ${maxAttempts} turns`);
-  }
+  // ── Step 5: Force the active player Yaniv-ready (deterministic seed) ─
+  console.log('\n▶ Forcing the active player Yaniv-ready via seedHand...');
+  const { yanivCaller, yanivCallerName } = await forceYanivReady(pages, names, gameID);
 
   const otherPage = yanivCaller === alicePage ? bobPage : alicePage;
   const otherName = yanivCallerName === 'Alice' ? 'Bob' : 'Alice';

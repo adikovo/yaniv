@@ -1,6 +1,6 @@
 const { Server } = require("socket.io");
 const { createDeck, shuffleDeck, dealCards, getCurrentPlayer, whosTurn, nextTurn, drawFromDeck, handValue, topCard, validYaniv, yanivCall, eliminatePlayers, drawTopCard, updateTopCard, makeTurnCardFromHand, selectCards, removeCardFromHand, rebuildDeck, makeTurnCardFromDeck, makeTurnCardFromTop } = require("./gameLogic");
-const { games } = require("./globals");
+const { games, gameIds } = require("./globals");
 const { ROUND_DELAY_MS, REMATCH_TIMEOUT_MS } = require("./config");
 
 let io;
@@ -132,7 +132,7 @@ const setupSocket = (server) => {
                             allPlayers[p.id] = { id: p.id, name: p.name, score: p.score };
                         }
                         // Same delay as the nextRound path, so clients can play the round-end call-out first
-                        setTimeout(() => io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, players: allPlayers }), ROUND_DELAY_MS);
+                        games[room].roundTimer = setTimeout(() => io.to(room).emit("gameOver", { winner: { id: winner.id, name: winner.name }, players: allPlayers }), ROUND_DELAY_MS);
                     } else {
                         // remaining >= 2: game continues; remaining === 0: draw, restore both players
                         if (remaining === 0) {
@@ -143,7 +143,7 @@ const setupSocket = (server) => {
                                 e => !newlyEliminated.some(n => n.id === e.id)
                             );
                         }
-                        setTimeout(() => dealNewRound(room, "nextRound", winner.id), ROUND_DELAY_MS);
+                        games[room].roundTimer = setTimeout(() => dealNewRound(room, "nextRound", winner.id), ROUND_DELAY_MS);
                     }
                 }
             }
@@ -221,6 +221,7 @@ function cleanupRoomIfEmpty(room) {
         if (games[room].rematchTimer) clearTimeout(games[room].rematchTimer);
         delete games[room];
     }
+    gameIds.delete(room); // `room` is the gameID; release it for reuse
     return true;
 }
 
@@ -282,6 +283,7 @@ function startRematch(room) {
         }
         delete rooms[room];
         delete games[room];
+        gameIds.delete(room); // game fully over (rematch cancelled); release the gameID
         return;
     }
 
@@ -363,4 +365,4 @@ const getUserRoom = (socketId) => {
 };
 
 
-module.exports = { setupSocket, getIo: () => io };
+module.exports = { setupSocket, getIo: () => io, rooms };

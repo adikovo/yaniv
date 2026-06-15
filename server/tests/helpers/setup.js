@@ -22,7 +22,7 @@ async function createTestServer({ readyTimeout, playerCount = 2 } = {}) {
     const { setupSocket } = require('../../socket');
 
     const httpServer = http.createServer(app);
-    setupSocket(httpServer, ...(readyTimeout !== undefined ? [{ readyTimeout }] : []));
+    const io = setupSocket(httpServer, ...(readyTimeout !== undefined ? [{ readyTimeout }] : []));
 
     await new Promise(resolve => httpServer.listen(0, resolve));
     const port = httpServer.address().port;
@@ -57,8 +57,11 @@ async function createTestServer({ readyTimeout, playerCount = 2 } = {}) {
 
     function closeServer() {
         return new Promise(resolve => {
+            if (games[gameID]?.roundTimer) clearTimeout(games[gameID].roundTimer);
             delete games[gameID];
-            httpServer.close(resolve);
+            // io.close() disconnects any still-open clients and closes the
+            // underlying httpServer
+            io.close(resolve);
         });
     }
 

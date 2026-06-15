@@ -2,7 +2,7 @@ import { test, expect, chromium } from '@playwright/test';
 import {
   hostGame,
   joinGame,
-  playUntilYanivReady,
+  forceYanivReady,
   seedScores,
 } from './helpers';
 
@@ -19,7 +19,11 @@ import {
 test('2-player: idle player goes home when timer expires, ready player also goes home (cancelled)', async () => {
   test.setTimeout(120000);
 
-  const browser = await chromium.launch({ headless: false, slowMo: 400 });
+  // Honor the CI environment: headless + slowMo 0 under CI, headed + slow locally.
+  const browser = await chromium.launch({
+    headless: !!process.env.CI,
+    slowMo: process.env.CI ? 0 : 400,
+  });
 
   const [p0Ctx, p1Ctx] = await Promise.all([
     browser.newContext({ viewport: { width: 900, height: 700 } }),
@@ -48,11 +52,12 @@ test('2-player: idle player goes home when timer expires, ready player also goes
     await Promise.all(pages.map(p => p.waitForURL('**/game', { timeout: 15000 })));
     console.log('✓ Both players on /game');
 
-    await pages[0].waitForTimeout(1500);
+    // No fixed settle wait — forceYanivReady below starts with a web-first
+    // wait for the turn state to settle.
 
-    // ── Step 3: Play until someone can call Yaniv ───────────────
-    console.log('\n▶ Playing turns until a player can call Yaniv (sum ≤ 7)...');
-    const { yanivCaller, yanivCallerName } = await playUntilYanivReady(pages, names);
+    // ── Step 3: Force a player Yaniv-ready (deterministic seed) ──
+    console.log('\n▶ Forcing the active player Yaniv-ready via seedHand...');
+    const { yanivCaller, yanivCallerName } = await forceYanivReady(pages, names, gameID);
 
     // Seed both players to 99 so this single Yaniv call ends the game.
     console.log('\n▶ Seeding both players to score 99 so this round ends the game...');
@@ -105,7 +110,11 @@ test('2-player: idle player goes home when timer expires, ready player also goes
 test('3-player game: 2 of 3 click Rematch → new 2-player game starts for them; idle player goes home', async () => {
   test.setTimeout(180000);
 
-  const browser = await chromium.launch({ headless: false, slowMo: 400 });
+  // Honor the CI environment: headless + slowMo 0 under CI, headed + slow locally.
+  const browser = await chromium.launch({
+    headless: !!process.env.CI,
+    slowMo: process.env.CI ? 0 : 400,
+  });
 
   const [p0Ctx, p1Ctx, p2Ctx] = await Promise.all([
     browser.newContext({ viewport: { width: 900, height: 700 } }),
@@ -140,11 +149,12 @@ test('3-player game: 2 of 3 click Rematch → new 2-player game starts for them;
     await Promise.all(pages.map(p => p.waitForURL('**/game', { timeout: 15000 })));
     console.log('✓ All 3 players on /game');
 
-    await pages[0].waitForTimeout(1500);
+    // No fixed settle wait — forceYanivReady below starts with a web-first
+    // wait for the turn state to settle.
 
-    // ── Step 3: Play until someone can call Yaniv ───────────────
-    console.log('\n▶ Playing turns until a player can call Yaniv (sum ≤ 7)...');
-    const { yanivCaller, yanivCallerName } = await playUntilYanivReady(pages, names);
+    // ── Step 3: Force a player Yaniv-ready (deterministic seed) ──
+    console.log('\n▶ Forcing the active player Yaniv-ready via seedHand...');
+    const { yanivCaller, yanivCallerName } = await forceYanivReady(pages, names, gameID);
 
     // Seed all players to 99 so this single Yaniv call ends the game.
     console.log('\n▶ Seeding all players to score 99 so this round ends the game...');
@@ -185,8 +195,11 @@ test('3-player game: 2 of 3 click Rematch → new 2-player game starts for them;
 
     console.log('\n✅ Test C passed: 2 ready players entered new game; idle player went home');
 
-    // Keep windows open so the outcome is visible before teardown
-    await pages[0].waitForTimeout(10000);
+    // Local-only: keep windows open so the outcome is visible before teardown.
+    // Skipped in CI (no display, pure wall-clock cost).
+    if (!process.env.CI) {
+      await pages[0].waitForTimeout(10000);
+    }
   } finally {
     await browser.close();
   }
@@ -209,7 +222,11 @@ test('3-player game: 2 of 3 click Rematch → new 2-player game starts for them;
 test('hosting a new game after a previous game shows the game board, not the winner overlay', async () => {
   test.setTimeout(120000);
 
-  const browser = await chromium.launch({ headless: false, slowMo: 400 });
+  // Honor the CI environment: headless + slowMo 0 under CI, headed + slow locally.
+  const browser = await chromium.launch({
+    headless: !!process.env.CI,
+    slowMo: process.env.CI ? 0 : 400,
+  });
 
   const [p0Ctx, p1Ctx] = await Promise.all([
     browser.newContext({ viewport: { width: 900, height: 700 } }),
@@ -237,11 +254,12 @@ test('hosting a new game after a previous game shows the game board, not the win
     await Promise.all(pages.map(p => p.waitForURL('**/game', { timeout: 15000 })));
     console.log('✓ Both players on /game');
 
-    await pages[0].waitForTimeout(1500);
+    // No fixed settle wait — forceYanivReady below starts with a web-first
+    // wait for the turn state to settle.
 
     // ── Step 2: Play until someone can call Yaniv ───────────────
-    console.log('\n▶ Playing turns until a player can call Yaniv (sum ≤ 7)...');
-    const { yanivCaller, yanivCallerName } = await playUntilYanivReady(pages, names);
+    console.log('\n▶ Forcing the active player Yaniv-ready via seedHand...');
+    const { yanivCaller, yanivCallerName } = await forceYanivReady(pages, names, gameID);
 
     // Seed both players to 99 so this single Yaniv call ends the first game.
     console.log('\n▶ Seeding both players to score 99 so this round ends the first game...');
@@ -285,19 +303,21 @@ test('hosting a new game after a previous game shows the game board, not the win
     await Promise.all(pages.map(p => p.waitForURL('**/game', { timeout: 15000 })));
     console.log('✓ Both players on /game (second game)');
 
-    await pages[0].waitForTimeout(1500);
-
     // ── Step 6: Assert no stale overlay; game board is present ──
+    // Assert the game board is rendered first: this is the positive signal that
+    // the second game's UI has actually mounted, so the subsequent negative
+    // assertion (no stale overlay) is meaningful rather than vacuously passing
+    // before the page has rendered. Replaces a fixed 1500ms settle wait.
+    console.log('\n▶ Asserting .game-board is visible on both pages...');
+    for (const [i, page] of pages.entries()) {
+      await expect(page.locator('.game-board')).toBeVisible({ timeout: 10000 });
+      console.log(`  ✓ ${names[i]}: .game-board IS visible`);
+    }
+
     console.log('\n▶ Asserting no stale round-result-overlay on either page...');
     for (const [i, page] of pages.entries()) {
       await expect(page.locator('.round-result-overlay')).not.toBeVisible({ timeout: 5000 });
       console.log(`  ✓ ${names[i]}: .round-result-overlay is NOT visible`);
-    }
-
-    console.log('\n▶ Asserting .game-board is visible on both pages...');
-    for (const [i, page] of pages.entries()) {
-      await expect(page.locator('.game-board')).toBeVisible({ timeout: 5000 });
-      console.log(`  ✓ ${names[i]}: .game-board IS visible`);
     }
 
     console.log('\n✅ Test B passed: second game shows game board without stale winner overlay');

@@ -1,15 +1,24 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 
 export const BASE = 'http://localhost:5173';
 export const SERVER_BASE = 'http://localhost:3000';
 
 // Test-only helper: seeds every player's cumulative score in the given game to
-// `score` via the server's /game/seedScores route. Used to force a single Yaniv
+// `score` via the server's /test/seedScores route. Used to force a single Yaniv
 // call to end the game (both players at 99 → loser exceeds 100 → gameOver).
 export async function seedScores(page: Page, gameID: string, score: number): Promise<void> {
-  const res = await page.request.get(`${SERVER_BASE}/game/seedScores?gameID=${gameID}&score=${score}`);
+  const res = await page.request.get(`${SERVER_BASE}/test/seedScores?gameID=${gameID}&score=${score}`);
   if (!res.ok()) {
     throw new Error(`seedScores failed: ${res.status()} ${res.statusText()} for gameID=${gameID} score=${score}`);
+  }
+}
+
+// Test-only helper: sets player `playerId`'s hand to a single card of value
+// `sum` (default 1) via /test/seedHand, so a Yaniv-ready be forced
+export async function seedHand(page: Page, gameID: string, playerId: number, sum = 1): Promise<void> {
+  const res = await page.request.get(`${SERVER_BASE}/test/seedHand?gameID=${gameID}&playerId=${playerId}&sum=${sum}`);
+  if (!res.ok()) {
+    throw new Error(`seedHand failed: ${res.status()} ${res.statusText()} for gameID=${gameID} playerId=${playerId} sum=${sum}`);
   }
 }
 
@@ -42,6 +51,27 @@ export async function findActiveIndex(pages: Page[]): Promise<number> {
     if (activeOpponents === 0) return i;
   }
   return -1;
+}
+
+// Waits until the turn state has settled — i.e. on exactly one page no opponent
+// area is highlighted active (that page's local player holds the turn). Returns
+// that page's index. Polls the DOM (web-first) instead of relying on a fixed
+// delay, so it is robust to the socket round-trip latency that varies between
+// local (slowMo) and CI (fast) runs. Throws if the turn never settles in time.
+export async function waitForActiveIndex(pages: Page[], timeout = 15000): Promise<number> {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    const counts = await Promise.all(
+      pages.map(p => p.locator('.opponent-area.active-turn').count())
+    );
+    const activeIndices = counts
+      .map((c, i) => (c === 0 ? i : -1))
+      .filter(i => i !== -1);
+    // Settled iff exactly one page reports it is the local player's turn.
+    if (activeIndices.length === 1) return activeIndices[0];
+    await pages[0].waitForTimeout(100);
+  }
+  throw new Error(`Turn state did not settle to a single active player within ${timeout}ms`);
 }
 
 export interface CardInfo { idx: number; value: number; suit: string; }
@@ -122,9 +152,11 @@ export async function discardHighestAndDraw(page: Page) {
 
   // Click the cards to discard first (before reading top-card pile, since
   // clicking a card changes selection state but doesn't mutate the pile).
-  for (const idx of toDiscard) {
-    await cardEls.nth(idx).click();
-    await page.waitForTimeout(150);
+  // Selection toggles the .selected class synchronously (client-side, no
+  // socket), so wait on that class rather than a fixed 150ms delay.
+  for (let n = 0; n < toDiscard.length; n++) {
+    await cardEls.nth(toDiscard[n]).click();
+    await expect(page.locator('.hand .card.selected')).toHaveCount(n + 1, { timeout: 5000 });
   }
 
   // Compute average value of cards we are keeping.
@@ -155,50 +187,39 @@ export async function discardHighestAndDraw(page: Page) {
     await page.getByRole('button', { name: 'DECK' }).click();
   }
 
-  await page.waitForTimeout(800);
+  // Discarding `toDiscard.length` cards and drawing exactly one leaves the hand
+  // at `count - toDiscard.length + 1` (it only stays at 5 when a single card is
+  // discarded; a pair/run shrinks it). Wait for the discard+draw socket
+  // round-trip to settle the hand at that size, instead of guessing with a
+  // fixed delay — this is the signal that the turn fully processed.
+  const expectedAfter = count - toDiscard.length + 1;
+  await expect(page.locator('.hand .card')).toHaveCount(expectedAfter, { timeout: 10000 });
+  return expectedAfter;
 }
 
-// Plays turns until one player's hand sum is ≤ 7 and they can call Yaniv.
-// Returns the page and player name of the Yaniv caller.
-// Throws if no player reaches sum ≤ 7 within maxAttempts turns.
-export async function playUntilYanivReady(
+// Deterministically forces the current-turn player into a Yaniv-ready hand by
+// seeding their hand server-side (sum=1 by default), instead of playing random
+// turns until someone happens to reach sum ≤ 7. Waits for the turn to settle,
+// seeds that player, then waits until their YANIV button is enabled.
+// Returns the page and player name of the (now Yaniv-ready) caller.
+export async function forceYanivReady(
   pages: Page[],
   names: string[],
-  maxAttempts = 60,
+  gameID: string,
+  sum = 1,
 ): Promise<{ yanivCaller: Page; yanivCallerName: string }> {
-  let yanivCaller: Page | null = null;
-  let yanivCallerName = '';
-  let attempts = 0;
+  const idx = await waitForActiveIndex(pages);
+  const yanivCaller = pages[idx];
+  const yanivCallerName = names[idx];
+  console.log(`  Seeding ${yanivCallerName} (player ${idx}) to sum ${sum} for a deterministic Yaniv...`);
 
-  while (!yanivCaller && attempts < maxAttempts) {
-    attempts++;
-    await pages[0].waitForTimeout(300);
+  // playerId equals the page index: host is player 0, joiners are added in order.
+  await seedHand(yanivCaller, gameID, idx, sum);
 
-    const idx = await findActiveIndex(pages);
-    if (idx === -1) {
-      console.log(`  Attempt ${attempts}: active player not found, retrying...`);
-      await pages[0].waitForTimeout(500);
-      continue;
-    }
-
-    const currentPage = pages[idx];
-    const currentName = names[idx];
-    const sumText = await currentPage.locator('h4', { hasText: 'Sum:' }).textContent();
-    const currentSum = parseInt(sumText?.replace('Sum:', '').trim() ?? '999');
-    console.log(`  Turn ${attempts}: ${currentName} (sum: ${currentSum})`);
-
-    if (currentSum <= 7) {
-      yanivCaller = currentPage;
-      yanivCallerName = currentName;
-      console.log(`  ✓ ${currentName} can call Yaniv with sum ${currentSum}`);
-    } else {
-      await discardHighestAndDraw(currentPage);
-    }
-  }
-
-  if (!yanivCaller) {
-    throw new Error(`No player reached sum ≤ 7 after ${maxAttempts} turns`);
-  }
+  // Wait until the seeded hand has propagated to the client and the YANIV button
+  // (disabled when sum > 7 or not your turn) is clickable — web-first, no fixed delay.
+  await expect(yanivCaller.getByRole('button', { name: 'YANIV' })).toBeEnabled({ timeout: 10000 });
+  console.log(`  ✓ ${yanivCallerName} is Yaniv-ready (sum ${sum})`);
 
   return { yanivCaller, yanivCallerName };
 }

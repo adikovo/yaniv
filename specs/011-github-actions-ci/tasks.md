@@ -105,8 +105,8 @@ description: "Task list for GitHub Actions CI pipeline"
 
 **Purpose**: End-to-end verification on real GitHub and docs.
 
-- [ ] T013 Run the full `specs/011-github-actions-ci/quickstart.md` validation: local `CI=true` run, push branch + open PR, confirm three checks go green within budget, force an e2e failure to confirm artifacts, then revert.
-- [ ] T014 [P] (Manual, repo owner) Enable branch protection on `main` requiring the `client-unit`, `server-unit`, and `e2e` status checks (per quickstart.md step 5). Out of code scope; documented here for completeness.
+- [x] T013 Run the full `specs/011-github-actions-ci/quickstart.md` validation: local `CI=true` run, push branch + open PR, confirm three checks go green within budget, force an e2e failure to confirm artifacts, then revert. (Artifact-on-failure confirmed by real CI run 27539726743, which uploaded a downloadable `playwright-traces` artifact; the failing test was then fixed by the e2e determinism work.)
+- [x] T014 [P] (Manual, repo owner) Enable branch protection on `main` requiring the `client-unit`, `server-unit`, and `e2e` status checks (per quickstart.md step 5). Out of code scope; documented here for completeness. (Done via ruleset `main-ci-required` after making the repo public — requires all three checks + a PR, 0 approvals, blocks force-push/deletion.)
 
 ---
 

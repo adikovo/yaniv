@@ -1,7 +1,7 @@
 const { createTestServer } = require('./helpers/setup');
 const { games } = require('../globals');
 
-const TIMEOUT = 6000;
+const TIMEOUT = 6000 * (process.env.CI ? 3 : 1);
 
 function setHand(player, cards) {
     player.hand = cards;

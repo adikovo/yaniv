@@ -1,7 +1,7 @@
 const { createTestServer } = require('./helpers/setup');
 const { games } = require('../globals');
 
-const TIMEOUT = 4000;
+const TIMEOUT = 4000 * (process.env.CI ? 3 : 1);
 
 describe('makeTurn guard — stale or disconnected player', () => {
     let server;

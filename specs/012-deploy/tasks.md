@@ -31,9 +31,9 @@ Tasks are ordered by real dependency, so [REPO] and [MANUAL] interleave where on
 
 **Purpose**: Document the new config surface and protect secrets.
 
-- [ ] T001 [P] [REPO] Create `client/.env.example` documenting `VITE_SERVER_URL` (with note: unset → falls back to `http://localhost:3000`)
-- [ ] T002 [P] [REPO] Create `server/.env.example` documenting `CLIENT_ORIGIN` (comma-separated origins) and `PORT`
-- [ ] T003 [REPO] Add `.env` (and `.env.*`, keeping `.env.example`) to gitignore for `client/` and `server/` so real config/secrets are never committed (FR-011)
+- [X] T001 [P] [REPO] Create `client/.env.example` documenting `VITE_SERVER_URL` (with note: unset → falls back to `http://localhost:3000`)
+- [X] T002 [P] [REPO] Create `server/.env.example` documenting `CLIENT_ORIGIN` (comma-separated origins) and `PORT`
+- [X] T003 [REPO] Add `.env` (and `.env.*`, keeping `.env.example`) to gitignore for `client/` and `server/` so real config/secrets are never committed (FR-011)
 
 ---
 

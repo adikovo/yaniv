@@ -8,6 +8,15 @@
 
 **Input**: User description: "Continuous deployment for the Yaniv card game. Deploy the two parts of the app to production with a CV-shareable public URL. The static client is hosted on a free static host that auto-deploys on every push to main. The always-on websocket server is deployed to a self-managed free always-on VM behind a reverse proxy with HTTPS. Prerequisite: the client's hardcoded server URL becomes environment-driven with a localhost fallback for local dev."
 
+## Clarifications
+
+### Session 2026-06-18
+
+- Q: How far should server-deploy automation go in this feature? → A: Fully automated — a GitHub Actions job runs on push to `main` (after CI), SSHes into the VM using a key stored as a GitHub secret, and runs the deploy commands (pull + reinstall + restart).
+- Q: How should the server obtain an HTTPS hostname (the VM only has a raw public IP)? → A: A free DuckDNS subdomain pointing at the VM, with nginx + Let's Encrypt (certbot) issuing the certificate on the VM. No purchased domain. This hostname is internal-only (client config) and never shown to visitors.
+- Q: Which free static host serves the client and auto-deploys on push to main? → A: Netlify, using a free `*.netlify.app` subdomain as the public CV-facing URL. No custom domain ($0 total).
+- Q: Should the server restrict connection origins or keep the wildcard? → A: Lock CORS and the Socket.io origin to the deployed client origin plus localhost (configurable via env), replacing `origin: "*"`.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - A visitor opens the public link and plays immediately (Priority: P1)
@@ -42,18 +51,19 @@ When the author merges a change to `main` (after CI passes), the public client u
 
 ---
 
-### User Story 3 - Server changes ship via a repeatable, documented step (Priority: P3)
+### User Story 3 - Server ships automatically on merge to main (Priority: P3)
 
-When the author changes the server, they can update the running production server through a single repeatable procedure, rather than improvising each time.
+When the author merges a server change to `main` (after CI passes), the production server is updated automatically — no manual login or commands.
 
-**Why this priority**: The server changes less often than the client and lives on a self-managed host, so a documented one-step procedure (initially manual) is sufficient. Full automation is a nice-to-have layered on later.
+**Why this priority**: The server changes less often than the client and lives on a self-managed host, so its automation is layered on after the client's. But automating it removes manual, error-prone steps and completes end-to-end CD for both halves of the app.
 
-**Independent Test**: Make a server change, follow the documented deploy step, and confirm the live server runs the new code and automatically resumes after a host reboot.
+**Independent Test**: Make a server change, merge to `main`, and confirm the live server runs the new code automatically and resumes after a host reboot.
 
 **Acceptance Scenarios**:
 
-1. **Given** a server code change, **When** the author runs the documented deploy step, **Then** the production server restarts on the new code and resumes serving connections.
-2. **Given** the host machine reboots, **When** it comes back online, **Then** the server process starts automatically without manual intervention.
+1. **Given** a server code change is merged to `main` and CI is green, **When** the merge completes, **Then** an automated job updates and restarts the production server on the new code with no manual action.
+2. **Given** the automated deploy job fails, **When** it errors, **Then** the previously running server keeps serving (a failed deploy does not take the server down) and the failure is visible.
+3. **Given** the host machine reboots, **When** it comes back online, **Then** the server process starts automatically without manual intervention.
 
 ---
 
@@ -77,9 +87,10 @@ When the author changes the server, they can update the running production serve
 - **FR-006**: A single server instance MUST host multiple concurrent, independent games without cross-game interference.
 - **FR-007**: Merging to `main` (with CI green) MUST automatically rebuild and publish the client without manual steps.
 - **FR-008**: A failed client build MUST NOT take down the currently live client.
-- **FR-009**: The server MUST be updatable via a single documented, repeatable deploy procedure.
+- **FR-009**: Merging a server change to `main` (with CI green) MUST automatically update and restart the production server with no manual steps; a failed deploy MUST leave the previously running server serving.
 - **FR-010**: Local development MUST continue to work with no deployment configuration present (unchanged developer experience).
-- **FR-011**: Any credentials or secrets required for deployment MUST NOT be committed to the repository.
+- **FR-011**: Any credentials or secrets required for deployment (including the key used to access the server host) MUST be stored outside the repository (e.g., as protected secrets) and MUST NOT be committed.
+- **FR-014**: The server MUST accept real-time and HTTP connections only from the configured client origin(s) plus the local development origin, rejecting others (no wildcard origin in production).
 - **FR-012**: The public deployment MUST incur no recurring monetary cost (free hosting tiers).
 - **FR-013**: The public client URL MUST be stable enough to place on a CV (it does not change on every deploy).
 
@@ -103,10 +114,11 @@ When the author changes the server, they can update the running production serve
 
 ## Assumptions
 
-- The client and server are deployed to two different hosts: a free static host for the client and a free always-on self-managed VM for the server.
+- The client is deployed to Netlify (free tier) on a free `*.netlify.app` subdomain, which is the public CV-facing URL; the server runs on a free always-on self-managed VM (Oracle Cloud Always Free).
 - A single server process serves all concurrent games; horizontal scaling across multiple server processes is out of scope (in-memory game state is not shared between processes).
 - Loss of in-memory game state on server restart/redeploy is acceptable (no game-state persistence is in scope).
-- A domain or stable host-provided hostname is available for the server so an HTTPS certificate can be issued; obtaining a custom domain is optional.
-- The author is willing to perform one-time manual host setup (account creation, VM provisioning, proxy/TLS configuration).
-- The existing CI gate on `main` remains the quality bar that precedes any client auto-deploy.
+- The server's HTTPS hostname is a free DuckDNS subdomain pointing at the VM, with nginx terminating TLS via a Let's Encrypt certificate; this hostname is internal config only and never shown to visitors. No custom domain is purchased ($0 total).
+- Automated server deploy uses a GitHub Actions job that connects to the VM over SSH using a key held as a protected GitHub secret.
+- The author is willing to perform one-time manual host setup (account creation, VM provisioning, nginx/TLS configuration, registering the GitHub deploy secret).
+- The existing CI gate on `main` remains the quality bar that precedes both client and server auto-deploy.
 - Traffic volume is low (portfolio/demo usage), so free-tier resource limits are sufficient.

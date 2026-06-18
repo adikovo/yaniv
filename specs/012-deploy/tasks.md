@@ -45,17 +45,17 @@ Tasks are ordered by real dependency, so [REPO] and [MANUAL] interleave where on
 
 ### Tests (write first, ensure they FAIL)
 
-- [ ] T004 [P] [REPO] Failing Vitest: server URL resolves from `VITE_SERVER_URL` and falls back to `http://localhost:3000` when unset — `client/src/api/__tests__/serverUrl.test.js`
-- [ ] T005 [P] [REPO] Failing Jest: allowed origins parse from `CLIENT_ORIGIN` and default to localhost dev origins; an origin not in the list is rejected — `server/tests/cors.test.js`
+- [X] T004 [P] [REPO] Failing Vitest: server URL resolves from `VITE_SERVER_URL` and falls back to `http://localhost:3000` when unset — `client/src/api/serverUrl.test.js` (colocated, per repo convention)
+- [X] T005 [P] [REPO] Failing Jest: allowed origins parse from `CLIENT_ORIGIN` and default to localhost dev origin; an origin not in the list is rejected — `server/tests/cors.test.js`
 
 ### Implementation
 
-- [ ] T006 [P] [REPO] Implement `const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000"` and use it in `client/src/api/socket.js`
-- [ ] T007 [P] [REPO] Implement the same env-driven `SERVER_URL` fallback in `client/src/api/api.js`
-- [ ] T008 [REPO] Add `CLIENT_ORIGIN` parsing (comma-split, default `http://localhost:5173,http://localhost:3000`) exported from `server/config.js`
-- [ ] T009 [REPO] Apply the allowed-origins list to the Express `cors()` middleware in `server/app.js` (replace blanket usage)
-- [ ] T010 [REPO] Apply the allowed-origins list to the Socket.io `cors.origin` in `server/socket.js` (replace `origin: "*"`)
-- [ ] T011 [REPO] Run client (Vitest) + server (Jest) suites; confirm T004/T005 now pass and all existing unit + e2e tests stay green (local origins still allowed)
+- [X] T006 [P] [REPO] Add shared `client/src/api/serverUrl.js` (`SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:3000"`) and use it in `client/src/api/socket.js`
+- [X] T007 [P] [REPO] Use the same shared `SERVER_URL` module in `client/src/api/api.js`
+- [X] T008 [REPO] Add `getAllowedOrigins` (comma-split, default `http://localhost:5173`) + shared `corsOrigin` callback exported from `server/config.js`
+- [X] T009 [REPO] Apply `corsOrigin` to the Express `cors()` middleware in `server/app.js` (replace blanket usage)
+- [X] T010 [REPO] Apply `corsOrigin` to the Socket.io `cors.origin` in `server/socket.js` (replace `origin: "*"`)
+- [X] T011 [REPO] Ran client (Vitest 67✓) + server (Jest 70✓) + e2e (Playwright 9✓) — new tests green, no regressions
 
 **Checkpoint**: App works locally exactly as before; production config is now injectable.
 

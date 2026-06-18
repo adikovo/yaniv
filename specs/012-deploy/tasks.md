@@ -69,8 +69,8 @@ Tasks are ordered by real dependency, so [REPO] and [MANUAL] interleave where on
 
 ### Repo configs (prepare before host setup)
 
-- [ ] T012 [P] [US1] [REPO] Create `client/netlify.toml`: base `client`, build `npm run build`, publish `client/dist`, and SPA redirect `/* → /index.html (200)`
-- [ ] T013 [P] [US1] [REPO] Create `ops/nginx-yaniv.conf` reference: 443 → `proxy_pass http://127.0.0.1:3000` with websocket upgrade headers (per contracts §3), `server_name` placeholder for the DuckDNS host
+- [X] T012 [P] [US1] [REPO] Create `netlify.toml` (repo root, not client/ — Netlify reads config from root): base `client`, build `npm run build`, publish `dist`, SPA redirect `/* → /index.html (200)`
+- [X] T013 [P] [US1] [REPO] Create `ops/nginx-yaniv.conf` reference: `proxy_pass http://127.0.0.1:3000` with websocket upgrade headers (per contracts §3), `server_name` placeholder for the DuckDNS host (certbot adds the 443 block)
 
 ### Host setup (you, guided by quickstart.md)
 

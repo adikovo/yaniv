@@ -63,7 +63,7 @@ Web app, two packages: `client/` (ESM, React, Vitest) and `server/` (CommonJS, E
 
 ### CI gate
 
-- [ ] T012 [US1] Add a `lint` job to `.github/workflows/ci.yml` that runs `npm ci` + `npm run lint` for both `client/` and `server/` on the existing push/PR triggers (ESLint default exit handles errors-only)
+- [X] T012 [US1] Add a `lint` job to `.github/workflows/ci.yml` that runs `npm ci` + `npm run lint` for both `client/` and `server/` on the existing push/PR triggers (ESLint default exit handles errors-only)
 
 **Checkpoint**: Codebase lint-clean; CI lint gate live. MVP complete and deployable.
 

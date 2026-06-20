@@ -80,7 +80,7 @@ Tasks are ordered by real dependency, so [REPO] and [MANUAL] interleave where on
 - [X] T017 [US1] [MANUAL] Install nginx using `ops/nginx-yaniv.conf`, then `certbot --nginx` to issue the Let's Encrypt cert + 80→443 redirect + renewal timer; confirm `https://<host>` reaches the server — quickstart Part 4 (also had to open Oracle security list + insert iptables ACCEPT for 80/443 above the default REJECT)
 - [X] T018 [US1] [MANUAL] Create the Netlify site from the GitHub repo, set `VITE_SERVER_URL=https://yaniv-app.mooo.com`, deploy, and rename the site to the tidy CV subdomain `https://yaniv-app.netlify.app` — quickstart Part 6
 - [X] T019 [US1] [MANUAL] Set `CLIENT_ORIGIN=https://yaniv-app.netlify.app` on the VM and `pm2 restart yaniv --update-env` + `pm2 save` — quickstart Part 5
-- [ ] T020 [US1] Verify acceptance (SC-001/002/003): cold load hosts a game within 5s; two browsers play a full round over `wss://` with no console CORS/security errors; two games run concurrently without interference
+- [X] T020 [US1] Verify acceptance (SC-001/002/003): cold load hosts a game within 5s; two browsers play a full round over `wss://` with no console CORS/security errors; two games run concurrently without interference (verified live at https://yaniv-app.netlify.app; pinned client to websocket transport to remove initial-polling lag)
 
 **Checkpoint**: The public link is live, always-on, and playable — MVP delivered.
 
@@ -92,7 +92,7 @@ Tasks are ordered by real dependency, so [REPO] and [MANUAL] interleave where on
 
 **Independent Test**: Merge a visible client change to `main`; it appears on the live URL within minutes with no manual action.
 
-- [ ] T021 [US2] [MANUAL] Confirm Netlify's GitHub integration is set to auto-build on push to `main`; merge a small visible client change and verify it goes live within ~5 minutes (SC-004), and that a deliberately broken build leaves the previous deploy serving (FR-008) — quickstart Part 6
+- [X] T021 [US2] [MANUAL] Confirm Netlify's GitHub integration is set to auto-build on push to `main`; merge a small visible client change and verify it goes live within ~5 minutes (SC-004), and that a deliberately broken build leaves the previous deploy serving (FR-008) — quickstart Part 6 (verified: merge of PR #14 auto-published `main@4c34a80`, "Auto publishing is on")
 
 **Checkpoint**: Client half of CD is automatic.
 
@@ -106,13 +106,13 @@ Tasks are ordered by real dependency, so [REPO] and [MANUAL] interleave where on
 
 ### Repo configs
 
-- [ ] T022 [P] [US3] [REPO] Create `ops/deploy.sh`: `cd ~/yaniv && git pull --ff-only && cd server && npm ci --omit=dev && pm2 restart yaniv`
-- [ ] T023 [US3] [REPO] Create `.github/workflows/deploy-server.yml`: `workflow_run` on the `CI` workflow (`.github/workflows/ci.yml`) filtered to `conclusion == success` and `head_branch == main`, using `appleboy/ssh-action` with secrets `DEPLOY_SSH_HOST` / `DEPLOY_SSH_USER` / `DEPLOY_SSH_KEY` to run `ops/deploy.sh`
+- [X] T022 [P] [US3] [REPO] Create `ops/deploy.sh`: `cd ~/yaniv && git pull --ff-only && cd server && npm ci --omit=dev && pm2 restart yaniv` (no `--update-env`, to preserve the saved `CLIENT_ORIGIN`)
+- [X] T023 [US3] [REPO] Create `.github/workflows/deploy-server.yml`: `workflow_run` on the `CI` workflow (`.github/workflows/ci.yml`) filtered to `conclusion == success` and `head_branch == main`, using `appleboy/ssh-action` with secrets `DEPLOY_SSH_HOST` / `DEPLOY_SSH_USER` / `DEPLOY_SSH_KEY` to run `ops/deploy.sh`
 
 ### Secrets & key (you, guided by quickstart.md)
 
-- [ ] T024 [US3] [MANUAL] On the VM, generate a dedicated deploy keypair and append its public half to `~/.ssh/authorized_keys` — quickstart Part 7 step 1
-- [ ] T025 [US3] [MANUAL] Add GitHub Actions secrets `DEPLOY_SSH_HOST`, `DEPLOY_SSH_USER`, `DEPLOY_SSH_KEY` (the private key) — quickstart Part 7 step 2
+- [X] T024 [US3] [MANUAL] On the VM, generate a dedicated deploy keypair (`~/deploy_key`) and append its public half to `~/.ssh/authorized_keys` — quickstart Part 7 step 1
+- [X] T025 [US3] [MANUAL] Add GitHub Actions secrets `DEPLOY_SSH_HOST` (129.159.157.174), `DEPLOY_SSH_USER` (ubuntu), `DEPLOY_SSH_KEY` (the private key) — quickstart Part 7 step 2
 - [ ] T026 [US3] Verify (FR-009): merge a server change to `main` → CI passes → `deploy-server.yml` runs green → live server runs new code; a deliberately failing deploy leaves the previous pm2 process running and shows red in Actions
 
 **Checkpoint**: Both halves of CD are fully automatic.

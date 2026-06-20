@@ -1,7 +1,7 @@
 const { Server } = require("socket.io");
 const { createDeck, shuffleDeck, dealCards, getCurrentPlayer, whosTurn, nextTurn, drawFromDeck, handValue, topCard, validYaniv, yanivCall, eliminatePlayers, drawTopCard, updateTopCard, makeTurnCardFromHand, selectCards, removeCardFromHand, rebuildDeck, makeTurnCardFromDeck, makeTurnCardFromTop } = require("./gameLogic");
 const { games, gameIds } = require("./globals");
-const { ROUND_DELAY_MS, REMATCH_TIMEOUT_MS } = require("./config");
+const { ROUND_DELAY_MS, REMATCH_TIMEOUT_MS, corsOrigin } = require("./config");
 
 let io;
 const rooms = {}; // Store users per room { roomId: { socketId: username, ... }, ... }
@@ -9,7 +9,7 @@ const rooms = {}; // Store users per room { roomId: { socketId: username, ... },
 const setupSocket = (server) => {
     io = new Server(server, {
         cors: {
-            origin: "*",
+            origin: corsOrigin,
             methods: ["GET", "POST"]
         }
     });

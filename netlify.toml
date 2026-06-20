@@ -1,0 +1,14 @@
+# Netlify build + routing config for the Yaniv client.
+# Read from the repo root; `base` points Netlify into the client/ folder.
+
+[build]
+  base = "client"           # cd into client/ before building
+  command = "npm run build" # Vite build
+  publish = "dist"          # output dir, relative to base -> client/dist
+
+# SPA fallback: serve index.html for any path so React Router deep links
+# (e.g. /game/ABC) work on refresh instead of returning 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

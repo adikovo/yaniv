@@ -4,6 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors')
+const { corsOrigin } = require('./config');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -11,7 +12,7 @@ const usersRouter = require('./routes/users');
 const gameRouter = require('./routes/game');
 
 const app = express();
-app.use(cors())
+app.use(cors({ origin: corsOrigin }))
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

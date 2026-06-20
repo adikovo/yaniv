@@ -74,12 +74,12 @@ Tasks are ordered by real dependency, so [REPO] and [MANUAL] interleave where on
 
 ### Host setup (you, guided by quickstart.md)
 
-- [ ] T014 [US1] [MANUAL] Provision the Oracle Always Free Ubuntu VM, reserve its public IP, open TCP 80/443 (subnet security list + host firewall) — quickstart Part 1
-- [ ] T015 [US1] [MANUAL] On the VM: install Node + git, `git clone` the repo, `npm ci --omit=dev` in `server/`, start under pm2, run `pm2 save` + `pm2 startup` for crash/reboot durability — quickstart Part 2
-- [ ] T016 [US1] [MANUAL] Create a DuckDNS subdomain pointed at the VM IP, add the updater cron — quickstart Part 3
-- [ ] T017 [US1] [MANUAL] Install nginx using `ops/nginx-yaniv.conf`, then `certbot --nginx` to issue the Let's Encrypt cert + 80→443 redirect + renewal timer; confirm `https://<duckdns-host>` reaches the server — quickstart Part 4
-- [ ] T018 [US1] [MANUAL] Create the Netlify site from the GitHub repo, set `VITE_SERVER_URL=https://<duckdns-host>`, deploy, and rename the site to the tidy CV subdomain — quickstart Part 6
-- [ ] T019 [US1] [MANUAL] Set `CLIENT_ORIGIN` on the VM to the exact Netlify URL and `pm2 restart yaniv --update-env` — quickstart Part 5
+- [X] T014 [US1] [MANUAL] Provision the Oracle Always Free Ubuntu VM, reserve its public IP, open TCP 80/443 (subnet security list + host firewall) — quickstart Part 1
+- [X] T015 [US1] [MANUAL] On the VM: install Node + git, `git clone` the repo, `npm ci --omit=dev` in `server/`, start under pm2, run `pm2 save` + `pm2 startup` for crash/reboot durability — quickstart Part 2
+- [X] T016 [US1] [MANUAL] Create a DuckDNS subdomain pointed at the VM IP, add the updater cron — quickstart Part 3 (used FreeDNS `yaniv-app.mooo.com` — DuckDNS was down; static Oracle IP so no updater cron needed)
+- [X] T017 [US1] [MANUAL] Install nginx using `ops/nginx-yaniv.conf`, then `certbot --nginx` to issue the Let's Encrypt cert + 80→443 redirect + renewal timer; confirm `https://<host>` reaches the server — quickstart Part 4 (also had to open Oracle security list + insert iptables ACCEPT for 80/443 above the default REJECT)
+- [X] T018 [US1] [MANUAL] Create the Netlify site from the GitHub repo, set `VITE_SERVER_URL=https://yaniv-app.mooo.com`, deploy, and rename the site to the tidy CV subdomain `https://yaniv-app.netlify.app` — quickstart Part 6
+- [X] T019 [US1] [MANUAL] Set `CLIENT_ORIGIN=https://yaniv-app.netlify.app` on the VM and `pm2 restart yaniv --update-env` + `pm2 save` — quickstart Part 5
 - [ ] T020 [US1] Verify acceptance (SC-001/002/003): cold load hosts a game within 5s; two browsers play a full round over `wss://` with no console CORS/security errors; two games run concurrently without interference
 
 **Checkpoint**: The public link is live, always-on, and playable — MVP delivered.

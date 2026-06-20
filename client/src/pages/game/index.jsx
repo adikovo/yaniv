@@ -13,7 +13,8 @@ import { SpectatorPrompt } from '../../components/spectator-prompt';
 
 export const Game = () => {
 
-    const { player, setPlayer, players, setPlayers, gameID, gameState, setGameState, sum, setSum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator, handSizes, setHandSizes, opponentScores, resetGame } = useGameContext();
+    const navigate = useNavigate();
+    const { player, players, setPlayers, gameID, gameState, setGameState, sum, selectedCards, setSelectedCards, gameOverData, setGameOverData, isSpectator, setIsSpectator, handSizes, setHandSizes, opponentScores, resetGame } = useGameContext();
     const [yanivResult, setYanivResult] = useState(null);
     const showAsaf = useAsafSequence(yanivResult);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
@@ -93,18 +94,10 @@ export const Game = () => {
     //     console.log("Player updated:", player);
     //   }, [player]);
 
-    //not needed
-    const getTopCard = () => {
-        if (!gameState.top_card || gameState.top_card.length === 0) return '';
-        const top = gameState.top_card[gameState.top_card.length - 1];
-        return getCardImageName(top);
-    }
-
     const selectCards = (index) => {
 
         const card = player.hand[index];
         const firstCard = player.hand[selectedCards[0]];
-        const lastCard = player.hand[selectedCards[selectedCards.length - 1]];
 
         console.log("Clicked card:", card);
         console.log("Currently selectedCards:", selectedCards);

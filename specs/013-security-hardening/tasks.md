@@ -47,13 +47,13 @@ Web app, two packages: `client/` (ESM, React, Vitest) and `server/` (CommonJS, E
 
 ### Cleanup — client errors (behavior-preserving unless noted)
 
-- [ ] T002 [P] [US1] Remove unused `React` import in `client/src/AppRouter.jsx`
-- [ ] T003 [P] [US1] Remove unused `useState` import in `client/src/components/card/index.jsx`
-- [ ] T004 [P] [US1] Remove unused `setPlayers`/`setLocalPlayer` in `client/src/pages/game/game.test.jsx`
-- [ ] T005 [P] [US1] Remove unused `players`/`setPlayers` destructure in `client/src/pages/home/index.jsx`
-- [ ] T006 [US1] In `client/src/pages/game/index.jsx`: **fix the `navigate` bug** — declare `const navigate = useNavigate()` (resolves the unused `useNavigate` import + both `no-undef` errors at lines ~45 and ~250). ⚠️ Behavior change: those handlers go from throwing to navigating home (intended). Confirm with user before/at review.
-- [ ] T007 [US1] In `client/src/pages/game/index.jsx`: delete dead `getTopCard` helper (the only user of undefined `getCardImageName`) and remove unused `setPlayer`/`setSum`/`lastCard` locals
-- [ ] T008 [US1] Run `cd client && npm run lint` → confirm 0 errors (warnings OK); run `npm test` → confirm no regression
+- [X] T002 [P] [US1] Remove unused `React` import in `client/src/AppRouter.jsx`
+- [X] T003 [P] [US1] Remove unused `useState` import in `client/src/components/card/index.jsx`
+- [X] T004 [P] [US1] Remove unused `setPlayers`/`setLocalPlayer` in `client/src/pages/game/game.test.jsx`
+- [X] T005 [P] [US1] Remove unused `players`/`setPlayers` destructure in `client/src/pages/home/index.jsx`
+- [X] T006 [US1] In `client/src/pages/game/index.jsx`: **fix the `navigate` bug** — declare `const navigate = useNavigate()` (resolves the unused `useNavigate` import + both `no-undef` errors at lines ~45 and ~250). ⚠️ Behavior change: those handlers go from throwing to navigating home (intended). Confirm with user before/at review.
+- [X] T007 [US1] In `client/src/pages/game/index.jsx`: delete dead `getTopCard` helper (the only user of undefined `getCardImageName`) and remove unused `setPlayer`/`setSum`/`lastCard` locals
+- [X] T008 [US1] Run `cd client && npm run lint` → confirm 0 errors (warnings OK); run `npm test` → confirm no regression
 
 ### Server lint setup
 

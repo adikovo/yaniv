@@ -1,0 +1,24 @@
+name: Deploy server
+
+# Runs only after the CI workflow finishes. We gate on success + main inside
+# the job, so a red CI (or any non-main run) never deploys.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Deploy only when CI passed AND it was the main branch.
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success' &&
+          github.event.workflow_run.head_branch == 'main' }}
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: bash ~/yaniv/ops/deploy.sh

@@ -123,9 +123,9 @@ Tasks are ordered by real dependency, so [REPO] and [MANUAL] interleave where on
 
 - [X] T027 [P] [REPO] Update `README.md` with the live public URL, a short architecture note (Netlify client + Oracle VM server + nginx/TLS), and optional CI/uptime badges
 - [X] T028 [REPO] Run full local test suites + `npm run lint` (client) to confirm the env/CORS changes introduced no regressions (client Vitest 67✓, server Jest 70✓; pre-existing lint errors in `src/pages/` are unrelated to this feature's files)
-- [ ] T029 [US1] [MANUAL] Reboot the VM and confirm auto-recovery: pm2 resurrects `yaniv` and nginx serves with no manual action (SC-005)
-- [ ] T030 [P] [MANUAL] (Optional) Add a free UptimeRobot HTTP monitor on the DuckDNS URL for an uptime badge + early warning
-- [ ] T031 [MANUAL] Run the quickstart.md Part 8 acceptance checklist end-to-end as the final sign-off
+- [X] T029 [US1] [MANUAL] Reboot the VM and confirm auto-recovery: pm2 resurrects `yaniv` and nginx serves with no manual action (SC-005) (verified: after `sudo reboot`, both `{"ok":true}` and the live game worked with no SSH/manual action)
+- [X] T030 [P] [MANUAL] (Optional) Add a free UptimeRobot HTTP monitor on the server URL for an uptime badge + early warning (monitoring https://yaniv-app.mooo.com every 5m; Up, 100%)
+- [X] T031 [MANUAL] Run the quickstart.md Part 8 acceptance checklist end-to-end as the final sign-off (all SC/FR verified live: SC-001/002/003 T020, SC-004 T021, FR-009 T026, SC-005 T029, monitoring T030)
 
 ---
 

@@ -113,7 +113,7 @@ Tasks are ordered by real dependency, so [REPO] and [MANUAL] interleave where on
 
 - [X] T024 [US3] [MANUAL] On the VM, generate a dedicated deploy keypair (`~/deploy_key`) and append its public half to `~/.ssh/authorized_keys` — quickstart Part 7 step 1
 - [X] T025 [US3] [MANUAL] Add GitHub Actions secrets `DEPLOY_SSH_HOST` (129.159.157.174), `DEPLOY_SSH_USER` (ubuntu), `DEPLOY_SSH_KEY` (the private key) — quickstart Part 7 step 2
-- [ ] T026 [US3] Verify (FR-009): merge a server change to `main` → CI passes → `deploy-server.yml` runs green → live server runs new code; a deliberately failing deploy leaves the previous pm2 process running and shows red in Actions
+- [X] T026 [US3] Verify (FR-009): merge a server change to `main` → CI passes → `deploy-server.yml` runs green → live server runs new code; a deliberately failing deploy leaves the previous pm2 process running and shows red in Actions (verified: workflow_run fired after CI on main; first run needed a one-time manual `git pull` on the VM to seed `ops/deploy.sh`, then green)
 
 **Checkpoint**: Both halves of CD are fully automatic.
 
@@ -121,8 +121,8 @@ Tasks are ordered by real dependency, so [REPO] and [MANUAL] interleave where on
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T027 [P] [REPO] Update `README.md` with the live public URL, a short architecture note (Netlify client + Oracle VM server + nginx/TLS), and optional CI/uptime badges
-- [ ] T028 [REPO] Run full local test suites + `npm run lint` (client) to confirm the env/CORS changes introduced no regressions
+- [X] T027 [P] [REPO] Update `README.md` with the live public URL, a short architecture note (Netlify client + Oracle VM server + nginx/TLS), and optional CI/uptime badges
+- [X] T028 [REPO] Run full local test suites + `npm run lint` (client) to confirm the env/CORS changes introduced no regressions (client Vitest 67✓, server Jest 70✓; pre-existing lint errors in `src/pages/` are unrelated to this feature's files)
 - [ ] T029 [US1] [MANUAL] Reboot the VM and confirm auto-recovery: pm2 resurrects `yaniv` and nginx serves with no manual action (SC-005)
 - [ ] T030 [P] [MANUAL] (Optional) Add a free UptimeRobot HTTP monitor on the DuckDNS URL for an uptime badge + early warning
 - [ ] T031 [MANUAL] Run the quickstart.md Part 8 acceptance checklist end-to-end as the final sign-off

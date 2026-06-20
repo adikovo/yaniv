@@ -1,5 +1,4 @@
 var express = require('express');
-const zlib = require("node:zlib");
 var router = express.Router();
 
 /* GET home page. */

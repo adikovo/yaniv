@@ -1,16 +1,9 @@
 const http = require('http');
-const { Server } = require('socket.io');
 const { io: ClientIO } = require('socket.io-client');
 const { games } = require('../../globals');
 const { createDeck, shuffleDeck, dealCards, whosTurn, topCard, handValue } = require('../../gameLogic');
 
 const PLAYER_NAMES = ['Alice', 'Bob', 'Carol', 'Dave'];
-
-// Wires up socket handlers on an existing io instance (mirrors socket.js without the globals coupling)
-function attachSocketHandlers(io, rooms) {
-    const { setupSocket } = require('../../socket');
-    return io;
-}
 
 /**
  * Spins up a real HTTP + Socket.io server on a random port.

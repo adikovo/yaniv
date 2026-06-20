@@ -58,7 +58,6 @@ describe('Multi-Round Auto-Advance', () => {
 
     // T-MR2: after auto-advance, game_state is fully reset (new deck, single top card)
     test('T-MR2: after auto-advance game_state is reset — new deck and top card', done => {
-        const originalDeckSize = games[gameID].game_state.deck.length;
 
         Promise.all([connectClient(player0), connectClient(player1)]).then(([c0, c1]) => {
             c0.once('nextRound', ({ top_card, deck }) => {
@@ -233,7 +232,7 @@ describe('Game Over & Rematch', () => {
 });
 
 describe('Leave Room & Ready-Only Rematch', () => {
-    let gameID, player0, player1, player2, players, connectClient, closeServer;
+    let gameID, player0, player1, player2, connectClient, closeServer;
 
     afterEach(async () => {
         if (closeServer) await closeServer();

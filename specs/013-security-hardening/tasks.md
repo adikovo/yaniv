@@ -57,9 +57,9 @@ Web app, two packages: `client/` (ESM, React, Vitest) and `server/` (CommonJS, E
 
 ### Server lint setup
 
-- [ ] T009 [US1] Add ESLint as a dev dependency and a `"lint": "eslint ."` script in `server/package.json` (match the client's ESLint major version)
-- [ ] T010 [US1] Create `server/eslint.config.js` — flat config for CommonJS + Node + Jest globals, `eslint:recommended` ruleset
-- [ ] T011 [US1] Run `cd server && npm run lint`; fix any errors surfaced so it reports 0 errors
+- [X] T009 [US1] Add ESLint as a dev dependency and a `"lint": "eslint ."` script in `server/package.json` (match the client's ESLint major version)
+- [X] T010 [US1] Create `server/eslint.config.js` — flat config for CommonJS + Node + Jest globals, `eslint:recommended` ruleset
+- [X] T011 [US1] Run `cd server && npm run lint`; fix any errors surfaced so it reports 0 errors
 
 ### CI gate
 

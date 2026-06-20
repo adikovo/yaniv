@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { getIo } = require("../socket");
 const { games, gameIds } = require("../globals");
 
 function gameId(length) {
@@ -65,8 +64,8 @@ router.get('/join', function(req, res, next) {
     
     console.log(`${playerName} player #${id} had joined the game!`);
 
-    const io = getIo();
-    // Broadcast to room
+    // Broadcast to room (not currently active):
+    // const io = getIo();
     // io.to(gameID).emit("message", { user: "Server", players: games[gameID]["players"] });
 
     res.send({player: player, gameID: gameID});

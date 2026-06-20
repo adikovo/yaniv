@@ -1,5 +1,3 @@
-const { games } = require("./globals");
-
 const NUM_OF_CARDS = 5;
 
 //TODO add 2 joker cards

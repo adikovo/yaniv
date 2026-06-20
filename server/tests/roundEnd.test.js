@@ -17,7 +17,7 @@ function makeCard(value, suit, numeric_val) {
 }
 
 describe('Round End — yanivCall & roundEnd event', () => {
-    let server, gameID, player0, player1, connectClient, closeServer;
+    let gameID, player0, player1, connectClient, closeServer;
 
     beforeEach(async () => {
         ({ gameID, player0, player1, connectClient, closeServer } = await createTestServer());

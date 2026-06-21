@@ -208,6 +208,18 @@ describe('validateMakeTurn', () => {
         expect(validateMakeTurn({ type: 'yaniv' }, HAND).ok).toBe(true);
     });
 
+    test('accepts an empty selected_cards array (handler enforces discard rules)', () => {
+        expect(
+            validateMakeTurn({ type: 'cardFromDeck', selected_cards: [] }, HAND).ok
+        ).toBe(true);
+    });
+
+    test('rejects an index equal to handLength (off-by-one boundary)', () => {
+        expect(
+            validateMakeTurn({ type: 'cardFromDeck', selected_cards: [HAND] }, HAND).ok
+        ).toBe(false);
+    });
+
     // --- reject cases ---
 
     test('rejects a null turn_data', () => {

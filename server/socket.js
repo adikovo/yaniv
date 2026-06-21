@@ -65,6 +65,7 @@ const setupSocket = (server) => {
         // }
 
         socket.on("makeTurn", (room, turn_data) => {
+            if (typeof room !== "string") return;
             const socketPlayer = rooms[room]?.[socket.id];
             if (!socketPlayer) return;
             const player = games[room]?.players?.[socketPlayer.id];

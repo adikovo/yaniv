@@ -77,17 +77,17 @@ Web app, two packages: `client/` (ESM, React, Vitest) and `server/` (CommonJS, E
 
 ### Tests for User Story 2 (write first, ensure they FAIL) ⚠️
 
-- [ ] T013 [US2] Via the `tester` subagent, write failing Jest tests in `server/tests/validation.test.js` covering the accept/reject matrix in `data-model.md` for `joinRoom`, `makeTurn`, `chatMessage`, and the `startGame` no-game guard (valid → ok, invalid shapes/types/ranges → rejected, never throws, state unchanged)
+- [X] T013 [US2] Via the `tester` subagent, write failing Jest tests in `server/tests/validation.test.js` covering the accept/reject matrix in `data-model.md` for `joinRoom`, `makeTurn`, `chatMessage`, and the `startGame` no-game guard (valid → ok, invalid shapes/types/ranges → rejected, never throws, state unchanged)
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Create `server/validation.js` with pure validators returning `{ ok, value }` / `{ ok, reason }`: `validateJoinRoom`, `validateMakeTurn`, `validateChatMessage`; trim+bound player name per `data-model.md` (1–20 chars), no new runtime dependency
-- [ ] T015 [US2] In `validateMakeTurn`: reject non-object `turn_data` (the crash vector at socket.js:75), unknown `type`, and `selected_cards` that aren't an array of unique integer indices within `0 ≤ i < hand.length`, plus invalid `side` for `cardFromTop` — closes FR-006
-- [ ] T016 [US2] Wire `validateJoinRoom` into the `joinRoom` handler in `server/socket.js` (reject before joining/creating the room)
-- [ ] T017 [US2] Wire `validateMakeTurn` into the `makeTurn` handler in `server/socket.js`, in front of the existing turn/player guards (reuse `turnError` channel where present)
-- [ ] T018 [US2] Wire `validateChatMessage` into the `chatMessage` handler in `server/socket.js` (drop non-string/over-length)
-- [ ] T019 [US2] Add an existence guard in the `startGame` handler in `server/socket.js` so an absent `games[room]` returns safely instead of throwing (current crash vector at socket.js:49)
-- [ ] T020 [US2] Run `cd server && npm test` → validation tests pass and all existing server suites still pass (no gameplay regression)
+- [X] T014 [US2] Create `server/validation.js` with pure validators returning `{ ok, value }` / `{ ok, reason }`: `validateJoinRoom`, `validateMakeTurn`, `validateChatMessage`; trim+bound player name per `data-model.md` (1–20 chars), no new runtime dependency
+- [X] T015 [US2] In `validateMakeTurn`: reject non-object `turn_data` (the crash vector at socket.js:75), unknown `type`, and `selected_cards` that aren't an array of unique integer indices within `0 ≤ i < hand.length`, plus invalid `side` for `cardFromTop` — closes FR-006
+- [X] T016 [US2] Wire `validateJoinRoom` into the `joinRoom` handler in `server/socket.js` (reject before joining/creating the room)
+- [X] T017 [US2] Wire `validateMakeTurn` into the `makeTurn` handler in `server/socket.js`, in front of the existing turn/player guards (reuse `turnError` channel where present)
+- [X] T018 [US2] Wire `validateChatMessage` into the `chatMessage` handler in `server/socket.js` (drop non-string/over-length)
+- [X] T019 [US2] Add an existence guard in the `startGame` handler in `server/socket.js` so an absent `games[room]` returns safely instead of throwing (current crash vector at socket.js:49)
+- [X] T020 [US2] Run `cd server && npm test` → validation tests pass and all existing server suites still pass (no gameplay regression)
 
 **Checkpoint**: Socket boundary hardened; server resilient to hand-crafted messages.
 

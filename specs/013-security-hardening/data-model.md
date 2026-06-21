@@ -24,7 +24,7 @@ A message from a client identified by an event name with a payload. Each event h
 | Field | Rule |
 |-------|------|
 | `player` | object, required |
-| `player.id` | non-empty string |
+| `player.id` | non-empty string OR finite number (server assigns numeric ids) |
 | `player.name` | satisfies **Player Name** rules above |
 | `room` | non-empty string, bounded length (e.g. ≤ 64) |
 | invalid → | do not join; do not create/populate `rooms[room]` |

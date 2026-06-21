@@ -1,5 +1,3 @@
-const { games } = require("./globals");
-
 const NUM_OF_CARDS = 5;
 
 //TODO add 2 joker cards
@@ -167,6 +165,7 @@ function drawTopCard(game, side) {
     else {
         card = top.pop();
     }
+    if (!card) return; 
     card.index = player.hand.length;
     player.hand.push(card);
     //game.game_state.top_card = [];

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import './styles.css'
 
 export const Card = ({card, onClick, selected, disabled, faceDown}) => {

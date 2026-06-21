@@ -1,7 +1,8 @@
 const { Server } = require("socket.io");
-const { createDeck, shuffleDeck, dealCards, getCurrentPlayer, whosTurn, nextTurn, drawFromDeck, handValue, topCard, validYaniv, yanivCall, eliminatePlayers, drawTopCard, updateTopCard, makeTurnCardFromHand, selectCards, removeCardFromHand, rebuildDeck, makeTurnCardFromDeck, makeTurnCardFromTop } = require("./gameLogic");
+const { createDeck, shuffleDeck, dealCards, getCurrentPlayer, whosTurn, nextTurn, handValue, topCard, validYaniv, yanivCall, eliminatePlayers, makeTurnCardFromHand, makeTurnCardFromDeck, makeTurnCardFromTop } = require("./gameLogic");
 const { games, gameIds } = require("./globals");
 const { ROUND_DELAY_MS, REMATCH_TIMEOUT_MS, corsOrigin } = require("./config");
+const { validateJoinRoom, validateMakeTurn, validateChatMessage } = require("./validation");
 
 let io;
 const rooms = {}; // Store users per room { roomId: { socketId: username, ... }, ... }
@@ -18,7 +19,11 @@ const setupSocket = (server) => {
         console.log(`User connected: ${socket.id}`);
 
         // When a user joins a room
-        socket.on("joinRoom", ({ player, room }) => {
+        socket.on("joinRoom", (payload) => {
+            const check = validateJoinRoom(payload);
+            if (!check.ok) return; // reject malformed join; don't create/populate the room
+            const { player, room } = check.value;
+
             socket.join(room);
 
             if (!rooms[room]) {
@@ -37,15 +42,18 @@ const setupSocket = (server) => {
 
         // When a user sends a message
         socket.on("chatMessage", (message) => {
+            const check = validateChatMessage(message);
+            if (!check.ok) return; // drop non-string / over-length messages
             let room = getUserRoom(socket.id);
             if (room) {
-                io.to(room).emit("message", { user: rooms[room][socket.id], text: message });
+                io.to(room).emit("message", { user: rooms[room][socket.id], text: check.value });
             }
         });
 
-        //debug to check gamelogic
+        // Host clicked "Start Game" in the lobby → deal the first round.
         socket.on("startGame", () => {
             const room = getUserRoom(socket.id);
+            if (!room || !games[room]) return; // no game for this socket — ignore safely
             games[room].eliminated = [];
             dealNewRound(room, "start");
         });
@@ -57,10 +65,7 @@ const setupSocket = (server) => {
         // }
 
         socket.on("makeTurn", (room, turn_data) => {
-            //const player = getCurrentPlayer(games[room]);
-            //debug
-            console.log("RECEIVED selected_cards:", turn_data.selected_cards);
-
+            if (typeof room !== "string") return;
             const socketPlayer = rooms[room]?.[socket.id];
             if (!socketPlayer) return;
             const player = games[room]?.players?.[socketPlayer.id];
@@ -68,6 +73,15 @@ const setupSocket = (server) => {
             const game_state = games[room].game_state;
             const currentPlayer = getCurrentPlayer(games[room]);
             if (!currentPlayer || socketPlayer.id !== currentPlayer.id) {
+                return;
+            }
+
+            // Validate the payload (shape, type, in-hand card indices, side) before
+            // acting — guards against crashes and game-state corruption from
+            // hand-crafted messages.
+            const check = validateMakeTurn(turn_data, player.hand.length);
+            if (!check.ok) {
+                socket.emit("turnError", { message: "Invalid move." });
                 return;
             }
 

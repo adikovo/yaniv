@@ -37,14 +37,6 @@ vi.mock('../../context/game-context', () => ({
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function setPlayers(players) {
-    mockContext.players = players;
-}
-
-function setLocalPlayer(player) {
-    mockContext.player = player;
-}
-
 function setCurrentTurn(id) {
     mockContext.gameState = { ...mockContext.gameState, current_turn: id };
 }

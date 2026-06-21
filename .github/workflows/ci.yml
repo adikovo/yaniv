@@ -10,6 +10,30 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+      - name: Install client dependencies
+        run: npm ci
+        working-directory: client
+      - name: Lint client
+        run: npm run lint
+        working-directory: client
+      - name: Install server dependencies
+        run: npm ci
+        working-directory: server
+      - name: Lint server
+        run: npm run lint
+        working-directory: server
+
   client-unit:
     runs-on: ubuntu-latest
     steps:

@@ -13,7 +13,7 @@ export const Home = () => {
     const [gameMode, setGameMode] = useState('welcome');
     const [joinError, setJoinError] = useState('');
 
-    const { players, setPlayers, setGameID, gameID, setPlayer, resetGame } = useGameContext();
+    const { setGameID, gameID, setPlayer, resetGame } = useGameContext();
 
     const hostGameClicked = async () => {
         resetGame();

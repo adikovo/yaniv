@@ -4,7 +4,7 @@ const { games } = require('../globals');
 const TIMEOUT = 3000 * (process.env.CI ? 3 : 1);
 
 describe('Atomic turn flow', () => {
-    let server, gameID, player0, player1, connectClient, closeServer;
+    let gameID, player0, player1, connectClient, closeServer;
 
     beforeEach(async () => {
         ({ gameID, player0, player1, connectClient, closeServer } = await createTestServer());

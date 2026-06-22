@@ -52,17 +52,22 @@ description: "Task list for feature 014 — Neon-Syndicate Visual Redesign"
 ### Tests for User Story 1 ⚠️ (write first, ensure they FAIL)
 
 - [ ] T007 [P] [US1] Test: active-seat highlight wraps a fixed-size seat panel and its dimensions do not change with hand count (FR-009/SC-004) in `client/src/components/opponent-area/opponent-area.test.jsx`
-- [ ] T008 [P] [US1] Test: an eliminated player's seat receives the de-emphasis class (FR-010) in `client/src/components/opponent-area/opponent-area.test.jsx`
+- [ ] T008 [P] [US1] Test: an eliminated player's seat receives the de-emphasis (grey) class, and a leaving/fade-out class when `leaving` is set (FR-010 a/b) in `client/src/components/opponent-area/opponent-area.test.jsx`
 
 ### Implementation for User Story 1
 
 - [ ] T009 [US1] Restyle Card with a neon frame around the existing PNG (dark rounded border, neon glow, selected lift+glow, takeable state, face-down back) in `client/src/components/card/styles.css` (+ minimal class hooks in `client/src/components/card/index.jsx`)
-- [ ] T010 [US1] Restyle opponent-area as a fixed-size seat panel: stable min dimensions, active-turn pulse on the panel (not the cards), eliminated de-emphasis, name ellipsis in `client/src/components/opponent-area/index.jsx` + `styles.css`
+- [ ] T010 [US1] Restyle opponent-area as a fixed-size seat panel: stable min dimensions, active-turn pulse on the panel (not the cards), eliminated de-emphasis (grey/desaturate) + a `leaving` fade-out transition (opacity/scale), name ellipsis in `client/src/components/opponent-area/index.jsx` + `styles.css`
 - [ ] T011 [US1] Replace green felt with a dark neon table surface (deep radial bg + cyan edge-glow ring), preserving the `getOpponentPositions` layout in `client/src/pages/game/styles.css`
 - [ ] T012 [US1] Game screen chrome: add header with the "YANIV" neon wordmark, enlarge cards/deck/discard, tighten spacing, and remove any demo/debug controls in `client/src/pages/game/index.jsx` + `styles.css`
-- [ ] T013 [US1] Local-player area: fixed-size active highlight (no shrink with hand), restyle score badge / hand / YANIV button / sum in `client/src/pages/game/index.jsx` + `styles.css`
+- [ ] T013 [US1] Local-player area: fixed-size active highlight (no shrink with hand), restyle score badge / hand / YANIV button / sum, plus `eliminated` (grey) + `leaving` (fade-out) states for when the local player is eliminated, in `client/src/pages/game/index.jsx` + `styles.css`
 
-**Checkpoint**: Game board fully re-themed and playable; MVP demoable
+### Eliminated-player sequence (grey → fade → remove → reshuffle)
+
+- [ ] T013a [US1] Test (`use-eliminations` hook): from a `roundEnd` `eliminated` list, ids are first greyed, then `leaving` (fade), then for OPPONENTS removed from `players` so `getOpponentPositions` re-lays-out the remaining seats (snap; animated slide is 015); for the LOCAL player, the hook greys+fades self but does NOT remove/reshuffle (the spectator prompt takes over). In `client/src/hooks/use-eliminations.test.js`. (FR-010)
+- [ ] T013b [US1] Add a `use-eliminations` hook and wire it in the game page: on `roundEnd`, mark eliminated ids greyed → after ~1s apply the `leaving` fade → on transition end remove opponents from `players` (reshuffle). For the local player, apply the same grey→fade to `.local-player-area`, then present the existing spectator prompt (watch/leave) — no reshuffle. In `client/src/hooks/use-eliminations.js` + `client/src/pages/game/index.jsx`
+
+**Checkpoint**: Game board fully re-themed and playable; eliminated players grey → fade → reshuffle; MVP demoable
 
 ---
 

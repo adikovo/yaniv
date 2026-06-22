@@ -31,7 +31,8 @@ A player in an active game sees the same board arrangement they already know —
 2. **Given** it is an opponent's turn, **When** the board renders, **Then** that opponent's seat is highlighted as the active seat, and the highlight wraps a fixed-size seat panel.
 3. **Given** the local player removes cards from their hand during play, **When** the hand shrinks, **Then** the active-seat highlight around the player does not shrink with the cards.
 4. **Given** the player performs any legal move (select cards then draw from deck, or take a takeable top-pile card, or call Yaniv when eligible), **When** the move is made, **Then** the outcome is identical to the pre-redesign behaviour.
-5. **Given** an eliminated player (over the losing score threshold), **When** the board renders, **Then** that player's seat appears visually de-emphasised (greyed/desaturated) compared with active players.
+5. **Given** an opponent crosses the losing score threshold at round end, **When** the board updates, **Then** that player's seat first appears visually de-emphasised (greyed/desaturated) for a brief beat, then fades out and is removed, after which the remaining players occupy the layout for the new (smaller) player count.
+5a. **Given** the local player is the one eliminated, **When** the board updates, **Then** their own player area greys out and fades the same way, and the spectator prompt (watch/leave) is then presented.
 6. **Given** the game board, **When** it renders, **Then** no demo-only or debug controls (such as a manual turn-cycler) are present.
 
 ---
@@ -96,7 +97,7 @@ A player in an active game can choose to leave from a Home control on the game s
 - **Long player names**: names that exceed the seat width must be truncated/ellipsised rather than breaking the fixed seat layout.
 - **Variable player counts**: the board must keep opponents in their existing positions for every supported player count (the redesign must not regress the existing positioning logic).
 - **Hand of one card vs. full hand**: the active-seat highlight size is identical in both cases.
-- **Eliminated and active seats side by side**: an eliminated seat is visibly de-emphasised while an adjacent active seat still shows the active highlight.
+- **Eliminated and active seats side by side**: during the brief grey/fade beat, an eliminated seat is visibly de-emphasised while an adjacent active seat still shows the active highlight; once the fade completes the eliminated seat is gone and the remaining seats settle into the smaller-count layout.
 - **Confirmation prompt during a turn change**: declining the leave prompt returns to the game in its current state without disrupting play.
 - **Overlapping overlays**: callouts, the disconnect notice, and the round-result screen must each render correctly on top of the re-themed board without visual conflict.
 
@@ -113,7 +114,7 @@ A player in an active game can choose to leave from a Home control on the game s
 - **FR-007**: The game screen MUST be decluttered, removing demo-only/debug controls (e.g. any manual turn-cycler) and tightening the composition.
 - **FR-008**: The game screen MUST preserve the existing interaction model for making a move (select cards, then draw from the deck or take a takeable top-pile card) and MUST NOT introduce a separate stand-alone discard button.
 - **FR-009**: The active-player highlight MUST wrap a fixed-size seat zone and MUST NOT change size as cards are added to or removed from a hand.
-- **FR-010**: An eliminated player's seat MUST be rendered in a visually de-emphasised (greyed/desaturated) state distinct from active players.
+- **FR-010**: When a player is eliminated (crosses the losing score threshold) the board MUST briefly render that player's seat/area in a visually de-emphasised (greyed/desaturated) state distinct from active players, then fade it out. For an eliminated **opponent**, the seat is then removed and the remaining players are re-laid-out for the new player count (remaining seats MAY snap to their new positions; an animated slide is out of scope, feature 015). When the **local player** is the one eliminated, their own player area receives the same grey→fade treatment, after which the existing spectator prompt (watch/leave) is presented (no reshuffle of the local viewpoint).
 - **FR-011**: The game screen MUST provide a Home control that opens a neon-themed "Leave the game?" confirmation; confirming navigates to the welcome screen and declining returns to the running game unchanged.
 - **FR-012**: Every existing UI component, dialog, and overlay MUST be restyled to the neon theme, including: the playing cards, the opponent seats, the round-result / game-over screen and its rematch controls, the spectator prompt, the disconnect notice, and the YANIV/ASAF callouts.
 - **FR-012a**: Playing-card faces MUST continue to use the existing card image set (face-card illustrations and jokers preserved); the neon treatment is applied as a frame around the image (dark rounded border, neon glow, lift + glow on selection) rather than by re-drawing card faces.
@@ -149,6 +150,6 @@ A player in an active game can choose to leave from a Home control on the game s
 - The reference export does not provide finished designs for every overlay (e.g. round-result, spectator prompt, disconnect notice); those are restyled to be consistent with the reference theme primitives rather than copied pixel-for-pixel.
 - Background animations in 014 are CSS keyframes ported from the reference (no animation library is added in this feature). A motion library (e.g. Framer Motion) may be introduced later for feature 015 card/board motion; that decision belongs to 015.
 - The Leave Lobby control is assumed to perform a clean room exit (analogous to leaving an active game) before returning to the welcome screen; it does not need to notify or reassign the host beyond existing disconnect handling.
-- Card slide/deal animations and the eliminated-player fade-out transition are OUT OF SCOPE (planned feature 015). Only the static greyed/de-emphasised eliminated state is in scope here.
+- Card slide/deal animations are OUT OF SCOPE (planned feature 015). The eliminated-player sequence in 014 covers grey → fade-out → removal → reshuffle, but the remaining seats MAY snap to their new positions; the *animated slide* of seats between positions (FLIP-style motion) is deferred to feature 015.
 - The per-move timeout and auto-elimination are OUT OF SCOPE (planned feature 016).
 - Existing responsive behaviour and supported player counts are preserved; this feature does not add new game modes or change game rules.

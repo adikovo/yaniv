@@ -1,11 +1,38 @@
+/* ============================================================================
+   Neon-Syndicate shared theme layer (feature 014)
+   T004: tokens + dark base/reset   |   T005: neon primitives + keyframes
+   Every screen/component consumes these tokens instead of duplicating values.
+   ========================================================================== */
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* ── Neon palette ─────────────────────────────────────────────── */
+  --neon-cyan: #00f0ff;
+  --neon-magenta: #ff2e97;
+  --neon-purple: #9b5fff;
+
+  /* ── Surfaces ─────────────────────────────────────────────────── */
+  --bg-deep: #0a0a0f;
+  --bg-board: linear-gradient(150deg, #0c1024 0%, #060b18 100%);
+  --glass-bg: rgba(10, 12, 26, 0.72);
+  --glass-border-cyan: rgba(0, 240, 255, 0.15);
+  --glass-border-magenta: rgba(255, 46, 151, 0.18);
+
+  /* ── Text ─────────────────────────────────────────────────────── */
+  --text-primary: #d0e4f8;
+  --text-muted: rgba(120, 150, 190, 0.6);
+
+  /* ── Typography ───────────────────────────────────────────────── */
+  --font-display: 'Orbitron', system-ui, sans-serif; /* wordmark / headings */
+  --font-mono: 'Space Mono', ui-monospace, monospace; /* labels / ids */
+  --font-body: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  font-family: var(--font-body);
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: dark;
+  color: var(--text-primary);
+  background-color: var(--bg-deep);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -13,57 +40,215 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+/* ── Base / reset (replaces legacy light-mode Vite defaults) ─────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+a {
+  color: var(--neon-cyan);
+  text-decoration: inherit;
+}
+a:hover {
+  color: var(--neon-magenta);
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  font-size: 1em;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* ============================================================================
+   T005 — Reusable neon primitives
+   ========================================================================== */
+
+/* ── Glow buttons ─────────────────────────────────────────────────
+   Base + cyan / magenta / purple variants. Transparent fill, neon
+   border + glow, lift on hover. */
+.glow-btn {
+  background: transparent;
+  border-width: 1.5px;
+  border-style: solid;
+  border-radius: 8px;
+  padding: 11px 22px;
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.glow-btn:active {
+  transform: translateY(0);
+}
+.glow-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.glow-btn--cyan {
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.28),
+    inset 0 0 12px rgba(0, 240, 255, 0.04);
+}
+.glow-btn--cyan:hover:not(:disabled) {
+  background: rgba(0, 240, 255, 0.07);
+  box-shadow: 0 0 28px rgba(0, 240, 255, 0.62),
+    0 0 60px rgba(0, 240, 255, 0.22), inset 0 0 18px rgba(0, 240, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+.glow-btn--magenta {
+  border-color: var(--neon-magenta);
+  color: var(--neon-magenta);
+  box-shadow: 0 0 10px rgba(255, 46, 151, 0.28),
+    inset 0 0 12px rgba(255, 46, 151, 0.04);
+}
+.glow-btn--magenta:hover:not(:disabled) {
+  background: rgba(255, 46, 151, 0.07);
+  box-shadow: 0 0 28px rgba(255, 46, 151, 0.62),
+    0 0 60px rgba(255, 46, 151, 0.22), inset 0 0 18px rgba(255, 46, 151, 0.08);
+  transform: translateY(-2px);
+}
+
+.glow-btn--purple {
+  border-color: var(--neon-purple);
+  color: var(--neon-purple);
+  box-shadow: 0 0 10px rgba(155, 95, 255, 0.28),
+    inset 0 0 12px rgba(155, 95, 255, 0.04);
+}
+.glow-btn--purple:hover:not(:disabled) {
+  background: rgba(155, 95, 255, 0.07);
+  box-shadow: 0 0 28px rgba(155, 95, 255, 0.62),
+    0 0 60px rgba(155, 95, 255, 0.22), inset 0 0 18px rgba(155, 95, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+/* ── Glass panels ─────────────────────────────────────────────────
+   Frosted dark surface with a neon hairline border. */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border-cyan);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45),
+    inset 0 0 30px rgba(0, 240, 255, 0.015);
+}
+.glass-panel--magenta {
+  border-color: var(--glass-border-magenta);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45),
+    inset 0 0 30px rgba(255, 46, 151, 0.015);
+}
+
+/* ── Neon input ───────────────────────────────────────────────── */
+.neon-input {
+  background: rgba(0, 240, 255, 0.035);
+  border: 1px solid rgba(0, 240, 255, 0.18);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  outline: none;
+  padding: 11px 14px;
+  border-radius: 7px;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.neon-input:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 0 1px var(--neon-cyan), 0 0 14px rgba(0, 240, 255, 0.18);
+}
+.neon-input::placeholder {
+  color: rgba(120, 150, 190, 0.35);
+}
+
+/* ============================================================================
+   T005 — Keyframes (animated background = menu screens; pulses + callouts)
+   ========================================================================== */
+
+/* Drifting grid (particle-grid background) */
+@keyframes gridDrift {
+  0% {
+    background-position: 0 0;
   }
-  a:hover {
-    color: #747bff;
+  100% {
+    background-position: 0 48px;
   }
-  button {
-    background-color: #f9f9f9;
+}
+
+/* Floating ambient orbs */
+@keyframes orbFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-22px) scale(1.06);
+  }
+}
+
+/* Cyan active-seat pulse (opponent seats) */
+@keyframes pulseC {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px var(--neon-cyan), 0 0 18px rgba(0, 240, 255, 0.5),
+      0 0 45px rgba(0, 240, 255, 0.22);
+  }
+  50% {
+    box-shadow: 0 0 0 3px var(--neon-cyan), 0 0 32px rgba(0, 240, 255, 0.75),
+      0 0 70px rgba(0, 240, 255, 0.38);
+  }
+}
+
+/* Magenta active pulse (local player) */
+@keyframes pulseM {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px var(--neon-magenta), 0 0 18px rgba(255, 46, 151, 0.5),
+      0 0 45px rgba(255, 46, 151, 0.22);
+  }
+  50% {
+    box-shadow: 0 0 0 3px var(--neon-magenta), 0 0 32px rgba(255, 46, 151, 0.75),
+      0 0 70px rgba(255, 46, 151, 0.38);
+  }
+}
+
+/* Connection / status blip */
+@keyframes blipDot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.7);
+  }
+}
+
+/* YANIV / ASAF callout entrance */
+@keyframes calloutIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px) scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px) scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
   }
 }

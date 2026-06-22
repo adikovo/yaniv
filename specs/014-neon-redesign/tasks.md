@@ -35,9 +35,9 @@ description: "Task list for feature 014 — Neon-Syndicate Visual Redesign"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Define neon theme tokens (CSS custom properties: `--neon-cyan/#00f0ff`, `--neon-magenta/#ff2e97`, `--neon-purple/#9b5fff`, `--bg-deep`, glass bg/border) and dark base/reset in `client/src/index.css` (replacing legacy light-mode Vite defaults)
-- [ ] T005 Add reusable neon primitives to the shared theme: glow-button classes (cyan/magenta/purple), glass-panel classes, neon input, and keyframes `gridDrift`, `orbFloat`, `pulseC`, `pulseM`, `calloutIn`, `blipDot` in `client/src/index.css` (or `client/src/styles/theme.css`)
-- [ ] T006 Remove/trim legacy default styles in `client/src/App.css` that conflict with the dark neon theme
+- [X] T004 Define neon theme tokens (CSS custom properties: `--neon-cyan/#00f0ff`, `--neon-magenta/#ff2e97`, `--neon-purple/#9b5fff`, `--bg-deep`, glass bg/border) and dark base/reset in `client/src/index.css` (replacing legacy light-mode Vite defaults)
+- [X] T005 Add reusable neon primitives to the shared theme: glow-button classes (cyan/magenta/purple), glass-panel classes, neon input, and keyframes `gridDrift`, `orbFloat`, `pulseC`, `pulseM`, `calloutIn`, `blipDot` in `client/src/index.css` (or `client/src/styles/theme.css`)
+- [X] T006 Remove/trim legacy default styles in `client/src/App.css` that conflict with the dark neon theme (App.css already layout-only; no conflicts — conflicting defaults were in index.css, replaced by T004)
 
 **Checkpoint**: Theme tokens, fonts, and keyframes available — user stories can begin
 

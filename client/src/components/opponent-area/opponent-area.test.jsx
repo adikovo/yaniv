@@ -51,6 +51,38 @@ describe('OpponentArea component', () => {
     });
 });
 
+describe('OpponentArea XSS / injection safety', () => {
+    test('renders an <img onerror> payload as inert literal text, not a live element', () => {
+        const payload = '<img src=x onerror="alert(1)">';
+        const { container } = render(
+            <OpponentArea name={payload} handCount={3} score={12} isActive={false} position="top" />
+        );
+
+        // The payload appears as literal text inside the name span.
+        expect(screen.getByText(payload)).toBeInTheDocument();
+        expect(container.querySelector('.opponent-name')).toHaveTextContent(payload);
+
+        // React escaped it, so no live <img> element was created from the name.
+        // (Face-down card images would have role="img" via <img>, so scope to the name span.)
+        const nameSpan = container.querySelector('.opponent-name');
+        expect(nameSpan.querySelector('img')).toBeNull();
+    });
+
+    test('renders a <script> payload as inert literal text, not a live element', () => {
+        const payload = '<script>alert(1)</script>';
+        const { container } = render(
+            <OpponentArea name={payload} handCount={0} score={0} isActive={false} position="top" />
+        );
+
+        // The payload appears as literal text.
+        expect(screen.getByText(payload)).toBeInTheDocument();
+        expect(container.querySelector('.opponent-name')).toHaveTextContent(payload);
+
+        // No live <script> node was injected into the rendered tree.
+        expect(container.querySelector('script')).toBeNull();
+    });
+});
+
 describe('OpponentArea callout prop', () => {
     const baseProps = { name: 'Alice', handCount: 3, score: 10, isActive: false, position: 'top' };
 

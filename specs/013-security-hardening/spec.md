@@ -4,7 +4,13 @@
 
 **Created**: 2026-06-20
 
-**Status**: Draft
+**Status**: Completed (2026-06-22)
+
+**Completion notes**:
+- **US1** — 14 client lint errors cleared (including a latent `navigate` bug in `client/src/pages/game/index.jsx`: `navigate` was referenced but never declared, so the rematch-cancelled and leave-game handlers would throw `ReferenceError`; fixing it via `const navigate = useNavigate()` restores the intended "navigate home" behavior). Server ESLint added from scratch (16 errors cleared). CI `lint` job gates client + server on errors. Delivered in PR #17.
+- **US2** — `server/validation.js` validates `joinRoom`, `makeTurn`, `chatMessage` at the Socket.io boundary; closed the `makeTurn` crash/corruption vector (bad card indices) and the `startGame` no-game crash, plus a `drawTopCard` empty-top-card guard. `player.id` accepted as number or string (server assigns numeric ids). Delivered in PR #17.
+- **US3** — XSS regression guard test added for player-name rendering (React output-escaping verified inert). Optional Playwright e2e smoke (T022) was skipped — see tasks.md rationale.
+- Final state: client 69 tests, server 123 tests, lint clean both packages.
 
 **Input**: User description: "CI hardening and security for the Yaniv multiplayer card game: (1) Add a lint gate to CI that fails the build on ESLint errors (after cleaning up the 14 existing errors in client/src/pages/). (2) Server-side input validation on the Socket.io event boundary — validate every socket event payload (player name length/charset, card indices, room codes) and reject malformed input so a hand-crafted socket message cannot crash the server or corrupt game state. (3) A targeted XSS test ensuring user-controlled strings (especially player names) render as inert text, not executable markup. Note: the project has NO database, so SQL injection is explicitly out of scope. The real attack surface is the Socket.io message boundary on the public server."
 

@@ -27,7 +27,7 @@ Web app, two packages: `client/` (ESM, React, Vitest) and `server/` (CommonJS, E
 
 **Purpose**: Baseline so all stories can be worked and verified.
 
-- [ ] T001 Install dependencies for both packages: `npm ci` in `client/` and in `server/` (and root for Playwright)
+- [X] T001 Install dependencies for both packages: `npm ci` in `client/` and in `server/` (and root for Playwright)
 
 ---
 
@@ -101,13 +101,13 @@ Web app, two packages: `client/` (ESM, React, Vitest) and `server/` (CommonJS, E
 
 ### Tests for User Story 3 (write first) ⚠️
 
-- [ ] T021 [US3] Via the `tester` subagent, write a Vitest + Testing Library test (e.g. `client/src/components/round-result/round-result.test.jsx` or `opponent-area`) rendering a name like `<img src=x onerror=alert(1)>`, asserting `getByText` finds the literal string and `container.querySelector('img,script')` is null
-- [ ] T022 [P] [US3] (Optional, per "close features with an e2e smoke" practice) Add a Playwright smoke that joins with an injection-payload name and asserts no script executes / it shows as text
+- [X] T021 [US3] Via the `tester` subagent, write a Vitest + Testing Library test (e.g. `client/src/components/round-result/round-result.test.jsx` or `opponent-area`) rendering a name like `<img src=x onerror=alert(1)>`, asserting `getByText` finds the literal string and `container.querySelector('img,script')` is null
+- [~] T022 [P] [US3] (Optional — SKIPPED) Playwright e2e smoke. Skipped: the component-level XSS unit test already proves React's escaping deterministically; names render via a single uniform `{name}` text path with no raw-HTML sinks, so the e2e adds only marginal real-browser confidence.
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] If any test reveals an unescaped render site, fix it to render the name as text (React default escaping should make this a no-op; no `dangerouslySetInnerHTML` exists today)
-- [ ] T024 [US3] Run `cd client && npm test` (and Playwright if T022 done) → XSS test passes
+- [X] T023 [US3] If any test reveals an unescaped render site, fix it to render the name as text (React default escaping should make this a no-op; no `dangerouslySetInnerHTML` exists today)
+- [X] T024 [US3] Run `cd client && npm test` (and Playwright if T022 done) → XSS test passes
 
 **Checkpoint**: XSS protection verified and regression-guarded.
 
@@ -115,8 +115,8 @@ Web app, two packages: `client/` (ESM, React, Vitest) and `server/` (CommonJS, E
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T025 Run full suites end to end: client `npm test`, server `npm test`, `npm run lint` (both packages) → all green
-- [ ] T026 Update `specs/013-security-hardening/spec.md` status to reflect completion and note the `navigate` bug fix outcome
+- [X] T025 Run full suites end to end: client `npm test`, server `npm test`, `npm run lint` (both packages) → all green
+- [X] T026 Update `specs/013-security-hardening/spec.md` status to reflect completion and note the `navigate` bug fix outcome
 
 ---
 

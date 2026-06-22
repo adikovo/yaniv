@@ -23,9 +23,9 @@ description: "Task list for feature 014 — Neon-Syndicate Visual Redesign"
 
 **Purpose**: Dependencies and build hygiene
 
-- [ ] T001 Add `lucide-react` to client dependencies in `client/package.json` (icons: Home, Copy, Check, ChevronLeft, Crown, Wifi)
-- [ ] T002 [P] Add Orbitron / Space Mono / Inter web-font `<link>` tags (with system fallbacks) in `client/index.html`
-- [ ] T003 [P] Add `client/Design YANIV Game Screen/` to `.gitignore` and confirm Vite build + ESLint gate do not include it
+- [X] T001 Add `lucide-react` to client dependencies in `client/package.json` (icons: Home, Copy, Check, ChevronLeft, Crown, Wifi)
+- [X] T002 [P] Add Orbitron / Space Mono / Inter web-font `<link>` tags (with system fallbacks) in `client/index.html`
+- [X] T003 [P] Add `client/Design YANIV Game Screen/` to `.gitignore` and confirm Vite build + ESLint gate do not include it
 
 ---
 

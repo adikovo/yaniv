@@ -27,7 +27,7 @@ Web app, two packages: `client/` (ESM, React, Vitest) and `server/` (CommonJS, E
 
 **Purpose**: Baseline so all stories can be worked and verified.
 
-- [ ] T001 Install dependencies for both packages: `npm ci` in `client/` and in `server/` (and root for Playwright)
+- [X] T001 Install dependencies for both packages: `npm ci` in `client/` and in `server/` (and root for Playwright)
 
 ---
 
@@ -115,8 +115,8 @@ Web app, two packages: `client/` (ESM, React, Vitest) and `server/` (CommonJS, E
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T025 Run full suites end to end: client `npm test`, server `npm test`, `npm run lint` (both packages) → all green
-- [ ] T026 Update `specs/013-security-hardening/spec.md` status to reflect completion and note the `navigate` bug fix outcome
+- [X] T025 Run full suites end to end: client `npm test`, server `npm test`, `npm run lint` (both packages) → all green
+- [X] T026 Update `specs/013-security-hardening/spec.md` status to reflect completion and note the `navigate` bug fix outcome
 
 ---
 

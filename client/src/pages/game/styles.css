@@ -1,9 +1,15 @@
 .game-board {
+    position: relative;
     display: grid;
     min-height: 100vh;
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
+    background:
+        radial-gradient(ellipse 70% 55% at 50% 42%, rgba(0, 240, 255, 0.07) 0%, transparent 60%),
+        var(--bg-board);
+    box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.55),
+        inset 0 0 2px rgba(0, 240, 255, 0.25);
 }
 
 .game-board.players-2 {
@@ -43,12 +49,56 @@
 .opponent-top    { grid-area: top; align-self: start; justify-self: center; width: fit-content; margin: 0 auto; padding: 8px; }
 .opponent-left   { grid-area: left; }
 .opponent-right  { grid-area: right; }
-.center-area     { grid-area: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.local-player-area { position: relative; grid-area: bottom; display: flex; flex-direction: column; align-items: center; width: fit-content; margin: 0 auto; padding: 8px; }
+.center-area     { grid-area: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+
+/* Deck (draw pile) on top, discard pile below */
+.deck-button {
+    font-size: 13px;
+    padding: 16px 34px;
+}
+
+.top_card_pile {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    min-height: 96px;
+}
+/* Fixed-size local seat: min-width keeps the active highlight from shrinking
+   as the hand shrinks (FR-009), mirroring the opponent seat panel. */
+.local-player-area {
+    position: relative;
+    grid-area: bottom;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    min-width: 340px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 46, 151, 0.18);
+    background: rgba(10, 13, 28, 0.55);
+    transition: border-color 0.3s ease, opacity 0.4s ease, transform 0.4s ease,
+        filter 0.4s ease;
+}
 
 .local-player-area.active-turn {
-    box-shadow: 0 0 12px #ffd700;
-    border-radius: 8px;
+    border-color: var(--neon-magenta);
+    animation: pulseM 1.7s ease-in-out infinite;
+}
+
+/* When the local player is eliminated: grey, then fade (FR-010) */
+.local-player-area.eliminated {
+    filter: grayscale(0.9) brightness(0.45);
+    border-color: rgba(70, 70, 90, 0.18);
+    animation: none;
+}
+
+.local-player-area.leaving {
+    opacity: 0;
+    transform: scale(0.96);
 }
 
 .disconnect-notice {
@@ -72,11 +122,22 @@
 }
 
 .local-score-label {
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
 }
 
 .hand {
     display: flex;
     flex-direction: row;
+    align-items: flex-end;
+    min-height: 96px;
+}
+
+.hand-sum {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: var(--neon-cyan);
 }

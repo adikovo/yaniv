@@ -34,7 +34,7 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
     await joinGame(page, PLAYERS[i + 1], gameID);
   }
 
-  await expect(hostPage.locator('li')).toHaveCount(3, { timeout: 10000 });
+  await expect(hostPage.locator('li')).toHaveCount(4, { timeout: 10000 });
   console.log('✓ All 4 players in lobby');
 
   // ── Step 3: Start game ────────────────────────────────────────
@@ -80,15 +80,15 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
 
   // ── Step 7: Sum display updates when card is selected ─────────
   console.log(`\n▶ Checking Sum label updates on card select (${activeName})...`);
-  const sumLabel = activePage.locator('h4', { hasText: 'Sum:' });
+  const sumLabel = activePage.locator('.hand-sum');
   await expect(sumLabel).toBeVisible();
   // Wait until the sum has populated with a non-zero numeric total before
   // reading it (it arrives with the dealt hand via socket).
-  await expect(sumLabel).toHaveText(/Sum:\s*[1-9]/, { timeout: 5000 });
+  await expect(sumLabel).toHaveText(/SUM\s*[1-9]/, { timeout: 5000 });
 
   // Sum shows total hand value (sent by server) — should be > 0 with a fresh hand
   const sumTextBefore = await sumLabel.textContent();
-  const sumBefore = parseInt(sumTextBefore?.replace('Sum:', '').trim() ?? '0');
+  const sumBefore = parseInt(sumTextBefore?.replace(/SUM/i, '').trim() ?? '0');
   console.log(`  Hand sum: ${sumBefore}`);
   expect(sumBefore).toBeGreaterThan(0);
   console.log(`✓ Sum label shows ${sumBefore} for ${activeName}'s hand`);
@@ -101,7 +101,7 @@ test('4-player game: join, start, play a turn, verify card counts', async () => 
   console.log(`✓ ${activeName} hand re-settled at ${handAfterDraw} cards after discard+draw`);
 
   const sumTextAfter = await sumLabel.textContent();
-  const sumAfter = parseInt(sumTextAfter?.replace('Sum:', '').trim() ?? '-1');
+  const sumAfter = parseInt(sumTextAfter?.replace(/SUM/i, '').trim() ?? '-1');
   console.log(`  Sum updated to new hand total: ${sumAfter}`);
   expect(sumAfter).toBeGreaterThanOrEqual(0);
   console.log('✓ Sum updated after draw');

@@ -131,9 +131,9 @@ description: "Task list for feature 014 — Neon-Syndicate Visual Redesign"
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 - [X] T025a [BUGFIX] Suppress the spectator prompt when an elimination ends the game (regression from T013b): in `handleRoundEnd` (`client/src/pages/game/index.jsx`) only run the local `onLocalEliminated` path when `players.length - eliminated.length >= 2`; otherwise it's game-over → no prompt. Guarded by 9 game-page integration tests in `game.test.jsx`.
-- [ ] T026 [P] Confirm the existing player-name XSS guard still passes across re-themed components (FR-014, no regression) in `client/src/components/opponent-area/opponent-area.test.jsx`
-- [ ] T027 Run the client lint gate; ensure no new errors and the reference export folder is excluded
-- [ ] T028 Playwright e2e smoke: Welcome → Host → Lobby → Game renders and the core play flow works after the restyle (closes the feature) in the client e2e suite
+- [X] T026 [P] Confirm the existing player-name XSS guard still passes across re-themed components (FR-014, no regression) in `client/src/components/opponent-area/opponent-area.test.jsx`
+- [X] T027 Run the client lint gate; ensure no new errors and the reference export folder is excluded
+- [X] T028 Playwright e2e smoke: Welcome → Host → Lobby → Game renders and the core play flow works after the restyle (closes the feature) in the client e2e suite — new `e2e/neon-smoke.spec.ts` + repaired the whole suite (helpers `.gameid-value`, lobby li counts +1, spectator Home button, `.hand-sum`); full suite 10/10 green
 - [ ] T029 [P] Responsive/edge pass: small-width usability, long-name ellipsis in seats, and all supported player counts keep their positions
 
 ---

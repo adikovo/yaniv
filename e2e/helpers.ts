@@ -28,8 +28,8 @@ export async function hostGame(page: Page, name: string): Promise<string> {
   await page.getByRole('textbox').fill(name);
   await page.getByRole('button', { name: /Start game/i }).click();
   await page.waitForURL('**/lobby');
-  const gameIDText = await page.locator('h4').first().textContent();
-  return gameIDText?.replace('Game ID:', '').trim() ?? '';
+  const gameIDText = await page.locator('.gameid-value').first().textContent();
+  return gameIDText?.trim() ?? '';
 }
 
 export async function joinGame(page: Page, name: string, gameID: string) {

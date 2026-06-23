@@ -30,7 +30,7 @@ test('2-player callout: Yaniv callout anchored to correct player area', async ()
   // ── Step 2: Bob joins ─────────────────────────────────────────
   console.log('▶ Bob joining...');
   await joinGame(bobPage, 'Bob', gameID);
-  await expect(alicePage.locator('li')).toHaveCount(1, { timeout: 10000 });
+  await expect(alicePage.locator('li')).toHaveCount(2, { timeout: 10000 });
   console.log('✓ Both players in lobby');
 
   // ── Step 3: Start game ────────────────────────────────────────

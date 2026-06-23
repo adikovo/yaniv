@@ -28,7 +28,7 @@ test('2-player: opponent disconnect ends the game (gameOver, no rematch)', async
     console.log('\n▶ Alice hosting + Bob joining...');
     const gameID = await hostGame(alicePage, 'Alice');
     await joinGame(bobPage, 'Bob', gameID);
-    await expect(alicePage.locator('li')).toHaveCount(1, { timeout: 10000 });
+    await expect(alicePage.locator('li')).toHaveCount(2, { timeout: 10000 });
 
     console.log('▶ Starting game...');
     await alicePage.getByRole('button', { name: /Start Game/i }).click();
@@ -80,7 +80,7 @@ test('3-player: one disconnect keeps the game going for the others', async () =>
     const gameID = await hostGame(alicePage, 'Alice');
     await joinGame(bobPage, 'Bob', gameID);
     await joinGame(carolPage, 'Carol', gameID);
-    await expect(alicePage.locator('li')).toHaveCount(2, { timeout: 10000 });
+    await expect(alicePage.locator('li')).toHaveCount(3, { timeout: 10000 });
 
     console.log('▶ Starting game...');
     await alicePage.getByRole('button', { name: /Start Game/i }).click();

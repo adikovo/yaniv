@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { ChevronLeft } from 'lucide-react';
 import { sendHost, sendJoin } from '../../api/api';
 
 import './styles.css'
 import { useGameContext } from '../../context/game-context';
+import { ParticleGrid } from '../../components/particle-grid';
 import socket from "../../api/socket";
 
 export const Home = () => {
@@ -41,45 +43,60 @@ export const Home = () => {
 
     const hostGame = () => {
         return (
-            <div>
-                <h1>Host a Game:</h1>
-                <div>
-                    Name: <input type="text" name="name" onChange={(event) => setHostName(event.target.value)}/>
-                    <br/>
-                    <button value="Host Game" onClick={hostGameClicked}>Start game!!!</button>
-                </div>
+            <div className="form-panel glass-panel">
+                <button className="back-btn" onClick={() => setGameMode('welcome')}>
+                    <ChevronLeft size={14} /> Back
+                </button>
+                <h2 className="form-title">Host a Game</h2>
+                <label className="form-field">
+                    <span className="form-label">Name</span>
+                    <input className="neon-input" type="text" name="name" onChange={(event) => setHostName(event.target.value)} />
+                </label>
+                <button className="glow-btn glow-btn--cyan form-submit" onClick={hostGameClicked}>Start Game</button>
             </div>
         );
     }
 
     const joinGame = () => {
-        return(
-            <div>
-                <h1>Join a Game:</h1>
-                <div> 
-                    Name: <input type="text" name="name" onChange={(event) => setJoinName(event.target.value)}/>
-                    <br/>
-                    Game ID: <input type="text" name="GameID" onChange={(event) => setGameID(event.target.value)}/>
-                    <br/>
-                    <button value="Join Game" onClick={joinGameClicked}>Join Game</button>
-                    <h3>{joinError}</h3>
-                </div>
+        return (
+            <div className="form-panel glass-panel">
+                <button className="back-btn" onClick={() => setGameMode('welcome')}>
+                    <ChevronLeft size={14} /> Back
+                </button>
+                <h2 className="form-title">Join a Game</h2>
+                <label className="form-field">
+                    <span className="form-label">Name</span>
+                    <input className="neon-input" type="text" name="name" onChange={(event) => setJoinName(event.target.value)} />
+                </label>
+                <label className="form-field">
+                    <span className="form-label">Game ID</span>
+                    <input className="neon-input" type="text" name="GameID" onChange={(event) => setGameID(event.target.value)} />
+                </label>
+                <button className="glow-btn glow-btn--magenta form-submit" onClick={joinGameClicked}>Join Game</button>
+                {joinError && <p className="form-error">{joinError}</p>}
             </div>
         )
-    }  
+    }
 
     return (
-        <div className="home">
-            {gameMode === 'welcome' && (
-                <>
-                    <h1>Welcome To YANIV! </h1>
-                    <div className="button-container">
-                        <button className="button" onClick={() => {setGameMode('host')}}> Host a Game </button>
-                        <button className="button" onClick={() => {setGameMode('join')}}> Join a Game</button>
+        <div className="menu-screen">
+            <ParticleGrid />
+            <div className="menu-content">
+                {gameMode === 'welcome' && (
+                    <div className="welcome">
+                        <div className="wordmark">
+                            <h1 className="wordmark-title">YANIV</h1>
+                            <div className="wordmark-underline" />
+                        </div>
+                        <div className="welcome-actions">
+                            <button className="glow-btn glow-btn--cyan" onClick={() => setGameMode('host')}>Host a Game</button>
+                            <button className="glow-btn glow-btn--magenta" onClick={() => setGameMode('join')}>Join a Game</button>
+                        </div>
                     </div>
-                </>) }
-            {gameMode === 'host' && hostGame()} 
-            {gameMode === 'join' && joinGame()}
+                )}
+                {gameMode === 'host' && hostGame()}
+                {gameMode === 'join' && joinGame()}
+            </div>
         </div>
     )
 };

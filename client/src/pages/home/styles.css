@@ -22,3 +22,133 @@
         background-color: #4682B4;
     }
 }
+
+/* ── Menu / setup screens (welcome, host, join) ──────────────────── */
+.menu-screen {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--bg-deep);
+}
+
+.menu-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 600px;
+    padding: 0 28px;
+    text-align: center;
+}
+
+/* YANIV wordmark */
+.wordmark {
+    display: inline-block;
+    margin-bottom: 48px;
+}
+
+.wordmark-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(64px, 15vw, 130px);
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    line-height: 1;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 24px var(--neon-cyan), 0 0 60px rgba(0, 240, 255, 0.5),
+        0 0 110px rgba(0, 240, 255, 0.25);
+}
+
+.wordmark-underline {
+    height: 2px;
+    margin-top: 8px;
+    background: linear-gradient(90deg, transparent 0%, var(--neon-cyan) 35%,
+        var(--neon-magenta) 65%, transparent 100%);
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.5), 0 0 28px rgba(255, 46, 151, 0.3);
+}
+
+/* Welcome Host/Join buttons */
+.welcome-actions {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.welcome-actions .glow-btn {
+    padding: 17px 44px;
+    font-size: 13px;
+}
+
+/* ── Host / Join forms ───────────────────────────────────────────── */
+.form-panel {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 30px 28px;
+    border-radius: 14px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.back-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    padding: 0;
+    color: #7aaac8;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s ease;
+}
+
+.back-btn:hover {
+    color: var(--neon-cyan);
+}
+
+.form-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 16px rgba(0, 240, 255, 0.55);
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.form-submit {
+    margin-top: 6px;
+}
+
+.form-error {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--neon-magenta);
+    text-shadow: 0 0 8px rgba(255, 46, 151, 0.4);
+}

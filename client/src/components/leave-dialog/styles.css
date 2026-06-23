@@ -1,0 +1,74 @@
+.leave-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 6, 14, 0.78);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+}
+
+.leave-dialog {
+    background: var(--glass-bg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 46, 151, 0.25);
+    border-radius: 16px;
+    padding: 36px 32px;
+    min-width: 300px;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 8px 50px rgba(0, 0, 0, 0.6), 0 0 60px rgba(255, 46, 151, 0.12);
+    color: var(--text-primary);
+}
+
+.leave-dialog h2 {
+    margin: 0 0 22px;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--neon-magenta);
+    text-shadow: 0 0 18px rgba(255, 46, 151, 0.5);
+}
+
+.leave-dialog-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.leave-dialog-btn {
+    padding: 12px 28px;
+    border-radius: 8px;
+    background: transparent;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.leave-dialog-btn-stay {
+    border: 1.5px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.28);
+}
+
+.leave-dialog-btn-stay:hover {
+    background: rgba(0, 240, 255, 0.07);
+    box-shadow: 0 0 24px rgba(0, 240, 255, 0.5);
+}
+
+.leave-dialog-btn-leave {
+    border: 1px solid rgba(255, 46, 151, 0.4);
+    color: var(--neon-magenta);
+}
+
+.leave-dialog-btn-leave:hover {
+    background: rgba(255, 46, 151, 0.07);
+    box-shadow: 0 0 20px rgba(255, 46, 151, 0.35);
+}

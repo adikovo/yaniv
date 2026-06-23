@@ -77,17 +77,17 @@ description: "Task list for feature 014 — Neon-Syndicate Visual Redesign"
 
 **Independent Test**: Walk Welcome → Host → Lobby and Welcome → Join: each is neon-styled with the animated background, all existing actions work, Back returns to welcome, copy-Game-ID copies, Leave Lobby exits cleanly, and the tagline/build-line are absent.
 
-- [ ] T014 [US2] Create `particle-grid` animated-background component (CSS drifting grid + floating orbs + scanlines, using the Phase-2 keyframes) in `client/src/components/particle-grid/index.jsx` + `styles.css`
+- [X] T014 [US2] Create `particle-grid` animated-background component (CSS drifting grid + floating orbs + scanlines, using the Phase-2 keyframes) in `client/src/components/particle-grid/index.jsx` + `styles.css`
 
 ### Tests for User Story 2 ⚠️ (write first, ensure they FAIL)
 
-- [ ] T015 [P] [US2] Test: Back returns to welcome; copy-Game-ID writes the game ID to the clipboard; Leave Lobby emits `leaveRoom` and navigates home in `client/src/pages/lobby/lobby.test.jsx` (and `client/src/pages/home/home.test.jsx` for Back)
+- [X] T015 [P] [US2] Test: Back returns to welcome; copy-Game-ID writes the game ID to the clipboard; Leave Lobby emits `leaveRoom` and navigates home in `client/src/pages/lobby/lobby.test.jsx` (and `client/src/pages/home/home.test.jsx` for Back)
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Welcome screen: neon "YANIV" wordmark + Host/Join neon buttons + `particle-grid` background; OMIT the "Hack the deck · Claim the syndicate" tagline and the "v2.4.1 // NEON SYNDICATE BUILD" line in `client/src/pages/home/index.jsx` + `styles.css`
-- [ ] T017 [US2] Host & Join forms: neon glass panels, neon inputs/buttons, error styling, and a Back control returning to welcome in `client/src/pages/home/index.jsx` + `styles.css`
-- [ ] T018 [US2] Lobby: neon glass layout, Game ID banner with copy-to-clipboard, neon player list + host indicator, host Start button, and a Leave Lobby control (emit `leaveRoom` then navigate `/`), with `particle-grid` background in `client/src/pages/lobby/index.jsx` + `styles.css`
+- [X] T016 [US2] Welcome screen: neon "YANIV" wordmark + Host/Join neon buttons + `particle-grid` background; OMIT the "Hack the deck · Claim the syndicate" tagline and the "v2.4.1 // NEON SYNDICATE BUILD" line in `client/src/pages/home/index.jsx` + `styles.css`
+- [X] T017 [US2] Host & Join forms: neon glass panels, neon inputs/buttons, error styling, and a Back control returning to welcome in `client/src/pages/home/index.jsx` + `styles.css`
+- [X] T018 [US2] Lobby: neon glass layout, Game ID banner with copy-to-clipboard, neon player list + host indicator, host Start button, and a Leave Lobby control (emit `leaveRoom` then navigate `/`), with `particle-grid` background in `client/src/pages/lobby/index.jsx` + `styles.css`
 
 **Checkpoint**: Entry flow fully re-themed with new controls
 

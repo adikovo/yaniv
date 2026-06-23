@@ -121,6 +121,33 @@
     pointer-events: none;
 }
 
+.home-corner-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--glass-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    border-radius: 10px;
+    color: var(--neon-cyan);
+    cursor: pointer;
+    box-shadow: 0 0 14px rgba(0, 240, 255, 0.2);
+    transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    z-index: 1000;
+}
+
+.home-corner-btn:hover {
+    background: rgba(0, 240, 255, 0.08);
+    box-shadow: 0 0 26px rgba(0, 240, 255, 0.5);
+    transform: scale(1.05);
+}
+
 .local-score {
     display: flex;
     align-items: center;

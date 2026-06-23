@@ -122,7 +122,7 @@ description: "Task list for feature 014 — Neon-Syndicate Visual Redesign"
 
 ### Implementation for User Story 4
 
-- [ ] T025 [US4] Add a Home control as a top-right corner icon button on the game screen (no header bar — Option B) in BOTH the active game view and the spectator view (same control, same behavior — replacing the spectator view's current plain "Exit" button), and wire it to `leave-dialog`: confirm → emit `leaveRoom` + `navigate('/')`, cancel → close; replace the current emit-less `handleLeave` in `client/src/pages/game/index.jsx` + `styles.css`
+- [X] T025 [US4] Add a Home control as a top-right corner icon button on the game screen (no header bar — Option B) in BOTH the active game view and the spectator view (same control, same behavior — replacing the spectator view's current plain "Exit" button), and wire it to `leave-dialog`: confirm → emit `leaveRoom` + `navigate('/')`, cancel → close; replace the current emit-less `handleLeave` in `client/src/pages/game/index.jsx` + `styles.css`
 
 **Checkpoint**: All four stories independently functional
 

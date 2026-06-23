@@ -11,6 +11,8 @@ import { useAsafSequence } from '../../hooks/use-asaf-sequence';
 import { useEliminations } from '../../hooks/use-eliminations';
 import { RoundResult } from '../../components/round-result';
 import { SpectatorPrompt } from '../../components/spectator-prompt';
+import { LeaveDialog } from '../../components/leave-dialog';
+import { Home } from 'lucide-react';
 
 export const Game = () => {
 
@@ -20,6 +22,7 @@ export const Game = () => {
     const showAsaf = useAsafSequence(yanivResult);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
     const [disconnectNotice, setDisconnectNotice] = useState(null);
+    const [showLeaveDialog, setShowLeaveDialog] = useState(false);
 
     // Eliminated-player sequence (FR-010): grey → fade → remove opponents so the
     // board reshuffles; the local player greys+fades, then the spectator prompt opens.
@@ -242,8 +245,26 @@ export const Game = () => {
     };
 
     const handleLeave = () => {
+        socket.emit('leaveRoom');
         navigate('/');
     };
+
+    // Home corner button + its confirmation dialog — shared by the active game
+    // view and the spectator view so leaving behaves identically in both.
+    const leaveControls = (
+        <>
+            <button
+                className="home-corner-btn"
+                aria-label="Leave game"
+                onClick={() => setShowLeaveDialog(true)}
+            >
+                <Home size={20} />
+            </button>
+            {showLeaveDialog && (
+                <LeaveDialog onConfirm={handleLeave} onCancel={() => setShowLeaveDialog(false)} />
+            )}
+        </>
+    );
 
     if (gameOverData) {
         return (
@@ -256,6 +277,7 @@ export const Game = () => {
     if (isSpectator) {
         return (
             <div className='home'>
+                {leaveControls}
                 <div className={`game-board players-${players.length}`}>
                     {players
                         .map(p => (
@@ -277,7 +299,6 @@ export const Game = () => {
                                 <Card key={index} card={card} disabled />
                             ))}
                         </div>
-                        <button onClick={handleLeave}>Exit</button>
                     </div>
                 </div>
             </div>
@@ -286,6 +307,7 @@ export const Game = () => {
 
     return (
         <div className='home'>
+            {leaveControls}
             {disconnectNotice && (
                 <div className='disconnect-notice'>{disconnectNotice}</div>
             )}

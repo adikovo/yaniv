@@ -1,7 +1,9 @@
 .spectator-prompt-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(5, 6, 14, 0.78);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -9,22 +11,33 @@
 }
 
 .spectator-prompt-dialog {
-    background: white;
-    border-radius: 12px;
-    padding: 32px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 46, 151, 0.25);
+    border-radius: 16px;
+    padding: 36px 32px;
     min-width: 300px;
     text-align: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 50px rgba(0, 0, 0, 0.6), 0 0 60px rgba(255, 46, 151, 0.12);
+    color: var(--text-primary);
 }
 
 .spectator-prompt-dialog h2 {
-    margin: 0 0 8px;
-    font-size: 1.5rem;
+    margin: 0 0 10px;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--neon-magenta);
+    text-shadow: 0 0 18px rgba(255, 46, 151, 0.5);
 }
 
 .spectator-prompt-dialog p {
-    color: #6b7280;
     margin: 0 0 24px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-muted);
 }
 
 .spectator-prompt-actions {
@@ -34,20 +47,34 @@
 }
 
 .spectator-btn {
-    padding: 10px 28px;
-    font-size: 1rem;
+    padding: 12px 28px;
     border-radius: 8px;
-    border: none;
+    background: transparent;
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
     cursor: pointer;
-    font-weight: 600;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .spectator-btn-watch {
-    background: #2563eb;
-    color: white;
+    border: 1.5px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.28);
+}
+
+.spectator-btn-watch:hover {
+    background: rgba(0, 240, 255, 0.07);
+    box-shadow: 0 0 24px rgba(0, 240, 255, 0.5);
 }
 
 .spectator-btn-leave {
-    background: #f3f4f6;
-    color: #374151;
+    border: 1px solid rgba(255, 46, 151, 0.4);
+    color: var(--neon-magenta);
+}
+
+.spectator-btn-leave:hover {
+    background: rgba(255, 46, 151, 0.07);
+    box-shadow: 0 0 20px rgba(255, 46, 151, 0.35);
 }

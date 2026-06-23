@@ -12,35 +12,35 @@
 
 .call-out-text {
     display: block;
-    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 6vw, 3rem);
     font-weight: 900;
     font-style: italic;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     rotate: -6deg;
-    background: linear-gradient(180deg, #ffe033 0%, #ff8c00 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -webkit-text-stroke: 3px #fff;
-    paint-order: stroke fill;
-    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.8));
+    color: var(--neon-cyan);
+    text-shadow: 0 0 12px var(--neon-cyan), 0 0 30px rgba(0, 240, 255, 0.6),
+        0 0 60px rgba(0, 240, 255, 0.3);
 }
 
 .call-out-asaf .call-out-text {
-    background: linear-gradient(180deg, #ff4444 0%, #cc0000 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
+    color: var(--neon-magenta);
+    text-shadow: 0 0 12px var(--neon-magenta), 0 0 30px rgba(255, 46, 151, 0.6),
+        0 0 60px rgba(255, 46, 151, 0.3);
 }
 
 .call-out-penalty {
-    display: block;
+    display: inline-block;
+    margin-top: 8px;
+    font-family: var(--font-mono);
     font-size: clamp(0.9rem, 3vw, 1.2rem);
     font-weight: 700;
     color: #fff;
-    background: #cc0000;
-    border-radius: 4px;
-    padding: 1px 6px;
-    margin-top: 2px;
+    background: var(--neon-magenta);
+    border-radius: 6px;
+    padding: 2px 10px;
+    box-shadow: 0 0 16px rgba(255, 46, 151, 0.5);
 }
 
 @keyframes call-out-pop {

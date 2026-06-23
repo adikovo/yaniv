@@ -14,7 +14,7 @@
 }
 
 /* Takeable / interactive face-up card */
-.card:hover:not(.disabled):not(.face-down) {
+.card:hover:not(.disabled):not(.face-down):not(.selected) {
     border-color: var(--neon-cyan);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55), 0 0 18px rgba(0, 240, 255, 0.45);
     transform: translateY(-3px);

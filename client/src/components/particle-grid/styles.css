@@ -1,0 +1,74 @@
+.particle-grid {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Drifting cyan grid */
+.particle-grid__grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0, 240, 255, 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.045) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: gridDrift 22s linear infinite;
+}
+
+/* Floating glow orbs */
+.particle-grid__orb {
+    position: absolute;
+    border-radius: 50%;
+    animation: orbFloat 10s ease-in-out infinite;
+}
+
+.particle-grid__orb--cyan {
+    top: 12%;
+    left: 8%;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(0, 240, 255, 0.07) 0%, transparent 68%);
+}
+
+.particle-grid__orb--magenta {
+    bottom: 18%;
+    right: 10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255, 46, 151, 0.055) 0%, transparent 68%);
+    animation-duration: 13s;
+    animation-direction: reverse;
+}
+
+.particle-grid__orb--purple {
+    top: 58%;
+    left: 52%;
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(circle, rgba(155, 95, 255, 0.06) 0%, transparent 68%);
+    animation-duration: 8s;
+    animation-delay: 3s;
+}
+
+/* Faint scanline overlay */
+.particle-grid__scanlines {
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 3px,
+        rgba(0, 0, 0, 0.025) 3px,
+        rgba(0, 0, 0, 0.025) 4px
+    );
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .particle-grid__grid,
+    .particle-grid__orb {
+        animation: none;
+    }
+}

@@ -99,10 +99,10 @@ description: "Task list for feature 014 — Neon-Syndicate Visual Redesign"
 
 **Independent Test**: Trigger each overlay (round end, elimination, disconnect, Yaniv/Asaf) and confirm neon styling with unchanged behavior.
 
-- [ ] T019 [P] [US3] Restyle round-result / game-over screen and its rematch controls to neon in `client/src/components/round-result/styles.css` (+ class hooks in `index.jsx`)
-- [ ] T020 [P] [US3] Restyle spectator-prompt (watch/leave) to neon in `client/src/components/spectator-prompt/styles.css`
-- [ ] T021 [P] [US3] Restyle call-out (YANIV/ASAF) to neon using the `calloutIn` keyframe in `client/src/components/call-out/styles.css`
-- [ ] T022 [US3] Restyle the inline disconnect notice to neon in `client/src/pages/game/index.jsx` + `styles.css`
+- [X] T019 [P] [US3] Restyle round-result / game-over screen and its rematch controls to neon in `client/src/components/round-result/styles.css` (+ class hooks in `index.jsx`)
+- [X] T020 [P] [US3] Restyle spectator-prompt (watch/leave) to neon in `client/src/components/spectator-prompt/styles.css`
+- [X] T021 [P] [US3] Restyle call-out (YANIV/ASAF) to neon in `client/src/components/call-out/styles.css` (kept the both-axis-centered `call-out-pop` scale entrance; `calloutIn` is for the top-anchored turn tags per the reference, would mis-center this popup)
+- [X] T022 [US3] Restyle the inline disconnect notice to neon in `client/src/pages/game/index.jsx` + `styles.css`
 
 **Checkpoint**: No overlay looks like the old design
 
@@ -114,15 +114,15 @@ description: "Task list for feature 014 — Neon-Syndicate Visual Redesign"
 
 **Independent Test**: In a game, click Home → neon dialog appears; "No" resumes unchanged; "Yes" leaves and lands on welcome.
 
-- [ ] T023 [US4] Create `leave-dialog` component (neon "Leave the game?" confirm with Yes/No) in `client/src/components/leave-dialog/index.jsx` + `styles.css`
+- [X] T023 [US4] Create `leave-dialog` component (neon "Leave the game?" confirm with Yes/No) in `client/src/components/leave-dialog/index.jsx` + `styles.css`
 
 ### Tests for User Story 4 ⚠️ (write first, ensure they FAIL)
 
-- [ ] T024 [P] [US4] Test: Home opens the dialog; "No" keeps the game mounted; "Yes" emits `leaveRoom` and navigates to `/` in `client/src/pages/game/game.test.jsx`
+- [X] T024 [P] [US4] Test: Home opens the dialog; "No" keeps the game mounted; "Yes" emits `leaveRoom` and navigates to `/` in `client/src/pages/game/game.test.jsx` (covers BOTH active game view and spectator view — same Home control, same behavior)
 
 ### Implementation for User Story 4
 
-- [ ] T025 [US4] Add a Home control as a top-right corner icon button on the game screen (no header bar — Option B) and wire it to `leave-dialog`: confirm → emit `leaveRoom` + `navigate('/')`, cancel → close; replace the current emit-less `handleLeave` in `client/src/pages/game/index.jsx` + `styles.css`
+- [ ] T025 [US4] Add a Home control as a top-right corner icon button on the game screen (no header bar — Option B) in BOTH the active game view and the spectator view (same control, same behavior — replacing the spectator view's current plain "Exit" button), and wire it to `leave-dialog`: confirm → emit `leaveRoom` + `navigate('/')`, cancel → close; replace the current emit-less `handleLeave` in `client/src/pages/game/index.jsx` + `styles.css`
 
 **Checkpoint**: All four stories independently functional
 
@@ -130,6 +130,7 @@ description: "Task list for feature 014 — Neon-Syndicate Visual Redesign"
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
+- [X] T025a [BUGFIX] Suppress the spectator prompt when an elimination ends the game (regression from T013b): in `handleRoundEnd` (`client/src/pages/game/index.jsx`) only run the local `onLocalEliminated` path when `players.length - eliminated.length >= 2`; otherwise it's game-over → no prompt. Guarded by 9 game-page integration tests in `game.test.jsx`.
 - [ ] T026 [P] Confirm the existing player-name XSS guard still passes across re-themed components (FR-014, no regression) in `client/src/components/opponent-area/opponent-area.test.jsx`
 - [ ] T027 Run the client lint gate; ensure no new errors and the reference export folder is excluded
 - [ ] T028 Playwright e2e smoke: Welcome → Host → Lobby → Game renders and the core play flow works after the restyle (closes the feature) in the client e2e suite

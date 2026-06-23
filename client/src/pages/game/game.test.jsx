@@ -1,5 +1,6 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
 import { Game } from './index';
+import socket from '../../api/socket';
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -7,7 +8,10 @@ import { Game } from './index';
 // drive them directly (e.g. fire `roundEnd` with eliminated players).
 // `vi.hoisted` runs before the (hoisted) `vi.mock` factory, so the factory can
 // safely close over `socketHandlers`.
-const { socketHandlers } = vi.hoisted(() => ({ socketHandlers: {} }));
+const { socketHandlers, navigateMock } = vi.hoisted(() => ({
+    socketHandlers: {},
+    navigateMock: vi.fn(),
+}));
 
 vi.mock('../../api/socket', () => ({
     default: {
@@ -18,7 +22,7 @@ vi.mock('../../api/socket', () => ({
 }));
 
 vi.mock('react-router-dom', () => ({
-    useNavigate: () => vi.fn(),
+    useNavigate: () => navigateMock,
 }));
 
 const mockContext = {
@@ -319,5 +323,131 @@ describe('Game page — elimination → spectator-prompt overlay decision', () =
         render(<Game />);
         fireRoundEndAndSettle([]);
         expect(screen.queryByText(PROMPT_TEXT)).not.toBeInTheDocument();
+    });
+});
+
+// ── US4: Home button + leave-confirmation dialog ─────────────────────────────
+//
+// T025 adds a top-right Home corner button (aria-label "Leave game", a lucide
+// Home icon) that opens the neon LeaveDialog ("Leave the game?"). Confirming
+// ("Yes") emits `leaveRoom` and navigates home ('/'); declining ("No") just
+// closes the dialog and leaves the game mounted. The control appears in BOTH
+// the active game view and the spectator view, with identical behavior.
+
+const LEAVE_DIALOG_HEADING = 'Leave the game?';
+
+function setupActiveBoard() {
+    mockContext.player = { id: 'p1', name: 'Alice', hand: [] };
+    mockContext.players = [
+        { id: 'p1', name: 'Alice' },
+        { id: 'p2', name: 'Bob' },
+    ];
+    mockContext.gameState = { current_turn: 'p2', top_card: [], deck: [] };
+    mockContext.handSizes = { p1: 5, p2: 4 };
+    mockContext.opponentScores = { p1: 0, p2: 10 };
+    mockContext.gameOverData = null;
+    mockContext.isSpectator = false;
+}
+
+const getHomeButton = () => screen.getByRole('button', { name: /leave game/i });
+const leaveRoomCalls = () => socket.emit.mock.calls.filter(([ev]) => ev === 'leaveRoom');
+
+describe('Game page — US4: Home button + leave-confirmation dialog', () => {
+    beforeEach(() => {
+        setupActiveBoard();
+        navigateMock.mockClear();
+        socket.emit.mockClear();
+    });
+
+    // ── Active game view ─────────────────────────────────────────────────────
+    test('renders a Home (leave game) control in the active game view', () => {
+        render(<Game />);
+        expect(getHomeButton()).toBeInTheDocument();
+    });
+
+    test('the leave dialog is NOT shown before the Home button is clicked', () => {
+        render(<Game />);
+        expect(screen.queryByText(LEAVE_DIALOG_HEADING)).not.toBeInTheDocument();
+    });
+
+    test('clicking Home opens the leave-confirmation dialog', () => {
+        render(<Game />);
+        fireEvent.click(getHomeButton());
+        expect(screen.getByText(LEAVE_DIALOG_HEADING)).toBeInTheDocument();
+    });
+
+    test('opening the dialog alone does not emit leaveRoom or navigate', () => {
+        render(<Game />);
+        fireEvent.click(getHomeButton());
+        expect(leaveRoomCalls()).toHaveLength(0);
+        expect(navigateMock).not.toHaveBeenCalled();
+    });
+
+    test('"No" closes the dialog without leaving (no emit, no navigate, game stays mounted)', () => {
+        render(<Game />);
+        fireEvent.click(getHomeButton());
+        fireEvent.click(screen.getByRole('button', { name: 'No' }));
+
+        expect(screen.queryByText(LEAVE_DIALOG_HEADING)).not.toBeInTheDocument();
+        expect(leaveRoomCalls()).toHaveLength(0);
+        expect(navigateMock).not.toHaveBeenCalled();
+        // The game board is still mounted (opponent still rendered).
+        expect(screen.getByText('Bob')).toBeInTheDocument();
+    });
+
+    test('"Yes" emits leaveRoom exactly once and navigates home exactly once', () => {
+        render(<Game />);
+        fireEvent.click(getHomeButton());
+        fireEvent.click(screen.getByRole('button', { name: 'Yes' }));
+
+        expect(leaveRoomCalls()).toHaveLength(1);
+        expect(navigateMock).toHaveBeenCalledTimes(1);
+        expect(navigateMock).toHaveBeenCalledWith('/');
+    });
+
+    test('after "No", clicking Home again re-opens the dialog (no stale state)', () => {
+        render(<Game />);
+        fireEvent.click(getHomeButton());
+        fireEvent.click(screen.getByRole('button', { name: 'No' }));
+        expect(screen.queryByText(LEAVE_DIALOG_HEADING)).not.toBeInTheDocument();
+
+        fireEvent.click(getHomeButton());
+        expect(screen.getByText(LEAVE_DIALOG_HEADING)).toBeInTheDocument();
+    });
+
+    // ── Spectator view (same control, same behavior) ─────────────────────────
+    test('renders the same Home (leave game) control in the spectator view', () => {
+        mockContext.isSpectator = true;
+        render(<Game />);
+        expect(getHomeButton()).toBeInTheDocument();
+    });
+
+    test('spectator: clicking Home opens the leave dialog', () => {
+        mockContext.isSpectator = true;
+        render(<Game />);
+        fireEvent.click(getHomeButton());
+        expect(screen.getByText(LEAVE_DIALOG_HEADING)).toBeInTheDocument();
+    });
+
+    test('spectator: "Yes" emits leaveRoom once and navigates home once', () => {
+        mockContext.isSpectator = true;
+        render(<Game />);
+        fireEvent.click(getHomeButton());
+        fireEvent.click(screen.getByRole('button', { name: 'Yes' }));
+
+        expect(leaveRoomCalls()).toHaveLength(1);
+        expect(navigateMock).toHaveBeenCalledTimes(1);
+        expect(navigateMock).toHaveBeenCalledWith('/');
+    });
+
+    test('spectator: "No" closes the dialog without leaving', () => {
+        mockContext.isSpectator = true;
+        render(<Game />);
+        fireEvent.click(getHomeButton());
+        fireEvent.click(screen.getByRole('button', { name: 'No' }));
+
+        expect(screen.queryByText(LEAVE_DIALOG_HEADING)).not.toBeInTheDocument();
+        expect(leaveRoomCalls()).toHaveLength(0);
+        expect(navigateMock).not.toHaveBeenCalled();
     });
 });

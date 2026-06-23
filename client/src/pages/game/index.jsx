@@ -43,7 +43,7 @@ export const Game = () => {
             setYanivResult(data);
             // Kick off the grey → fade → remove sequence for anyone eliminated.
             // Record how many players remain so a local elimination only opens the
-            // spectator prompt when the game continues (suppressed at game-over, T025a).
+            // spectator prompt when the game continues 
             if (data.eliminated?.length) {
                 remainingRef.current = playersRef.current.length - data.eliminated.length;
                 eliminateRef.current(data.eliminated);

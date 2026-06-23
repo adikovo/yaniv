@@ -23,10 +23,16 @@ export const Game = () => {
 
     // Eliminated-player sequence (FR-010): grey → fade → remove opponents so the
     // board reshuffles; the local player greys+fades, then the spectator prompt opens.
+    const playersRef = useRef(players);
+    playersRef.current = players;
+    const remainingRef = useRef(2);
+
     const { greyedIds, leavingIds, eliminate } = useEliminations({
         localId: player.id,
         onRemoveOpponents: (ids) => setPlayers(prev => prev.filter(p => !ids.includes(p.id))),
-        onLocalEliminated: () => setShowSpectatorPrompt(true),
+        onLocalEliminated: () => {
+            if (remainingRef.current >= 2) setShowSpectatorPrompt(true);
+        },
     });
     // Keep the latest `eliminate` reachable from the once-registered socket
     const eliminateRef = useRef(eliminate);
@@ -36,7 +42,12 @@ export const Game = () => {
         const handleRoundEnd = (data) => {
             setYanivResult(data);
             // Kick off the grey → fade → remove sequence for anyone eliminated.
-            if (data.eliminated?.length) eliminateRef.current(data.eliminated);
+            // Record how many players remain so a local elimination only opens the
+            // spectator prompt when the game continues (suppressed at game-over, T025a).
+            if (data.eliminated?.length) {
+                remainingRef.current = playersRef.current.length - data.eliminated.length;
+                eliminateRef.current(data.eliminated);
+            }
         };
 
         const handleNextRound = ({ top_card, current_turn, deck, hand_sizes }) => {

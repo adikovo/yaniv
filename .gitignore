@@ -21,6 +21,9 @@ dist-ssr
 /playwright-report/
 /test-results/
 
+# Design mockup export (Stitch/Figma scaffold — reference only, not part of the app)
+client/Design YANIV Game Screen/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

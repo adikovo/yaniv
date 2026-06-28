@@ -280,6 +280,7 @@ export const Game = () => {
                 {leaveControls}
                 <div className={`game-board players-${players.length}`}>
                     {players
+                        .filter(p => p.id !== player.id)
                         .map(p => (
                             <OpponentArea
                                 key={p.id}
@@ -293,7 +294,7 @@ export const Game = () => {
                         ))
                     }
                     <div className="center-area">
-                        <h3>TOP CARD:</h3>
+                        <button className="deck-button glow-btn glow-btn--cyan" disabled>DECK</button>
                         <div className='top_card_pile'>
                             {gameState.top_card?.map((card, index) => (
                                 <Card key={index} card={card} disabled />

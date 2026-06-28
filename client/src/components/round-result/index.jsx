@@ -38,7 +38,7 @@ export const RoundResult = ({ winner, canRematch = true }) => {
     return (
         <div className="round-result-overlay">
             <div className="round-result-dialog">
-                <h2>Game Over — {winner.name} wins!</h2>
+                <h2>Game Over - {winner.name} wins!</h2>
                 {canRematch ? (
                     <button
                         className="round-result-next-btn"

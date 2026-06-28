@@ -29,7 +29,7 @@ Web app, **server package only**: production code in `server/`, Jest tests in `s
 
 **Purpose**: Scaffold the single new test file against the existing Socket.io harness.
 
-- [ ] T001 Create `server/tests/lobbyLeave.test.js` with the Jest scaffold: import `createTestServer` from `./helpers/setup`, import `games` from `../globals`, a `describe('Lobby leave/disconnect broadcast')` block, and a `beforeEach` that spins up a 3-player server and forces the **pre-start** state via `delete games[gameID].game_state` (the helper seeds a started game). Add `afterEach(closeServer)`.
+- [x] T001 Create `server/tests/lobbyLeave.test.js` with the Jest scaffold: import `createTestServer` from `./helpers/setup`, import `games` from `../globals`, a `describe('Lobby leave/disconnect broadcast')` block, and a `beforeEach` that spins up a 3-player server and forces the **pre-start** state via `delete games[gameID].game_state` (the helper seeds a started game). Add `afterEach(closeServer)`.
 
 ---
 
@@ -49,12 +49,12 @@ Web app, **server package only**: production code in `server/`, Jest tests in `s
 
 ### Tests for User Story 1 (write first; MUST FAIL before T004)
 
-- [ ] T002 [US1] In `server/tests/lobbyLeave.test.js`, add a failing test: 3 clients connected to the pre-start room; `client2.emit('leaveRoom')`; assert `client0` (and/or `client1`) receives `playersUpdate` whose `players` array excludes the leaver and has length 2.
-- [ ] T003 [US1] In `server/tests/lobbyLeave.test.js`, add a failing test asserting **no spurious event**: on the same pre-start `leaveRoom`, a remaining client does **not** receive `gameOver` (register a `gameOver` listener that fails the test if called; use a short timeout / the `playersUpdate` arrival to end the test).
+- [x] T002 [US1] In `server/tests/lobbyLeave.test.js`, add a failing test: 3 clients connected to the pre-start room; `client2.emit('leaveRoom')`; assert `client0` (and/or `client1`) receives `playersUpdate` whose `players` array excludes the leaver and has length 2.
+- [x] T003 [US1] In `server/tests/lobbyLeave.test.js`, add a failing test asserting **no spurious event**: on the same pre-start `leaveRoom`, a remaining client does **not** receive `gameOver` (register a `gameOver` listener that fails the test if called; use a short timeout / the `playersUpdate` arrival to end the test).
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] In `server/socket.js`, add the pre-start branch to `removePlayer` (around the gate at line 263, after `cleanupRoomIfEmpty` returns false): when `games[room] && !games[room].game_state`, `delete games[room].players[player.id]` (guarded by `player`), `io.to(room).emit("playersUpdate", { players: Object.values(rooms[room]) })`, then `return player`. Leave the existing in-game block unchanged (it now runs only when `game_state` exists). Turns T002 + T003 green.
+- [x] T004 [US1] In `server/socket.js`, add the pre-start branch to `removePlayer` (around the gate at line 263, after `cleanupRoomIfEmpty` returns false): when `games[room] && !games[room].game_state`, `delete games[room].players[player.id]` (guarded by `player`), `io.to(room).emit("playersUpdate", { players: Object.values(rooms[room]) })`, then `return player`. Leave the existing in-game block unchanged (it now runs only when `game_state` exists). Turns T002 + T003 green.
 
 **Checkpoint**: US1 fully functional — pre-start leave updates remaining rosters with no spurious `gameOver`.
 
@@ -68,7 +68,7 @@ Web app, **server package only**: production code in `server/`, Jest tests in `s
 
 ### Tests for User Story 2 (write first)
 
-- [ ] T005 [US2] In `server/tests/lobbyLeave.test.js`, add a test: 3 clients connected to the pre-start room; `client2.disconnect()`; assert a remaining client receives `playersUpdate` whose `players` excludes the disconnected player and has length 2. (This passes once T004 is in, since `removePlayer` backs both `leaveRoom` and `disconnect`; the test confirms the disconnect path explicitly.)
+- [x] T005 [US2] In `server/tests/lobbyLeave.test.js`, add a test: 3 clients connected to the pre-start room; `client2.disconnect()`; assert a remaining client receives `playersUpdate` whose `players` excludes the disconnected player and has length 2. (This passes once T004 is in, since `removePlayer` backs both `leaveRoom` and `disconnect`; the test confirms the disconnect path explicitly.)
 
 **Checkpoint**: US1 and US2 both verified independently.
 
@@ -76,10 +76,10 @@ Web app, **server package only**: production code in `server/`, Jest tests in `s
 
 ## Phase 5: Polish & Cross-Cutting Concerns
 
-- [ ] T006 In `server/tests/lobbyLeave.test.js`, add an **in-game regression guard** (locks FR-006): with `game_state` present (do NOT delete it — use the helper's default started game), a `disconnect` still emits `playerDisconnected` (and `gameOver` when one player remains), proving the post-start path is unchanged.
-- [ ] T007 In `server/tests/lobbyLeave.test.js`, add an **edge case** test: the last player leaving an otherwise-empty pre-start room cleans up the room (no error thrown, no broadcast needed) — assert `rooms`/`games` no longer hold the room (or simply that no exception occurs and no `playersUpdate` is delivered to anyone).
-- [ ] T008 Run the full server suite (`cd server && npm test`) and confirm all tests pass, including the existing `disconnect.test.js`.
-- [ ] T009 Mark the feature complete: tick the boxes in this file and prepare the PR (server-only change + new test file).
+- [x] T006 In `server/tests/lobbyLeave.test.js`, add an **in-game regression guard** (locks FR-006): with `game_state` present (do NOT delete it — use the helper's default started game), a `disconnect` still emits `playerDisconnected` (and `gameOver` when one player remains), proving the post-start path is unchanged.
+- [x] T007 In `server/tests/lobbyLeave.test.js`, add an **edge case** test: the last player leaving an otherwise-empty pre-start room cleans up the room (no error thrown, no broadcast needed) — assert `rooms`/`games` no longer hold the room (or simply that no exception occurs and no `playersUpdate` is delivered to anyone).
+- [x] T008 Run the full server suite (`cd server && npm test`) and confirm all tests pass, including the existing `disconnect.test.js`.
+- [x] T009 Mark the feature complete: tick the boxes in this file and prepare the PR (server-only change + new test file).
 
 ---
 

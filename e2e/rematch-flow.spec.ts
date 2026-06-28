@@ -43,7 +43,7 @@ test('2-player: idle player goes home when timer expires, ready player also goes
 
     console.log('▶ Bob joining...');
     await joinGame(p1, 'Bob', gameID);
-    await expect(p0.locator('li')).toHaveCount(1, { timeout: 10000 });
+    await expect(p0.locator('li')).toHaveCount(2, { timeout: 10000 });
     console.log('✓ Both players in lobby');
 
     // ── Step 2: Start game ──────────────────────────────────────
@@ -136,11 +136,11 @@ test('3-player game: 2 of 3 click Rematch → new 2-player game starts for them;
 
     console.log('▶ Bob joining...');
     await joinGame(p1, 'Bob', gameID);
-    await expect(p0.locator('li')).toHaveCount(1, { timeout: 10000 });
+    await expect(p0.locator('li')).toHaveCount(2, { timeout: 10000 });
 
     console.log('▶ Carol joining...');
     await joinGame(p2, 'Carol', gameID);
-    await expect(p0.locator('li')).toHaveCount(2, { timeout: 10000 });
+    await expect(p0.locator('li')).toHaveCount(3, { timeout: 10000 });
     console.log('✓ All 3 players in lobby');
 
     // ── Step 2: Start game ──────────────────────────────────────
@@ -246,7 +246,7 @@ test('hosting a new game after a previous game shows the game board, not the win
 
     console.log('▶ Bob joining first game...');
     await joinGame(p1, 'Bob', gameID);
-    await expect(p0.locator('li')).toHaveCount(1, { timeout: 10000 });
+    await expect(p0.locator('li')).toHaveCount(2, { timeout: 10000 });
     console.log('✓ Both players in lobby');
 
     console.log('\n▶ Starting first game...');
@@ -295,7 +295,7 @@ test('hosting a new game after a previous game shows the game board, not the win
 
     console.log('▶ Bob joining second game...');
     await joinGame(p1, 'Bob', gameID2);
-    await expect(p0.locator('li')).toHaveCount(1, { timeout: 10000 });
+    await expect(p0.locator('li')).toHaveCount(2, { timeout: 10000 });
     console.log('✓ Both players in second game lobby');
 
     console.log('\n▶ Starting second game...');

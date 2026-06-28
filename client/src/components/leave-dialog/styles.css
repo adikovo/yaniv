@@ -1,4 +1,4 @@
-.spectator-prompt-overlay {
+.leave-dialog-overlay {
     position: fixed;
     inset: 0;
     background: rgba(5, 6, 14, 0.78);
@@ -7,10 +7,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 200;
+    z-index: 1100;
 }
 
-.spectator-prompt-dialog {
+.leave-dialog {
     background: var(--glass-bg);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
@@ -18,13 +18,14 @@
     border-radius: 16px;
     padding: 36px 32px;
     min-width: 300px;
+    max-width: 420px;
     text-align: center;
     box-shadow: 0 8px 50px rgba(0, 0, 0, 0.6), 0 0 60px rgba(255, 46, 151, 0.12);
     color: var(--text-primary);
 }
 
-.spectator-prompt-dialog h2 {
-    margin: 0 0 10px;
+.leave-dialog h2 {
+    margin: 0 0 22px;
     font-family: var(--font-display);
     font-size: 1.4rem;
     font-weight: 700;
@@ -33,20 +34,13 @@
     text-shadow: 0 0 18px rgba(255, 46, 151, 0.5);
 }
 
-.spectator-prompt-dialog p {
-    margin: 0 0 24px;
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
-
-.spectator-prompt-actions {
+.leave-dialog-actions {
     display: flex;
     gap: 12px;
     justify-content: center;
 }
 
-.spectator-btn {
+.leave-dialog-btn {
     padding: 12px 28px;
     border-radius: 8px;
     background: transparent;
@@ -58,23 +52,23 @@
     transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.spectator-btn-watch {
+.leave-dialog-btn-stay {
     border: 1.5px solid var(--neon-cyan);
     color: var(--neon-cyan);
     box-shadow: 0 0 10px rgba(0, 240, 255, 0.28);
 }
 
-.spectator-btn-watch:hover {
+.leave-dialog-btn-stay:hover {
     background: rgba(0, 240, 255, 0.07);
     box-shadow: 0 0 24px rgba(0, 240, 255, 0.5);
 }
 
-.spectator-btn-leave {
+.leave-dialog-btn-leave {
     border: 1px solid rgba(255, 46, 151, 0.4);
     color: var(--neon-magenta);
 }
 
-.spectator-btn-leave:hover {
+.leave-dialog-btn-leave:hover {
     background: rgba(255, 46, 151, 0.07);
     box-shadow: 0 0 20px rgba(255, 46, 151, 0.35);
 }

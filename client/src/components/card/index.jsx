@@ -44,7 +44,7 @@ export const Card = ({card, onClick, selected, disabled, faceDown}) => {
 
     return (
         <img
-        className={`card ${selected ? "selected" : ''}`}
+        className={`card${selected ? " selected" : ''}${faceDown ? " face-down" : ''}${disabled ? " disabled" : ''}`}
         src={src}
         onClick={handleClick}></img>
     )

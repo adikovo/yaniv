@@ -1,7 +1,9 @@
 .round-result-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(5, 6, 14, 0.78);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -9,27 +11,42 @@
 }
 
 .round-result-dialog {
-    background: white;
-    color: #111;
-    border-radius: 12px;
-    padding: 32px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 16px;
+    padding: 36px 32px;
     min-width: 320px;
     max-width: 480px;
     width: 90%;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 50px rgba(0, 0, 0, 0.6), 0 0 60px rgba(0, 240, 255, 0.12);
     text-align: center;
+    color: var(--text-primary);
 }
 
 .round-result-dialog h2 {
-    margin: 0 0 8px;
-    font-size: 1.6rem;
+    margin: 0 0 18px;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+}
+
+.round-result-dialog p {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-muted);
 }
 
 .round-result-asaf {
-    color: crimson;
-    font-weight: bold;
-    font-size: 1.1rem;
+    color: var(--neon-magenta);
+    font-family: var(--font-mono);
+    font-weight: 700;
     margin-bottom: 16px;
+    text-shadow: 0 0 10px rgba(255, 46, 151, 0.5);
 }
 
 .round-result-scores {
@@ -42,44 +59,56 @@
 .round-result-scores li {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px solid #eee;
-    font-size: 1rem;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
 }
 
 .round-result-eliminated {
-    color: #9ca3af;
+    color: var(--text-muted);
     font-style: italic;
 }
 
-.round-result-next-btn {
-    margin-top: 8px;
-    padding: 10px 24px;
-    font-size: 1rem;
+/* Rematch + Home buttons */
+.round-result-next-btn,
+.round-result-home-btn {
+    margin-top: 12px;
+    padding: 13px 28px;
     border-radius: 8px;
-    border: none;
-    background: #2563eb;
-    color: white;
+    font-family: var(--font-display);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
     cursor: pointer;
+    background: transparent;
+    transition: background 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.round-result-next-btn {
+    display: block;
+    width: 100%;
+    border: 1.5px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.28);
+}
+
+.round-result-next-btn:hover:not(:disabled) {
+    background: rgba(0, 240, 255, 0.07);
+    box-shadow: 0 0 24px rgba(0, 240, 255, 0.5);
 }
 
 .round-result-next-btn:disabled {
-    background: #9ca3af;
+    opacity: 0.45;
     cursor: default;
 }
 
 .round-result-home-btn {
-    margin-top: 8px;
-    padding: 10px 24px;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: 2px solid #6b7280;
-    background: transparent;
-    color: #6b7280;
-    cursor: pointer;
+    border: 1px solid rgba(255, 46, 151, 0.4);
+    color: var(--neon-magenta);
 }
 
 .round-result-home-btn:hover {
-    border-color: #374151;
-    color: #374151;
+    background: rgba(255, 46, 151, 0.07);
+    box-shadow: 0 0 20px rgba(255, 46, 151, 0.35);
 }

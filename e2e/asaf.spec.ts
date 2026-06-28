@@ -33,7 +33,7 @@ test('2-player: caller beaten → ASAF callout with +30 penalty on the lower han
 
     console.log('▶ Bob joining...');
     await joinGame(bobPage, 'Bob', gameID);
-    await expect(alicePage.locator('li')).toHaveCount(1, { timeout: 10000 });
+    await expect(alicePage.locator('li')).toHaveCount(2, { timeout: 10000 });
 
     console.log('\n▶ Starting game...');
     await alicePage.getByRole('button', { name: /Start Game/i }).click();

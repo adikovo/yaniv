@@ -134,3 +134,87 @@ describe('OpponentArea callout anchoring by position', () => {
         expect(container.querySelector('.opponent-right .call-out')).not.toBeNull();
     });
 });
+
+// T007 — fixed-size active-seat highlight (FR-009)
+// The active-turn highlight must be carried by a fixed-size seat panel
+// (`.opponent-seat`, applied to the outer `.opponent-area` element), NOT by the
+// inner `.opponent-hand`. This decouples the highlight from the number of cards.
+describe('OpponentArea active-seat highlight (T007, FR-009)', () => {
+    const baseProps = { name: 'Alice', score: 10, position: 'top' };
+
+    test('seat panel (firstChild) carries the opponent-seat class', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} handCount={3} isActive={false} />
+        );
+        expect(container.firstChild).toHaveClass('opponent-seat');
+    });
+
+    test('when active, firstChild has BOTH opponent-seat and active-turn', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} handCount={3} isActive={true} />
+        );
+        expect(container.firstChild).toHaveClass('opponent-seat');
+        expect(container.firstChild).toHaveClass('active-turn');
+    });
+
+    test('active-turn highlight does NOT live on the inner .opponent-hand', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} handCount={3} isActive={true} />
+        );
+        const hand = container.querySelector('.opponent-hand');
+        expect(hand).not.toBeNull();
+        expect(hand).not.toHaveClass('active-turn');
+    });
+
+    test('seat panel is a stable wrapper around the hand with handCount=1', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} handCount={1} isActive={true} />
+        );
+        // The seat panel exists and wraps the hand, independent of card count.
+        expect(container.firstChild).toHaveClass('opponent-seat');
+        expect(container.firstChild.querySelector('.opponent-hand')).not.toBeNull();
+    });
+
+    test('seat panel is a stable wrapper around the hand with handCount=5', () => {
+        const { container } = render(
+            <OpponentArea {...baseProps} handCount={5} isActive={true} />
+        );
+        expect(container.firstChild).toHaveClass('opponent-seat');
+        expect(container.firstChild.querySelector('.opponent-hand')).not.toBeNull();
+    });
+});
+
+// T008 — eliminated de-emphasis + fade (FR-010 a/b)
+describe('OpponentArea eliminated / leaving state (T008, FR-010)', () => {
+    const baseProps = { name: 'Alice', handCount: 3, score: 10, isActive: false, position: 'top' };
+
+    test('applies eliminated class when eliminated prop is true', () => {
+        const { container } = render(<OpponentArea {...baseProps} eliminated />);
+        expect(container.firstChild).toHaveClass('eliminated');
+    });
+
+    test('does not apply eliminated class when eliminated prop is omitted', () => {
+        const { container } = render(<OpponentArea {...baseProps} />);
+        expect(container.firstChild).not.toHaveClass('eliminated');
+    });
+
+    test('does not apply eliminated class when eliminated prop is false', () => {
+        const { container } = render(<OpponentArea {...baseProps} eliminated={false} />);
+        expect(container.firstChild).not.toHaveClass('eliminated');
+    });
+
+    test('applies leaving class when leaving prop is true', () => {
+        const { container } = render(<OpponentArea {...baseProps} eliminated leaving />);
+        expect(container.firstChild).toHaveClass('leaving');
+    });
+
+    test('does not apply leaving class when leaving prop is omitted', () => {
+        const { container } = render(<OpponentArea {...baseProps} eliminated />);
+        expect(container.firstChild).not.toHaveClass('leaving');
+    });
+
+    test('does not apply leaving class when leaving prop is false', () => {
+        const { container } = render(<OpponentArea {...baseProps} eliminated leaving={false} />);
+        expect(container.firstChild).not.toHaveClass('leaving');
+    });
+});

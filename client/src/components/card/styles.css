@@ -1,12 +1,42 @@
+/* Neon frame around the existing PNG card face (FR-012a — no re-draw).
+   Larger, higher-contrast cards with a dark rounded border + cyan glow. */
 .card {
-    width: 50px;
-    margin-left: 20px;
-    
+    width: 64px;
+    height: auto;
+    margin-left: 18px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(0, 240, 255, 0.25);
+    background: #0c1024;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 8px rgba(0, 240, 255, 0.12);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+    display: block;
 }
 
+/* Takeable / interactive face-up card */
+.card:hover:not(.disabled):not(.face-down):not(.selected) {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.55), 0 0 18px rgba(0, 240, 255, 0.45);
+    transform: translateY(-3px);
+}
+
+/* Selected: lift + strong cyan glow */
 .card.selected {
-    transform: translateY(-10px);
-    box-shadow: 0 0 10px #00f7ff; 
-    border: 2px solid #00f7ff;
-    border-radius: 8px;
+    transform: translateY(-12px);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 0 2px var(--neon-cyan), 0 0 18px rgba(0, 240, 255, 0.6),
+        0 0 40px rgba(0, 240, 255, 0.25);
+}
+
+/* Face-down back: purple-tinted frame, not interactive */
+.card.face-down {
+    border-color: rgba(155, 95, 255, 0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 0 8px rgba(155, 95, 255, 0.15);
+    cursor: default;
+}
+
+/* Disabled (not currently takeable): dimmed, no pointer */
+.card.disabled {
+    cursor: default;
+    opacity: 0.82;
 }

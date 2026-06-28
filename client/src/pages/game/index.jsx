@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useGameContext } from '../../context/game-context';
 import { useNavigate } from "react-router-dom";
 import socket from "../../api/socket";
@@ -8,8 +8,11 @@ import { OpponentArea } from '../../components/opponent-area';
 import { getOpponentPositions } from '../../utils/opponent-positions';
 import { CallOut } from '../../components/call-out';
 import { useAsafSequence } from '../../hooks/use-asaf-sequence';
+import { useEliminations } from '../../hooks/use-eliminations';
 import { RoundResult } from '../../components/round-result';
 import { SpectatorPrompt } from '../../components/spectator-prompt';
+import { LeaveDialog } from '../../components/leave-dialog';
+import { Home } from 'lucide-react';
 
 export const Game = () => {
 
@@ -19,27 +22,46 @@ export const Game = () => {
     const showAsaf = useAsafSequence(yanivResult);
     const [showSpectatorPrompt, setShowSpectatorPrompt] = useState(false);
     const [disconnectNotice, setDisconnectNotice] = useState(null);
+    const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+
+    // Eliminated-player sequence (FR-010): grey → fade → remove opponents so the
+    // board reshuffles; the local player greys+fades, then the spectator prompt opens.
+    const playersRef = useRef(players);
+    playersRef.current = players;
+    const remainingRef = useRef(2);
+
+    const { greyedIds, leavingIds, eliminate } = useEliminations({
+        localId: player.id,
+        onRemoveOpponents: (ids) => setPlayers(prev => prev.filter(p => !ids.includes(p.id))),
+        onLocalEliminated: () => {
+            if (remainingRef.current >= 2) setShowSpectatorPrompt(true);
+        },
+    });
+    // Keep the latest `eliminate` reachable from the once-registered socket
+    const eliminateRef = useRef(eliminate);
+    eliminateRef.current = eliminate;
 
     useEffect(() => {
-        const handleRoundEnd = (data) => setYanivResult(data);
+        const handleRoundEnd = (data) => {
+            setYanivResult(data);
+            // Kick off the grey → fade → remove sequence for anyone eliminated.
+            // Record how many players remain so a local elimination only opens the
+            // spectator prompt when the game continues 
+            if (data.eliminated?.length) {
+                remainingRef.current = playersRef.current.length - data.eliminated.length;
+                eliminateRef.current(data.eliminated);
+            }
+        };
 
         const handleNextRound = ({ top_card, current_turn, deck, hand_sizes }) => {
             setGameState({ top_card, current_turn, deck });
             if (hand_sizes) setHandSizes(hand_sizes);
-            setTimeout(() => {
-                setYanivResult(prev => {
-                    if (prev?.eliminated?.some(e => e.id === player.id)) {
-                        setShowSpectatorPrompt(true);
-                    }
-                    return null;
-                });
-            }, 1500);
+            // Clear the round-end call-out after a beat
+            setTimeout(() => setYanivResult(null), 1500);
         };
 
         const handleGameOver = (data) => {
             setGameOverData(data);
-            // No nextRound follows a gameOver, so clear the round-end state here
-            // to avoid a stale call-out appearing after a rematch
             setYanivResult(null);
         };
         const handleStart = () => setGameOverData(null);
@@ -71,28 +93,6 @@ export const Game = () => {
     const yanivCall = () => {
         socket.emit("makeTurn", gameID, { type: "yaniv" });
     }
-
-    // const getTurn = () => {
-    //     if(!hasEmittedTurn.current){
-    //         hasEmittedTurn.current = true;
-
-    //         //debug
-    //         console.log("inside getTurn");
-    //     }
-    // }
-
-    // useEffect(() => {
-    //     getTurn();
-    //   }, []);
-
-    //debug
-    //   useEffect(() => {
-    //     console.log("Game state updated:", gameState);
-    //   }, [gameState]);
-    //   //debug
-    //   useEffect(() => {
-    //     console.log("Player updated:", player);
-    //   }, [player]);
 
     const selectCards = (index) => {
 
@@ -192,13 +192,18 @@ export const Game = () => {
                             isActive={gameState.current_turn === p.id}
                             position={positionMap[p.id]}
                             callout={calloutFor(p.id)}
+                            eliminated={greyedIds.includes(p.id)}
+                            leaving={leavingIds.includes(p.id)}
                         />
                     ))
                 }
 
                 <div className="center-area">
-                    <button onClick={drawFromDeck} disabled={selectedCards.length < 1}>DECK</button>
-                    <h3>TOP CARD:</h3>
+                    <button
+                        className="deck-button glow-btn glow-btn--cyan"
+                        onClick={drawFromDeck}
+                        disabled={selectedCards.length < 1}
+                    >DECK</button>
                     <div className='top_card_pile'>
                         {gameState.top_card?.map((card, index) => (
                             <Card key={index} card={card} onClick={() => drawFromTop(index)} disabled={selectedCards.length < 1} />
@@ -206,13 +211,12 @@ export const Game = () => {
                     </div>
                 </div>
 
-                <div className={`local-player-area${gameState.current_turn === player.id ? ' active-turn' : ''}`}>
+                <div className={`local-player-area${gameState.current_turn === player.id ? ' active-turn' : ''}${greyedIds.includes(player.id) ? ' eliminated' : ''}${leavingIds.includes(player.id) ? ' leaving' : ''}`}>
                     {calloutFor(player.id) && <CallOut variant={calloutFor(player.id).variant} penalty={calloutFor(player.id).penalty} />}
                     <div className="local-score">
-                        <span className="local-score-label">Score</span>
+                        <span className="local-score-label">SCORE</span>
                         <span className="score-badge">{opponentScores[player.id] ?? 0}</span>
                     </div>
-                    <h3>Your Hand:</h3>
                     <div className='hand'>
                         {player.hand?.map((card, index) => (
                             <Card key={index}
@@ -222,11 +226,12 @@ export const Game = () => {
                         ))}
                     </div>
                     <button
+                        className="glow-btn glow-btn--magenta"
                         onClick={yanivCall}
                         disabled={player.id !== gameState.current_turn || sum > 7}>
                         YANIV
                     </button>
-                    <h4>Sum:{sum}</h4>
+                    <span className="hand-sum">SUM {sum}</span>
                 </div>
 
             </div>
@@ -240,8 +245,26 @@ export const Game = () => {
     };
 
     const handleLeave = () => {
+        socket.emit('leaveRoom');
         navigate('/');
     };
+
+    // Home corner button + its confirmation dialog — shared by the active game
+    // view and the spectator view so leaving behaves identically in both.
+    const leaveControls = (
+        <>
+            <button
+                className="home-corner-btn"
+                aria-label="Leave game"
+                onClick={() => setShowLeaveDialog(true)}
+            >
+                <Home size={20} />
+            </button>
+            {showLeaveDialog && (
+                <LeaveDialog onConfirm={handleLeave} onCancel={() => setShowLeaveDialog(false)} />
+            )}
+        </>
+    );
 
     if (gameOverData) {
         return (
@@ -254,6 +277,7 @@ export const Game = () => {
     if (isSpectator) {
         return (
             <div className='home'>
+                {leaveControls}
                 <div className={`game-board players-${players.length}`}>
                     {players
                         .map(p => (
@@ -275,7 +299,6 @@ export const Game = () => {
                                 <Card key={index} card={card} disabled />
                             ))}
                         </div>
-                        <button onClick={handleLeave}>Exit</button>
                     </div>
                 </div>
             </div>
@@ -284,6 +307,7 @@ export const Game = () => {
 
     return (
         <div className='home'>
+            {leaveControls}
             {disconnectNotice && (
                 <div className='disconnect-notice'>{disconnectNotice}</div>
             )}

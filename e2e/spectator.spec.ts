@@ -11,7 +11,7 @@ import { hostGame, joinGame, waitForActiveIndex, seedHand, seedScores } from './
 //          (sum 1), one opponent survives (sum 2 → 97), and one is eliminated
 //          (sum 10 → 105 > 100). No asaf: caller has the strictly lowest hand.
 // Assert : the eliminated player gets the spectator prompt, clicks Watch, and
-//          lands in the spectator view (board + Exit, no hand, no YANIV).
+//          lands in the spectator view (board + Home (Leave game), no hand, no YANIV).
 test('3-player: eliminated player can choose to watch as a spectator', async () => {
   test.setTimeout(60000);
 
@@ -31,7 +31,7 @@ test('3-player: eliminated player can choose to watch as a spectator', async () 
     const gameID = await hostGame(pages[0], 'Alice');
     await joinGame(pages[1], 'Bob', gameID);
     await joinGame(pages[2], 'Carol', gameID);
-    await expect(pages[0].locator('li')).toHaveCount(2, { timeout: 10000 });
+    await expect(pages[0].locator('li')).toHaveCount(3, { timeout: 10000 });
 
     console.log('▶ Starting game...');
     await pages[0].getByRole('button', { name: /Start Game/i }).click();
@@ -67,13 +67,13 @@ test('3-player: eliminated player can choose to watch as a spectator', async () 
     console.log(`▶ ${names[eliminatedIdx]} clicks Watch...`);
     await eliminatedPage.locator('.spectator-btn-watch').click();
 
-    // Spectator view: the board + an Exit button, and crucially NO own hand and
-    // NO YANIV button (the eliminated player can only watch).
+    // Spectator view: the board + a Home (Leave game) button, and crucially NO
+    // own hand and NO YANIV button (the eliminated player can only watch).
     await expect(eliminatedPage.locator('.game-board')).toBeVisible({ timeout: 5000 });
-    await expect(eliminatedPage.getByRole('button', { name: 'Exit' })).toBeVisible();
+    await expect(eliminatedPage.getByRole('button', { name: /leave game/i })).toBeVisible();
     await expect(eliminatedPage.locator('.hand')).toHaveCount(0);
     await expect(eliminatedPage.getByRole('button', { name: 'YANIV' })).toHaveCount(0);
-    console.log(`  ✓ ${names[eliminatedIdx]} is now spectating (board + Exit, no hand, no YANIV)`);
+    console.log(`  ✓ ${names[eliminatedIdx]} is now spectating (board + Home (Leave game), no hand, no YANIV)`);
 
     console.log('\n✅ Spectator checks passed!');
   } finally {

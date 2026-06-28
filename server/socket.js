@@ -54,6 +54,7 @@ const setupSocket = (server) => {
         socket.on("startGame", () => {
             const room = getUserRoom(socket.id);
             if (!room || !games[room]) return; // no game for this socket — ignore safely
+            if (Object.keys(rooms[room] ?? {}).length < 2) return;
             games[room].eliminated = [];
             dealNewRound(room, "start");
         });

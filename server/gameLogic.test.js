@@ -158,6 +158,20 @@ describe('asafPlayers', () => {
         expect(ids).not.toContain('p3');
     });
 
+    test('multiple counters — winner is the player with the lowest sum, not the last processed', () => {
+        // Carol(2) inserted before Bob(5): buggy code would pick Bob (last processed),
+        // correct code must pick Carol (lowest sum).
+        const game = makeGame(
+            { 0: { id: 'p0', name: 'Alice', sum: 7, score: 0 },
+              1: { id: 'p2', name: 'Carol', sum: 2, score: 0 },
+              2: { id: 'p1', name: 'Bob',   sum: 5, score: 0 } },
+            0
+        );
+        const result = yanivCall(game);
+        expect(result.asaf).toBe(true);
+        expect(result.winner.id).toBe('p2');
+    });
+
     test('asafPlayers objects contain exactly id and name — no extra player fields', () => {
         const game = makeGame(
             { 0: { id: 'p0', name: 'Alice', sum: 7, score: 10 },

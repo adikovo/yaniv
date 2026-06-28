@@ -116,7 +116,7 @@ function yanivCall(game) {
         if (p === caller) continue;
         if (p.sum <= caller.sum) {
             asaf = true;
-            winner = p;
+            if (p.sum < winner.sum) winner = p;
             asafPlayers.push({ id: p.id, name: p.name });
         }
     }

@@ -260,6 +260,14 @@ function removePlayer(room, socketId) {
 
     if (cleanupRoomIfEmpty(room)) return player;
 
+    // Pre-start lobby: game exists but hasn't dealt yet (no game_state).
+    // Emit the roster update the lobby UI listens to and skip the in-game path.
+    if (games[room] && !games[room].game_state) {
+        if (player) delete games[room].players[player.id];
+        io.to(room).emit("playersUpdate", { players: Object.values(rooms[room]) });
+        return player;
+    }
+
     if (games[room] && player && games[room].players[player.id]) {
         delete games[room].players[player.id];
         io.to(room).emit("playerDisconnected", { name: player.name, id: player.id });

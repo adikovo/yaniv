@@ -61,7 +61,7 @@ export const Lobby = () => {
 
                 <div className="lobby-actions">
                     {player.playerType === 'host'
-                        ? <button className="glow-btn glow-btn--cyan" onClick={startGameClicked}>Start Game</button>
+                        ? <button className="glow-btn glow-btn--cyan" onClick={startGameClicked} disabled={players.length < 2}>Start Game</button>
                         : <p className="lobby-waiting">Waiting for host to start the game…</p>}
                     <button className="leave-btn" onClick={leaveLobby}>Leave Lobby</button>
                 </div>

@@ -85,19 +85,21 @@ describe('Lobby leave/disconnect broadcast (pre-start)', () => {
             const { player0, player1, connectClient } = server;
             Promise.all([connectClient(player0), connectClient(player1)])
                 .then(([c0, c1]) => {
-                    let playersUpdateFired = false;
-                    c0.on('playersUpdate', () => { playersUpdateFired = true; });
-                    c0.once('playerDisconnected', ({ name }) => {
-                        setTimeout(() => {
-                            try {
-                                expect(name).toBe('Bob');
-                                expect(playersUpdateFired).toBe(false);
-                                c0.disconnect();
-                                done();
-                            } catch (e) { done(e); }
-                        }, 150);
-                    });
-                    c1.disconnect();
+                    setTimeout(() => {
+                        let playersUpdateFired = false;
+                        c0.on('playersUpdate', () => { playersUpdateFired = true; });
+                        c0.once('playerDisconnected', ({ name }) => {
+                            setTimeout(() => {
+                                try {
+                                    expect(name).toBe('Bob');
+                                    expect(playersUpdateFired).toBe(false);
+                                    c0.disconnect();
+                                    done();
+                                } catch (e) { done(e); }
+                            }, 150);
+                        });
+                        c1.disconnect();
+                    }, SETTLE_MS);
                 });
         }, TIMEOUT);
     });

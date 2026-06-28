@@ -90,6 +90,7 @@ export const GameProvider = ({ children }) => {
         setPlayers([]);
         setGameID('');
         setGameState({});
+        setGameStarted(false);
         setSum(0);
         setSelectedCards([]);
         setGameOverData(null);

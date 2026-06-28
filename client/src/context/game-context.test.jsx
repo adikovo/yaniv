@@ -64,6 +64,24 @@ describe('GameContext — resetGame and start-event clearing', () => {
         expect(result.current.opponentScores).toEqual({});
     });
 
+    // T007c ──────────────────────────────────────────────────────────────────
+    test('T007c — resetGame() resets gameStarted to false', () => {
+        const { result } = renderHook(() => useGameContext(), { wrapper });
+
+        // Drive gameStarted=true via the start socket event (the only setter path)
+        const handleStart = getListener('start');
+        act(() => {
+            handleStart({ deck: [], top_card: [], current_turn: 'p1', hand_sizes: {} });
+        });
+        expect(result.current.gameStarted).toBe(true);
+
+        act(() => {
+            result.current.resetGame();
+        });
+
+        expect(result.current.gameStarted).toBe(false);
+    });
+
     // T007b ──────────────────────────────────────────────────────────────────
     test('T007b — a `start` socket event clears gameOverData even when Game page is not mounted', () => {
         const { result } = renderHook(() => useGameContext(), { wrapper });
